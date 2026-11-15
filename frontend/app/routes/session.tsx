@@ -71,8 +71,8 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
       </p>
 
       {views.length > 1 && (
-        <nav aria-label="Results" className="-mx-4 mt-4 overflow-x-auto px-4">
-          <ul className="flex gap-2">
+        <nav aria-label="Results" className="mt-4">
+          <ul className="flex flex-wrap gap-2">
             {views.map((view) => (
               <li key={view.key}>
                 <Link
