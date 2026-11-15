@@ -17,15 +17,16 @@ export function QualificationBadge({ result }: { result: QualificationResult | n
   if (!result) {
     return null;
   }
-  const qualified = result === "Q";
+  const colors =
+    result === "Q"
+      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+      : result === "NR"
+        ? "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100";
   return (
     <abbr
       title={QUALIFICATION_LABELS[result]}
-      className={`rounded px-1.5 py-0.5 text-xs font-semibold no-underline ${
-        qualified
-          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-          : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-      }`}
+      className={`rounded px-1.5 py-0.5 text-xs font-semibold no-underline ${colors}`}
     >
       {result}
     </abbr>
