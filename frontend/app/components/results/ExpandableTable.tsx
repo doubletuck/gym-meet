@@ -32,8 +32,9 @@ function sortRows<T>(rows: T[], column: Column<T>, direction: SortDirection): T[
 
 /**
  * A results table whose rows expand on tap to show a detail panel. At phone
- * width the "wide" columns are hidden, so the detail panel is where their
- * values are read. Without a detail panel, rows don't expand.
+ * width the "wide" columns are hidden, so their values have to be shown
+ * elsewhere: in the detail panel or in another column's cell. A row whose
+ * `detail` is false or null doesn't expand.
  *
  * @param defaultSort the header of the sortable column the rows arrive in
  *   order of, e.g. "#" for rows ranked as published
@@ -65,6 +66,12 @@ export function ExpandableTable<T>({
     );
   const sortColumn = columns.find((c) => c.header === sort?.header);
   const sorted = sortColumn?.sortValue && sort ? sortRows(rows, sortColumn, sort.direction) : rows;
+
+  const panel = (row: T) => {
+    const content = detail?.(row);
+    return content == null || content === false ? null : content;
+  };
+  const expandable = rows.some((row) => panel(row) != null);
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggle = (key: string) =>
@@ -112,7 +119,7 @@ export function ExpandableTable<T>({
               </th>
             );
           })}
-          {detail && (
+          {expandable && (
             <th scope="col" className="w-8">
               <span className="sr-only">Details</span>
             </th>
@@ -122,12 +129,13 @@ export function ExpandableTable<T>({
       <tbody>
         {sorted.map((row) => {
           const key = rowKey(row);
-          const open = expanded.has(key);
+          const content = panel(row);
+          const open = content != null && expanded.has(key);
           return (
             <Fragment key={key}>
               <tr
-                onClick={detail ? () => toggle(key) : undefined}
-                className={`border-b border-gray-200 dark:border-gray-800 ${detail ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900" : ""}`}
+                onClick={content != null ? () => toggle(key) : undefined}
+                className={`border-b border-gray-200 dark:border-gray-800 ${content != null ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900" : ""}`}
               >
                 {columns.map((column) => (
                   <td
@@ -137,40 +145,42 @@ export function ExpandableTable<T>({
                     {column.cell(row)}
                   </td>
                 ))}
-                {detail && (
+                {expandable && (
                   <td className="py-2.5 pr-1 text-right align-top">
-                    <button
-                      type="button"
-                      aria-expanded={open}
-                      aria-label={open ? "Hide details" : "Show details"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggle(key);
-                      }}
-                      className="-m-2 p-2 text-gray-500"
-                    >
-                      <svg
-                        aria-hidden
-                        viewBox="0 0 20 20"
-                        className={`size-5 transition-transform ${open ? "rotate-180" : ""}`}
+                    {content != null && (
+                      <button
+                        type="button"
+                        aria-expanded={open}
+                        aria-label={open ? "Hide details" : "Show details"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggle(key);
+                        }}
+                        className="-m-2 p-2 text-gray-500"
                       >
-                        <path
-                          d="M5 7.5l5 5 5-5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.75"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
+                        <svg
+                          aria-hidden
+                          viewBox="0 0 20 20"
+                          className={`size-5 transition-transform ${open ? "rotate-180" : ""}`}
+                        >
+                          <path
+                            d="M5 7.5l5 5 5-5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>
-              {open && detail && (
+              {open && (
                 <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
                   <td colSpan={columns.length + 1} className="px-2 py-3">
-                    {detail(row)}
+                    {content}
                   </td>
                 </tr>
               )}

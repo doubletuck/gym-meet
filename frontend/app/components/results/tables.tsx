@@ -26,6 +26,47 @@ function routineDetails(routine: Routine): [string, string][] {
   ];
 }
 
+/** D, E, bonus and penalty on one line, for a phone, where their columns are hidden; blanks are left out. */
+function RoutineLine({ routine }: { routine: Routine }) {
+  const items = (
+    [
+      ["D", "Difficulty", difficulty(routine)],
+      ["E", "Execution", formatScore(routine.execution)],
+      ["B", "Bonus", formatValue(routine.bonus)],
+      ["P", "Penalty", formatValue(routine.penalty)],
+    ] as const
+  ).filter(([, , value]) => value !== "");
+  if (items.length === 0) {
+    return null;
+  }
+  return (
+    <span className="mt-0.5 flex flex-wrap gap-x-2.5 text-xs text-gray-500 tabular-nums sm:hidden">
+      {items.map(([short, label, value]) => (
+        <span key={short} className="whitespace-nowrap">
+          <abbr title={label} className="no-underline">
+            {short}
+          </abbr>{" "}
+          {value}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * Whether an expanded row would show more than the columns and the phone line:
+ * vault's second attempt, an itemized bonus, a Superior Jury penalty, or a
+ * qualification rank that differs from the rank.
+ */
+function hasMoreDetail(row: ScoreRow, apparatus: Apparatus): boolean {
+  return (
+    apparatus === "VT" ||
+    (row.routine.bonusDetail?.length ?? 0) > 0 ||
+    !!row.routine.sjPenalty ||
+    (row.qualificationRank != null && row.qualificationRank !== row.rank)
+  );
+}
+
 function statusLabel(routine: Routine): string {
   return { COMPLETED: "", DNS: "Did not start", INVALID_VAULT: "Invalid vault", UNKNOWN: "Unknown" }[routine.status];
 }
@@ -34,7 +75,10 @@ function statusLabel(routine: Routine): string {
  * One apparatus's scores as published. In qualification the qualification
  * column shows who made the final; scores dropped from a team's total are
  * shown faded. The bonus column appears only when someone earned a bonus,
- * so that a row's D, E, bonus and penalty add up to its total.
+ * so that a row's D, E, bonus and penalty add up to its total. On a phone,
+ * where those columns are hidden, they're on a line under the gymnast instead.
+ * Rows expand only when there's more to show (see hasMoreDetail); vault, left
+ * for later, always expands and has no phone line.
  *
  * @param rankedOnFirstVault a championship qualification ranks vault on the
  *   first vault, the one that counts for all-around and team, so that is the
@@ -63,7 +107,14 @@ export function ScoreTable({
       sortFirst: "ascending",
       cell: (row) => <Rank rank={row.rank} />,
     },
-    { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} /> },
+    {
+      header: "Gymnast",
+      cell: (row) => (
+        <Gymnast athlete={row.athlete} noc={row.noc}>
+          {apparatus !== "VT" && <RoutineLine routine={row.routine} />}
+        </Gymnast>
+      ),
+    },
     {
       header: "D",
       label: "Difficulty",
@@ -133,32 +184,34 @@ export function ScoreTable({
       defaultSort="#"
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
-      detail={(row) => (
-        <div className="space-y-3">
-          {row.secondRoutine ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <p className="mb-1 font-medium">Vault 1</p>
-                <DetailList items={routineDetails(row.routine)} />
+      detail={(row) =>
+        hasMoreDetail(row, apparatus) && (
+          <div className="space-y-3">
+            {row.secondRoutine ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="mb-1 font-medium">Vault 1</p>
+                  <DetailList items={routineDetails(row.routine)} />
+                </div>
+                <div>
+                  <p className="mb-1 font-medium">Vault 2</p>
+                  <DetailList items={routineDetails(row.secondRoutine)} />
+                </div>
               </div>
-              <div>
-                <p className="mb-1 font-medium">Vault 2</p>
-                <DetailList items={routineDetails(row.secondRoutine)} />
-              </div>
-            </div>
-          ) : (
-            <DetailList items={routineDetails(row.routine)} />
-          )}
-          <DetailList
-            items={[
-              ["Combined bonus", formatValue(row.combinedBonus)],
-              ["Two-vault total", row.secondRoutine ? formatScore(row.total) : ""],
-              ["Qualification rank", row.qualificationRank != null ? String(row.qualificationRank) : ""],
-              ["Team", teamScoring && !row.countsTowardTeam ? "Dropped from the team total" : ""],
-            ]}
-          />
-        </div>
-      )}
+            ) : (
+              <DetailList items={routineDetails(row.routine)} />
+            )}
+            <DetailList
+              items={[
+                ["Combined bonus", formatValue(row.combinedBonus)],
+                ["Two-vault total", row.secondRoutine ? formatScore(row.total) : ""],
+                ["Qualification rank", row.qualificationRank != null ? String(row.qualificationRank) : ""],
+                ["Team", teamScoring && !row.countsTowardTeam ? "Dropped from the team total" : ""],
+              ]}
+            />
+          </div>
+        )
+      }
     />
   );
 }

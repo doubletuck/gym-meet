@@ -93,11 +93,70 @@ describe("ScoreTable", () => {
       <ScoreTable apparatus="PB" scores={[zou, plain]} qualification={false} teamScoring={false} rankedOnFirstVault />,
     );
     expect(screen.getByRole("columnheader", { name: "Bon" })).toBeInTheDocument();
-    expect(within(screen.getByText("Jingyuan Zou").closest("tr")!).getByText("0.1")).toBeInTheDocument();
+    expect(
+      within(screen.getByText("Jingyuan Zou").closest("tr")!).getByRole("cell", { name: "0.1" }),
+    ).toBeInTheDocument();
     unmount();
 
     render(<ScoreTable apparatus="PB" scores={[plain]} qualification={false} teamScoring={false} rankedOnFirstVault />);
     expect(screen.queryByRole("columnheader", { name: "Bon" })).not.toBeInTheDocument();
+  });
+
+  it("lists D, E, bonus and penalty under the gymnast for a phone, leaving out blanks", () => {
+    const zou: ScoreRow = {
+      ...yeo,
+      qualificationRank: 1,
+      athlete: { id: 2, surname: "Zou", givenName: "Jingyuan" },
+      secondRoutine: null,
+      routine: routine({ difficulty: 5.8, execution: 9.566, bonus: 0.1, penalty: -0.3, score: 15.166 }),
+    };
+    const lin: ScoreRow = {
+      ...zou,
+      athlete: { id: 3, surname: "Lin", givenName: "Chaopan" },
+      routine: routine({ difficulty: 6, execution: 8, score: 14 }),
+    };
+    render(
+      <ScoreTable apparatus="PB" scores={[zou, lin]} qualification={false} teamScoring={false} rankedOnFirstVault />,
+    );
+
+    const zouCell = screen.getByText("Jingyuan Zou").closest("td")!;
+    expect(within(zouCell).getByTitle("Difficulty").parentElement).toHaveTextContent("D 5.8");
+    expect(within(zouCell).getByTitle("Execution").parentElement).toHaveTextContent("E 9.566");
+    expect(within(zouCell).getByTitle("Bonus").parentElement).toHaveTextContent("B 0.1");
+    expect(within(zouCell).getByTitle("Penalty").parentElement).toHaveTextContent("P -0.3");
+
+    const linCell = screen.getByText("Chaopan Lin").closest("td")!;
+    expect(within(linCell).getByTitle("Execution")).toBeInTheDocument();
+    expect(within(linCell).queryByTitle("Bonus")).not.toBeInTheDocument();
+    expect(within(linCell).queryByTitle("Penalty")).not.toBeInTheDocument();
+  });
+
+  it("expands only rows with more to show than the columns", () => {
+    const plain: ScoreRow = {
+      ...yeo,
+      qualificationRank: 1,
+      secondRoutine: null,
+      routine: routine({ difficulty: 6, execution: 8, score: 14 }),
+      total: 14,
+    };
+    const sj: ScoreRow = {
+      ...plain,
+      athlete: { id: 2, surname: "Penalised", givenName: "A" },
+      routine: routine({ difficulty: 6, execution: 8, sjPenalty: -1, score: 13 }),
+    };
+
+    const { unmount } = render(
+      <ScoreTable apparatus="UB" scores={[plain]} qualification={false} teamScoring={false} rankedOnFirstVault />,
+    );
+    expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Details" })).not.toBeInTheDocument();
+    unmount();
+
+    render(
+      <ScoreTable apparatus="UB" scores={[plain, sj]} qualification={false} teamScoring={false} rankedOnFirstVault />,
+    );
+    expect(screen.getAllByRole("button", { name: "Show details" })).toHaveLength(1);
+    expect(within(screen.getByText("A Penalised").closest("tr")!).getByRole("button")).toBeInTheDocument();
   });
 
   it("sorts by D highest first and by penalty largest deduction first", async () => {

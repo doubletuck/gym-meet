@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { Athlete, QualificationResult } from "~/api/types";
 import { countryName } from "~/lib/countries";
 import { athleteName } from "~/lib/format";
@@ -31,11 +33,12 @@ export function QualificationBadge({ result }: { result: QualificationResult | n
 }
 
 /** The gymnast's name over their country, the way a narrow results column reads best. */
-export function Gymnast({ athlete, noc }: { athlete: Athlete; noc: string }) {
+export function Gymnast({ athlete, noc, children }: { athlete: Athlete; noc: string; children?: ReactNode }) {
   return (
     <>
       <span className="font-medium">{athleteName(athlete)}</span>
       <span className="block text-xs text-gray-500">{countryName(noc)}</span>
+      {children}
     </>
   );
 }
