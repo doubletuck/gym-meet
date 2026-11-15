@@ -2,8 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import type { AllAroundRow, Routine, ScoreRow } from "~/api/types";
-import { AllAroundTable, ScoreTable } from "./tables";
+import type { AllAroundRow, Routine, ScoreRow, TeamRow } from "~/api/types";
+import { AllAroundTable, ScoreTable, TeamTable } from "./tables";
 
 function routine(overrides: Partial<Routine>): Routine {
   return {
@@ -212,6 +212,14 @@ describe("AllAroundTable", () => {
   ];
   const order = () => screen.getAllByText(/^A /).map((name) => name.textContent);
 
+  it("lists apparatus scores under the gymnast for a phone, and doesn't expand", () => {
+    render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
+
+    const cell = screen.getByText("A First").closest("td")!;
+    expect(within(cell).getByTitle("Vault").parentElement).toHaveTextContent("VT 13.500");
+    expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
+  });
+
   it("is ranked as published until a header is tapped", () => {
     render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
 
@@ -242,5 +250,17 @@ describe("AllAroundTable", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "#" }));
     expect(order()).toEqual(["A First", "A Second", "A Unranked"]);
+  });
+});
+
+describe("TeamTable", () => {
+  it("lists apparatus totals under the team for a phone, leaving out blanks", () => {
+    const team: TeamRow = { rank: 1, noc: "JPN", total: 252.0, qualification: null, apparatusTotals: { FX: 42.1 } };
+    render(<TeamTable rows={[team]} apparatus={["FX", "PH"]} qualification={false} />);
+
+    const cell = screen.getByText("Japan").closest("td")!;
+    expect(within(cell).getByTitle("Floor Exercise").parentElement).toHaveTextContent("FX 42.100");
+    expect(within(cell).queryByTitle("Pommel Horse")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
   });
 });

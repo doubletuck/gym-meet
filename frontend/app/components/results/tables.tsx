@@ -1,7 +1,7 @@
 import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
 import { countryName } from "~/lib/countries";
 import { formatScore, formatValue } from "~/lib/format";
-import { APPARATUS_LABELS, APPARATUS_SHORT_LABELS } from "~/lib/labels";
+import { APPARATUS_LABELS } from "~/lib/labels";
 import { ExpandableTable, type Column } from "./ExpandableTable";
 import { DetailList, Gymnast, QualificationBadge, Rank } from "./parts";
 
@@ -26,22 +26,18 @@ function routineDetails(routine: Routine): [string, string][] {
   ];
 }
 
-/** D, E, bonus and penalty on one line, for a phone, where their columns are hidden; blanks are left out. */
-function RoutineLine({ routine }: { routine: Routine }) {
-  const items = (
-    [
-      ["D", "Difficulty", difficulty(routine)],
-      ["E", "Execution", formatScore(routine.execution)],
-      ["B", "Bonus", formatValue(routine.bonus)],
-      ["P", "Penalty", formatValue(routine.penalty)],
-    ] as const
-  ).filter(([, , value]) => value !== "");
-  if (items.length === 0) {
+/**
+ * Labelled values on a line under a row's name, for a phone, where their
+ * columns are hidden. Blanks are left out, and the line wraps between values.
+ */
+function PhoneLine({ items }: { items: (readonly [short: string, label: string, value: string])[] }) {
+  const shown = items.filter(([, , value]) => value !== "");
+  if (shown.length === 0) {
     return null;
   }
   return (
     <span className="mt-0.5 flex flex-wrap gap-x-2.5 text-xs text-gray-500 tabular-nums sm:hidden">
-      {items.map(([short, label, value]) => (
+      {shown.map(([short, label, value]) => (
         <span key={short} className="whitespace-nowrap">
           <abbr title={label} className="no-underline">
             {short}
@@ -111,7 +107,16 @@ export function ScoreTable({
       header: "Gymnast",
       cell: (row) => (
         <Gymnast athlete={row.athlete} noc={row.noc}>
-          {apparatus !== "VT" && <RoutineLine routine={row.routine} />}
+          {apparatus !== "VT" && (
+            <PhoneLine
+              items={[
+                ["D", "Difficulty", difficulty(row.routine)],
+                ["E", "Execution", formatScore(row.routine.execution)],
+                ["B", "Bonus", formatValue(row.routine.bonus)],
+                ["P", "Penalty", formatValue(row.routine.penalty)],
+              ]}
+            />
+          )}
         </Gymnast>
       ),
     },
@@ -216,6 +221,11 @@ export function ScoreTable({
   );
 }
 
+function apparatusItems(apparatus: Apparatus[], scores: Partial<Record<string, number>>) {
+  return apparatus.map((app) => [app, APPARATUS_LABELS[app], formatScore(scores[app])] as const);
+}
+
+/** All-around results; on a phone, each gymnast's apparatus scores are on a line under their name. */
 export function AllAroundTable({
   rows,
   apparatus,
@@ -233,7 +243,14 @@ export function AllAroundTable({
       sortFirst: "ascending",
       cell: (row) => <Rank rank={row.rank} />,
     },
-    { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} /> },
+    {
+      header: "Gymnast",
+      cell: (row) => (
+        <Gymnast athlete={row.athlete} noc={row.noc}>
+          <PhoneLine items={apparatusItems(apparatus, row.apparatusScores)} />
+        </Gymnast>
+      ),
+    },
     ...apparatus.map((app): Column<AllAroundRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
@@ -264,18 +281,11 @@ export function AllAroundTable({
       defaultSort="#"
       rows={rows}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
-      detail={(row) => (
-        <DetailList
-          items={apparatus.map((app): [string, string] => [
-            APPARATUS_SHORT_LABELS[app],
-            formatScore(row.apparatusScores[app]),
-          ])}
-        />
-      )}
     />
   );
 }
 
+/** Team results; on a phone, each team's apparatus totals are on a line under its name. */
 export function TeamTable({
   rows,
   apparatus,
@@ -293,7 +303,15 @@ export function TeamTable({
       sortFirst: "ascending",
       cell: (row) => <Rank rank={row.rank} />,
     },
-    { header: "Team", cell: (row) => <span className="font-medium">{countryName(row.noc)}</span> },
+    {
+      header: "Team",
+      cell: (row) => (
+        <>
+          <span className="font-medium">{countryName(row.noc)}</span>
+          <PhoneLine items={apparatusItems(apparatus, row.apparatusTotals)} />
+        </>
+      ),
+    },
     ...apparatus.map((app): Column<TeamRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
@@ -318,21 +336,7 @@ export function TeamTable({
   }
 
   return (
-    <ExpandableTable
-      caption="Team results"
-      columns={columns}
-      defaultSort="#"
-      rows={rows}
-      rowKey={(row) => row.noc}
-      detail={(row) => (
-        <DetailList
-          items={apparatus.map((app): [string, string] => [
-            APPARATUS_SHORT_LABELS[app],
-            formatScore(row.apparatusTotals[app]),
-          ])}
-        />
-      )}
-    />
+    <ExpandableTable caption="Team results" columns={columns} defaultSort="#" rows={rows} rowKey={(row) => row.noc} />
   );
 }
 
