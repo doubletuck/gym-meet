@@ -74,6 +74,32 @@ describe("ScoreTable", () => {
     expect(screen.getByText("Difficulty").nextSibling).toHaveTextContent("!5.5");
   });
 
+  it("shows a bonus column only when someone earned a bonus", () => {
+    const zou: ScoreRow = {
+      ...yeo,
+      athlete: { id: 2, surname: "Zou", givenName: "Jingyuan" },
+      secondRoutine: null,
+      routine: routine({ difficulty: 6.6, execution: 8.733, bonus: 0.1, score: 15.433 }),
+      total: 15.433,
+    };
+    const plain: ScoreRow = {
+      ...zou,
+      athlete: { id: 3, surname: "Lin", givenName: "Chaopan" },
+      routine: routine({ difficulty: 6, execution: 8, score: 14 }),
+      total: 14,
+    };
+
+    const { unmount } = render(
+      <ScoreTable apparatus="PB" scores={[zou, plain]} qualification={false} teamScoring={false} rankedOnFirstVault />,
+    );
+    expect(screen.getByRole("columnheader", { name: "Bon" })).toBeInTheDocument();
+    expect(within(screen.getByText("Jingyuan Zou").closest("tr")!).getByText("0.1")).toBeInTheDocument();
+    unmount();
+
+    render(<ScoreTable apparatus="PB" scores={[plain]} qualification={false} teamScoring={false} rankedOnFirstVault />);
+    expect(screen.queryByRole("columnheader", { name: "Bon" })).not.toBeInTheDocument();
+  });
+
   it("shows did not start in place of a total", () => {
     const dns: ScoreRow = { ...yeo, rank: null, secondRoutine: null, routine: routine({ status: "DNS" }), total: null };
     render(<ScoreTable apparatus="PH" scores={[dns]} qualification teamScoring={false} rankedOnFirstVault />);

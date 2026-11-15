@@ -33,7 +33,8 @@ function statusLabel(routine: Routine): string {
 /**
  * One apparatus's scores as published. In qualification the qualification
  * column shows who made the final; scores dropped from a team's total are
- * shown faded.
+ * shown faded. The bonus column appears only when someone earned a bonus,
+ * so that a row's D, E, bonus and penalty add up to its total.
  *
  * @param rankedOnFirstVault a championship qualification ranks vault on the
  *   first vault, the one that counts for all-around and team, so that is the
@@ -59,6 +60,17 @@ export function ScoreTable({
     { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} /> },
     { header: "D", label: "Difficulty", align: "right", wide: true, cell: (row) => difficulty(row.routine) },
     { header: "E", label: "Execution", align: "right", wide: true, cell: (row) => formatScore(row.routine.execution) },
+    ...(scores.some((row) => row.routine.bonus)
+      ? [
+          {
+            header: "Bon",
+            label: "Bonus",
+            align: "right",
+            wide: true,
+            cell: (row) => formatValue(row.routine.bonus),
+          } satisfies Column<ScoreRow>,
+        ]
+      : []),
     { header: "Pen", label: "Penalty", align: "right", wide: true, cell: (row) => formatValue(row.routine.penalty) },
     {
       header: "Total",
