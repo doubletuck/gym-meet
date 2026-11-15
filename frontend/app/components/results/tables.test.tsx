@@ -2,8 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import type { Routine, ScoreRow } from "~/api/types";
-import { ScoreTable } from "./tables";
+import type { AllAroundRow, Routine, ScoreRow } from "~/api/types";
+import { AllAroundTable, ScoreTable } from "./tables";
 
 function routine(overrides: Partial<Routine>): Routine {
   return {
@@ -80,5 +80,57 @@ describe("ScoreTable", () => {
 
     expect(screen.getByText("Did not start")).toBeInTheDocument();
     expect(screen.getByText("–")).toBeInTheDocument();
+  });
+});
+
+describe("AllAroundTable", () => {
+  function allAround(rank: number | null, surname: string, VT: number, total: number | null): AllAroundRow {
+    return {
+      rank,
+      bib: surname,
+      athlete: { id: rank ?? 0, surname, givenName: "A" },
+      noc: "USA",
+      total,
+      qualification: null,
+      apparatusScores: { VT },
+    };
+  }
+  const rows = [
+    allAround(1, "First", 13.5, 55.1),
+    allAround(2, "Second", 14.2, 54.9),
+    allAround(null, "Unranked", 12.0, null),
+  ];
+  const order = () => screen.getAllByText(/^A /).map((name) => name.textContent);
+
+  it("is ranked as published until a header is tapped", () => {
+    render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
+
+    expect(order()).toEqual(["A First", "A Second", "A Unranked"]);
+    expect(screen.getByRole("columnheader", { name: "#" })).toHaveAttribute("aria-sort", "ascending");
+  });
+
+  it("sorts an apparatus highest first, then lowest first", async () => {
+    render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
+    const vault = screen.getByRole("button", { name: "VT" });
+
+    await userEvent.click(vault);
+    expect(order()).toEqual(["A Second", "A First", "A Unranked"]);
+    expect(screen.getByRole("columnheader", { name: "VT" })).toHaveAttribute("aria-sort", "descending");
+
+    await userEvent.click(vault);
+    expect(order()).toEqual(["A Unranked", "A First", "A Second"]);
+  });
+
+  it("keeps rows without a value last in either direction", async () => {
+    render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
+    const total = screen.getByRole("button", { name: "Total" });
+
+    await userEvent.click(total);
+    expect(order()).toEqual(["A First", "A Second", "A Unranked"]);
+    await userEvent.click(total);
+    expect(order()).toEqual(["A Second", "A First", "A Unranked"]);
+
+    await userEvent.click(screen.getByRole("button", { name: "#" }));
+    expect(order()).toEqual(["A First", "A Second", "A Unranked"]);
   });
 });

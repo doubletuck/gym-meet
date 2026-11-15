@@ -47,5 +47,5 @@ running, and commit the regenerated file.
 | `app/routes.ts` | The pages and their addresses |
 | `app/routes/` | Events list (`/`), an event (`/events/:eventSlug`), a session's results (`/events/:eventSlug/:discipline/:ageCategory/:sessionSlug`, e.g. `/events/2026-world-championships/wag/sr/beam-final`) |
 | `app/api/` | The typed API client, its queries, and the generated types |
-| `app/components/results/` | The results tables, whose rows expand on tap to show D, E, penalties and the second vault |
+| `app/components/results/` | The results tables, whose rows expand on tap to show D, E, penalties and the second vault; the all-around and team tables sort by a tapped column header |
 | `app/lib/` | Labels, country names (IOC codes), and number and date formatting |

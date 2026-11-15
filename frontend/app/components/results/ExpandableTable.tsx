@@ -1,5 +1,7 @@
 import { Fragment, useState, type ReactNode } from "react";
 
+type SortDirection = "ascending" | "descending";
+
 export type Column<T> = {
   header: string;
   /** Screen-reader name when the header is abbreviated, e.g. "Difficulty" for "D". */
@@ -8,12 +10,33 @@ export type Column<T> = {
   align?: "left" | "right";
   /** Shown only from the small breakpoint up; on a phone it's in the expanded row. */
   wide?: boolean;
+  /** Makes the column sortable by tapping its header; rows without a value sort last either way. */
+  sortValue?: (row: T) => number | null | undefined;
+  /** The direction of the first tap: ranks ascend, scores (the default) descend. */
+  sortFirst?: SortDirection;
 };
+
+function sortRows<T>(rows: T[], column: Column<T>, direction: SortDirection): T[] {
+  const value = column.sortValue!;
+  const sign = direction === "ascending" ? 1 : -1;
+  // Stable, so tied rows keep their published order
+  return [...rows].sort((a, b) => {
+    const x = value(a);
+    const y = value(b);
+    if (x == null || y == null) {
+      return x == null ? (y == null ? 0 : 1) : -1;
+    }
+    return sign * (x - y);
+  });
+}
 
 /**
  * A results table whose rows expand on tap to show a detail panel. At phone
  * width the "wide" columns are hidden, so the detail panel is where their
  * values are read. Without a detail panel, rows don't expand.
+ *
+ * @param defaultSort the header of the sortable column the rows arrive in
+ *   order of, e.g. "#" for rows ranked as published
  */
 export function ExpandableTable<T>({
   columns,
@@ -21,13 +44,28 @@ export function ExpandableTable<T>({
   rowKey,
   detail,
   caption,
+  defaultSort,
 }: {
   columns: Column<T>[];
   rows: T[];
   rowKey: (row: T) => string;
   detail?: (row: T) => ReactNode;
   caption: string;
+  defaultSort?: string;
 }) {
+  const [sort, setSort] = useState<{ header: string; direction: SortDirection } | null>(() => {
+    const column = columns.find((c) => c.header === defaultSort);
+    return column ? { header: column.header, direction: column.sortFirst ?? "descending" } : null;
+  });
+  const sortBy = (column: Column<T>) =>
+    setSort((current) =>
+      current?.header === column.header
+        ? { header: column.header, direction: current.direction === "ascending" ? "descending" : "ascending" }
+        : { header: column.header, direction: column.sortFirst ?? "descending" },
+    );
+  const sortColumn = columns.find((c) => c.header === sort?.header);
+  const sorted = sortColumn?.sortValue && sort ? sortRows(rows, sortColumn, sort.direction) : rows;
+
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggle = (key: string) =>
     setExpanded((current) => {
@@ -43,21 +81,37 @@ export function ExpandableTable<T>({
       <caption className="sr-only">{caption}</caption>
       <thead>
         <tr className="border-b border-gray-300 text-xs text-gray-500 dark:border-gray-700">
-          {columns.map((column) => (
-            <th
-              key={column.header}
-              scope="col"
-              className={`px-2 py-2 font-medium ${column.align === "right" ? "text-right" : "text-left"} ${column.wide ? "hidden sm:table-cell" : ""}`}
-            >
-              {column.label ? (
-                <abbr title={column.label} className="no-underline">
-                  {column.header}
-                </abbr>
-              ) : (
-                column.header
-              )}
-            </th>
-          ))}
+          {columns.map((column) => {
+            const name = column.label ? (
+              <abbr title={column.label} className="no-underline">
+                {column.header}
+              </abbr>
+            ) : (
+              column.header
+            );
+            const direction = sort?.header === column.header ? sort.direction : undefined;
+            return (
+              <th
+                key={column.header}
+                scope="col"
+                aria-sort={column.sortValue ? (direction ?? "none") : undefined}
+                className={`px-2 py-2 font-medium ${column.align === "right" ? "text-right" : "text-left"} ${column.wide ? "hidden sm:table-cell" : ""}`}
+              >
+                {column.sortValue ? (
+                  <button
+                    type="button"
+                    onClick={() => sortBy(column)}
+                    className={`-mx-1 inline-flex items-center gap-0.5 px-1 font-medium hover:text-gray-900 dark:hover:text-gray-100 ${column.align === "right" ? "flex-row-reverse" : ""} ${direction ? "text-gray-900 dark:text-gray-100" : ""}`}
+                  >
+                    {name}
+                    <SortArrow direction={direction} />
+                  </button>
+                ) : (
+                  name
+                )}
+              </th>
+            );
+          })}
           {detail && (
             <th scope="col" className="w-8">
               <span className="sr-only">Details</span>
@@ -66,7 +120,7 @@ export function ExpandableTable<T>({
         </tr>
       </thead>
       <tbody>
-        {rows.map((row) => {
+        {sorted.map((row) => {
           const key = rowKey(row);
           const open = expanded.has(key);
           return (
@@ -125,5 +179,25 @@ export function ExpandableTable<T>({
         })}
       </tbody>
     </table>
+  );
+}
+
+/** Space is kept for the arrow on unsorted columns so headers don't shift when sorted. */
+function SortArrow({ direction }: { direction?: SortDirection }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 12 12"
+      className={`size-3 shrink-0 ${direction ? "" : "invisible"} ${direction === "ascending" ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M6 2.5v7M3 6.5l3 3 3-3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

@@ -129,16 +129,28 @@ export function AllAroundTable({
   qualification: boolean;
 }) {
   const columns: Column<AllAroundRow>[] = [
-    { header: "#", label: "Rank", cell: (row) => <Rank rank={row.rank} /> },
+    {
+      header: "#",
+      label: "Rank",
+      sortValue: (row) => row.rank,
+      sortFirst: "ascending",
+      cell: (row) => <Rank rank={row.rank} />,
+    },
     { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} /> },
     ...apparatus.map((app): Column<AllAroundRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
       align: "right",
       wide: true,
+      sortValue: (row) => row.apparatusScores[app],
       cell: (row) => formatScore(row.apparatusScores[app]),
     })),
-    { header: "Total", align: "right", cell: (row) => <span className="font-semibold">{formatScore(row.total)}</span> },
+    {
+      header: "Total",
+      align: "right",
+      sortValue: (row) => row.total,
+      cell: (row) => <span className="font-semibold">{formatScore(row.total)}</span>,
+    },
   ];
   if (qualification) {
     columns.push({
@@ -152,6 +164,7 @@ export function AllAroundTable({
     <ExpandableTable
       caption="All-around results"
       columns={columns}
+      defaultSort="#"
       rows={rows}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
       detail={(row) => (
@@ -176,16 +189,28 @@ export function TeamTable({
   qualification: boolean;
 }) {
   const columns: Column<TeamRow>[] = [
-    { header: "#", label: "Rank", cell: (row) => <Rank rank={row.rank} /> },
+    {
+      header: "#",
+      label: "Rank",
+      sortValue: (row) => row.rank,
+      sortFirst: "ascending",
+      cell: (row) => <Rank rank={row.rank} />,
+    },
     { header: "Team", cell: (row) => <span className="font-medium">{countryName(row.noc)}</span> },
     ...apparatus.map((app): Column<TeamRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
       align: "right",
       wide: true,
+      sortValue: (row) => row.apparatusTotals[app],
       cell: (row) => formatScore(row.apparatusTotals[app]),
     })),
-    { header: "Total", align: "right", cell: (row) => <span className="font-semibold">{formatScore(row.total)}</span> },
+    {
+      header: "Total",
+      align: "right",
+      sortValue: (row) => row.total,
+      cell: (row) => <span className="font-semibold">{formatScore(row.total)}</span>,
+    },
   ];
   if (qualification) {
     columns.push({
@@ -199,6 +224,7 @@ export function TeamTable({
     <ExpandableTable
       caption="Team results"
       columns={columns}
+      defaultSort="#"
       rows={rows}
       rowKey={(row) => row.noc}
       detail={(row) => (
