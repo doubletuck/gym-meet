@@ -100,6 +100,31 @@ describe("ScoreTable", () => {
     expect(screen.queryByRole("columnheader", { name: "Bon" })).not.toBeInTheDocument();
   });
 
+  it("sorts by D highest first and by penalty largest deduction first", async () => {
+    const row = (surname: string, difficulty: number, penalty: number | null): ScoreRow => ({
+      ...yeo,
+      athlete: { id: difficulty, surname, givenName: "A" },
+      secondRoutine: null,
+      routine: routine({ difficulty, execution: 8, penalty, score: 8 + difficulty + (penalty ?? 0) }),
+    });
+    render(
+      <ScoreTable
+        apparatus="FX"
+        scores={[row("Low", 5, null), row("High", 6, -0.1), row("Mid", 5.5, -0.3)]}
+        qualification={false}
+        teamScoring={false}
+        rankedOnFirstVault={false}
+      />,
+    );
+    const order = () => screen.getAllByText(/^A /).map((name) => name.textContent);
+
+    await userEvent.click(screen.getByRole("button", { name: "D" }));
+    expect(order()).toEqual(["A High", "A Mid", "A Low"]);
+
+    await userEvent.click(screen.getByRole("button", { name: "Pen" }));
+    expect(order()).toEqual(["A Mid", "A High", "A Low"]);
+  });
+
   it("shows did not start in place of a total", () => {
     const dns: ScoreRow = { ...yeo, rank: null, secondRoutine: null, routine: routine({ status: "DNS" }), total: null };
     render(<ScoreTable apparatus="PH" scores={[dns]} qualification teamScoring={false} rankedOnFirstVault />);

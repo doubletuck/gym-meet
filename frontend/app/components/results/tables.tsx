@@ -56,10 +56,30 @@ export function ScoreTable({
 }) {
   const shown = (row: ScoreRow) => (rankedOnFirstVault ? row.routine.score : row.total);
   const columns: Column<ScoreRow>[] = [
-    { header: "#", label: "Rank", cell: (row) => <Rank rank={row.rank} /> },
+    {
+      header: "#",
+      label: "Rank",
+      sortValue: (row) => row.rank,
+      sortFirst: "ascending",
+      cell: (row) => <Rank rank={row.rank} />,
+    },
     { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} /> },
-    { header: "D", label: "Difficulty", align: "right", wide: true, cell: (row) => difficulty(row.routine) },
-    { header: "E", label: "Execution", align: "right", wide: true, cell: (row) => formatScore(row.routine.execution) },
+    {
+      header: "D",
+      label: "Difficulty",
+      align: "right",
+      wide: true,
+      sortValue: (row) => row.routine.difficulty,
+      cell: (row) => difficulty(row.routine),
+    },
+    {
+      header: "E",
+      label: "Execution",
+      align: "right",
+      wide: true,
+      sortValue: (row) => row.routine.execution,
+      cell: (row) => formatScore(row.routine.execution),
+    },
     ...(scores.some((row) => row.routine.bonus)
       ? [
           {
@@ -67,14 +87,25 @@ export function ScoreTable({
             label: "Bonus",
             align: "right",
             wide: true,
+            sortValue: (row) => row.routine.bonus,
             cell: (row) => formatValue(row.routine.bonus),
           } satisfies Column<ScoreRow>,
         ]
       : []),
-    { header: "Pen", label: "Penalty", align: "right", wide: true, cell: (row) => formatValue(row.routine.penalty) },
+    {
+      header: "Pen",
+      label: "Penalty",
+      align: "right",
+      wide: true,
+      sortValue: (row) => row.routine.penalty,
+      // Penalties are negative, so the largest deduction comes first
+      sortFirst: "ascending",
+      cell: (row) => formatValue(row.routine.penalty),
+    },
     {
       header: "Total",
       align: "right",
+      sortValue: shown,
       cell: (row) =>
         row.routine.status !== "COMPLETED" && shown(row) == null ? (
           <span className="text-gray-500">{statusLabel(row.routine)}</span>
@@ -99,6 +130,7 @@ export function ScoreTable({
     <ExpandableTable
       caption={`${APPARATUS_LABELS[apparatus]} results`}
       columns={columns}
+      defaultSort="#"
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
       detail={(row) => (
