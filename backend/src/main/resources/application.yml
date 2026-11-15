@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: gym-meet
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema; Hibernate only checks the entities agree with it
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+springdoc:
+  # The API only speaks JSON; without this every response is documented as */*
+  default-produces-media-type: application/json
+server:
+  compression:
+    # A qualification's results are a few hundred KB of JSON; gzip shrinks that about tenfold for phones
+    enabled: true
+    mime-types: application/json
+    min-response-size: 2KB

@@ -8,8 +8,6 @@ import doubletuck.meet.repository.EventRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +26,6 @@ public class EventService {
         this.eventRepository = eventRepository;
         this.sessionRepository = sessionRepository;
         this.participantRepository = participantRepository;
-    }
-
-    public Optional<EventResponse> findById(Long id) {
-        return eventRepository.findById(id).map(EventResponse::from);
-    }
-
-    public Page<EventResponse> getPaginatedEntities(Pageable pageable) {
-        return eventRepository.findAll(pageable).map(EventResponse::from);
     }
 
     @Transactional
@@ -69,27 +59,37 @@ public class EventService {
     }
 
     private void checkForDuplicate(EventRequest request, Long excludeId) {
-        Optional<Event> duplicate = (request.figEventNumber() != null && !request.figEventNumber().isBlank())
-                ? eventRepository.findByFigEventNumber(request.figEventNumber())
-                : eventRepository.findByTitleIgnoreCaseAndStartDate(request.title(), request.startDate());
-
-        duplicate.filter(event -> !event.getId().equals(excludeId))
+        if (request.figEventNumber() != null && !request.figEventNumber().isBlank()) {
+            eventRepository.findByFigEventNumber(request.figEventNumber())
+                    .filter(event -> !event.getId().equals(excludeId))
+                    .ifPresent(event -> {
+                        throw new ConflictException(
+                                "An event with FIG event number '" + request.figEventNumber() + "' already exists");
+                    });
+        }
+        eventRepository.findBySlug(request.slug())
+                .filter(event -> !event.getId().equals(excludeId))
                 .ifPresent(event -> {
-                    throw new ConflictException((request.figEventNumber() != null && !request.figEventNumber().isBlank())
-                            ? "An event with FIG event number '" + request.figEventNumber() + "' already exists"
-                            : "An event titled '" + request.title() + "' starting " + request.startDate()
-                                    + " already exists");
+                    throw new ConflictException("An event with slug '" + request.slug() + "' already exists");
+                });
+        eventRepository.findByTitleIgnoreCaseAndStartDate(request.title(), request.startDate())
+                .filter(event -> !event.getId().equals(excludeId))
+                .ifPresent(event -> {
+                    throw new ConflictException("An event titled '" + request.title() + "' starting "
+                            + request.startDate() + " already exists");
                 });
     }
 
     private void applyRequest(Event event, EventRequest request) {
         event.setFigEventNumber(request.figEventNumber());
+        event.setSlug(request.slug());
         event.setTitle(request.title());
         event.setStartDate(request.startDate());
         event.setEndDate(request.endDate());
         event.setCity(request.city());
         event.setCountryCode(request.countryCode());
         event.setVenue(request.venue());
+        event.setApparatusSuppliers(request.apparatusSuppliers());
         event.setLevel(request.level());
     }
 }

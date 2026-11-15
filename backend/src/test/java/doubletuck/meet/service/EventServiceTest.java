@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -53,6 +52,7 @@ class EventServiceTest {
         testEvent = new Event();
         testEvent.setFigEventNumber("FIG-2026-EURO");
         testEvent.setTitle("2026 European Championships");
+        testEvent.setSlug("2026-european-championships");
         testEvent.setStartDate(LocalDate.of(2026, 4, 20));
         testEvent.setEndDate(LocalDate.of(2026, 4, 26));
         testEvent.setCity("Stuttgart");
@@ -62,24 +62,13 @@ class EventServiceTest {
     }
 
     @Test
-    void testFindById_Found() {
-        Optional<EventResponse> found = eventService.findById(testEvent.getId());
+    void testCreate_FailsOnDuplicateSlug() {
+        EventRequest request = new EventRequest(null, "2026-european-championships", "A Different Title",
+                LocalDate.of(2027, 1, 1), LocalDate.of(2027, 1, 5), "Stuttgart", "GER", null, null,
+                EventLevel.CONTINENTAL_CHAMPIONSHIPS);
 
-        assertTrue(found.isPresent());
-        assertEquals(testEvent.getId(), found.get().id());
-        assertEquals("2026 European Championships", found.get().title());
-    }
-
-    @Test
-    void testFindById_NotFound() {
-        Optional<EventResponse> found = eventService.findById(-1L);
-
-        assertTrue(found.isEmpty());
-    }
-
-    @Test
-    void testGetPaginatedEntities_ReturnsAllEvents() {
-        assertEquals(1, eventService.getPaginatedEntities(PageRequest.of(0, 10)).getTotalElements());
+        ConflictException e = assertThrows(ConflictException.class, () -> eventService.create(request));
+        assertTrue(e.getMessage().contains("slug"), e.getMessage());
     }
 
     @Test
@@ -104,17 +93,25 @@ class EventServiceTest {
 
     @Test
     void testCreate_FailsOnDuplicateTitleAndStartDate_WhenFigEventNumberAbsent() {
-        EventRequest request = new EventRequest(null, "2026 European Championships", testEvent.getStartDate(),
-                LocalDate.of(2026, 4, 27), "Different City", "FRA", null,
+        EventRequest request = new EventRequest(null, "2026-european-championships-copy", "2026 European Championships", testEvent.getStartDate(),
+                LocalDate.of(2026, 4, 27), "Different City", "FRA", null, null,
                 EventLevel.DOMESTIC_COMPETITION);
 
         assertThrows(ConflictException.class, () -> eventService.create(request));
     }
 
     @Test
+    void testCreate_FailsOnDuplicateTitleAndStartDate_WhenFigEventNumberDiffers() {
+        EventRequest request = requestFor("FIG-2026-OTHER", "2026 European Championships",
+                testEvent.getStartDate(), testEvent.getEndDate());
+
+        assertThrows(ConflictException.class, () -> eventService.create(request));
+    }
+
+    @Test
     void testCreate_SucceedsWithoutFigEventNumber_WhenTitleAndStartDateAreUnique() {
-        EventRequest request = new EventRequest(null, "2026 US Championships", LocalDate.of(2026, 8, 15),
-                LocalDate.of(2026, 8, 18), "Fort Worth", "USA", null,
+        EventRequest request = new EventRequest(null, "2026-us-championships", "2026 US Championships", LocalDate.of(2026, 8, 15),
+                LocalDate.of(2026, 8, 18), "Fort Worth", "USA", null, null,
                 EventLevel.NATIONAL_CHAMPIONSHIPS);
 
         EventResponse created = eventService.create(request);
@@ -159,6 +156,7 @@ class EventServiceTest {
         Event otherEvent = new Event();
         otherEvent.setFigEventNumber("FIG-2026-WORLDS");
         otherEvent.setTitle("2026 World Championships");
+        otherEvent.setSlug("2026-world-championships");
         otherEvent.setStartDate(LocalDate.of(2026, 10, 1));
         otherEvent.setEndDate(LocalDate.of(2026, 10, 10));
         otherEvent.setCity("Jakarta");
@@ -207,6 +205,7 @@ class EventServiceTest {
         athlete.setDiscipline(Discipline.WAG);
         athlete.setSurname("Biles");
         athlete.setGivenName("Simone");
+        athlete.setBirthYear((short) 2000);
         athlete = athleteRepository.save(athlete);
 
         Participant participant = new Participant();
@@ -220,7 +219,7 @@ class EventServiceTest {
     }
 
     private EventRequest requestFor(String figEventNumber, String title, LocalDate startDate, LocalDate endDate) {
-        return new EventRequest(figEventNumber, title, startDate, endDate, "Stuttgart", "GER", null,
+        return new EventRequest(figEventNumber, title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("-$", ""), title, startDate, endDate, "Stuttgart", "GER", null, null,
                 EventLevel.CONTINENTAL_CHAMPIONSHIPS);
     }
 }

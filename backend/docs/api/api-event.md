@@ -1,76 +1,92 @@
 # Event API
 
-Base path: `/event`
+Base path: `/api/events`
 
-Manages gymnastics competitions where `Event` is the named competition (e.g.
-"2026 European Championships"). An `Event` is the primary record to which `Participant`s and `Session`s are related.
+Gymnastics competitions, where `Event` is the named competition (e.g.
+"54th Artistic Gymnastics World Championships"). An `Event` is the primary
+record to which `Participant`s and `Session`s are related. Its results are
+read through the [Session API](api-session.md).
+
+The `GET` endpoints are public. Their responses may be cached for 5 minutes
+(`Cache-Control: max-age=300, public`) and carry an `ETag`, so a client
+revalidating a cached response gets `304 Not Modified` when nothing has
+changed. The `POST`, `PUT` and `DELETE` endpoints require a login; without one
+they return `401 Unauthorized`.
+
+The live OpenAPI description is served at `/v3/api-docs` (browsable at
+`/swagger-ui.html`).
 
 ---
 
 ## Endpoints
 
-### GET /event/{id}
+### GET /api/events
 
-Returns a single event by ID.
+Lists events, newest first, each with the disciplines and age categories it has
+results for.
+
+**Query Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| year | int | No | Only events starting or ending in this year |
+| level | String | No | Only events of this `EventLevel` code (e.g. `WORLD_CHAMPIONSHIPS`) |
+| discipline | String | No | Only events with results in this discipline (`MAG` or `WAG`) |
+
+**Responses**
+
+| Status | Description |
+|--------|-------------|
+| 200 OK | A list of [EventSummaryResponse](#eventsummaryresponse-object) objects |
+
+---
+
+### GET /api/events/{slug}
+
+Returns an event and its sessions, grouped by discipline and age category.
 
 **Path Parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | Long | Event ID |
+| slug | String | The event's slug, e.g. `2026-world-championships` |
 
 **Responses**
 
 | Status | Description |
 |--------|-------------|
-| 200 OK | Event found; returns [EventResponse](#eventresponse-object) |
-| 404 Not Found | No event with the given ID |
+| 200 OK | Event found; returns [EventDetailResponse](#eventdetailresponse-object) |
+| 404 Not Found | No event with the given slug |
 
 ---
 
-### GET /event
+### POST /api/events
 
-Returns a paginated list of events.
-
-**Query Parameters**
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| page | int | 0 | Zero-based page index |
-| size | int | 10 | Number of records per page |
-
-**Responses**
-
-| Status | Description |
-|--------|-------------|
-| 200 OK | Paginated result; returns a Spring Data `Page` containing a list of [EventResponse](#eventresponse-object) objects |
-
----
-
-### POST /event
-
-Creates a new event.
+Creates a new event. Requires a login.
 
 **Request Body** — [EventRequest](#eventrequest-object) (JSON)
 
 **Validation**
 
-- When pressent, the `figEventNumber` must be unique across events.
-- When `figEventNumber` is absent, the pair `title` + `startDate` must be unique.
+- The `slug` must be unique across events.
+- When present, the `figEventNumber` must be unique across events.
+- The pair `title` + `startDate` must be unique.
 
 **Responses**
 
 | Status | Description |
 |--------|-------------|
 | 201 Created | Event created; returns the new [EventResponse](#eventresponse-object) |
-| 409 Conflict | An event with the same `figEventNumber` (or `title` + `startDate`, when `figEventNumber` is absent) already exists |
+| 401 Unauthorized | Not logged in |
+| 409 Conflict | An event with the same `slug`, `figEventNumber`, or `title` + `startDate` already exists |
 
 ---
 
-### PUT /event/{id}
+### PUT /api/events/{id}
 
-Updates an existing event. Replaces `figEventNumber`, `title`, `startDate`,
-`endDate`, `city`, `countryCode`, `venue`, and `level`.
+Updates an existing event. Requires a login. Replaces `figEventNumber`,
+`slug`, `title`, `startDate`, `endDate`, `city`, `countryCode`, `venue`,
+`apparatusSuppliers`, and `level`.
 
 **Path Parameters**
 
@@ -82,23 +98,24 @@ Updates an existing event. Replaces `figEventNumber`, `title`, `startDate`,
 
 **Validation**
 
-- Same duplicate check as create: the update is rejected if it would make this
-  event's `figEventNumber` (or `title` + `startDate`, when `figEventNumber` is
-  absent) match a *different* existing event.
+- Same duplicate checks as create: the update is rejected if it would make this
+  event's `slug`, `figEventNumber`, or `title` + `startDate` match a
+  *different* existing event.
 
 **Responses**
 
 | Status | Description |
 |--------|-------------|
 | 200 OK | Event updated; returns the updated [EventResponse](#eventresponse-object) |
+| 401 Unauthorized | Not logged in |
 | 404 Not Found | No event with the given ID |
-| 409 Conflict | The update would duplicate another existing event's `figEventNumber` (or `title` + `startDate`) |
+| 409 Conflict | The update would duplicate another existing event's `slug`, `figEventNumber`, or `title` + `startDate` |
 
 ---
 
-### DELETE /event/{id}
+### DELETE /api/events/{id}
 
-Deletes an event by ID.
+Deletes an event by ID. Requires a login.
 
 **Path Parameters**
 
@@ -111,6 +128,7 @@ Deletes an event by ID.
 | Status | Description |
 |--------|-------------|
 | 204 No Content | Event deleted |
+| 401 Unauthorized | Not logged in |
 | 404 Not Found | No event with the given ID |
 | 409 Conflict | The event still has dependent `Session` or `Participant` records and cannot be deleted |
 
@@ -118,72 +136,110 @@ Deletes an event by ID.
 
 ## Data Objects
 
+### EventSummaryResponse Object
+
+Returned by `GET /api/events`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| slug | String | The event's name in addresses, e.g. `2026-world-championships` |
+| title | String | Event name |
+| startDate | LocalDate | First day of competition (ISO 8601) |
+| endDate | LocalDate | Last day of competition (ISO 8601) |
+| city | String | Host city |
+| countryCode | String | Host country as a 3-character IOC code (e.g. `NED`) |
+| level | String | Competitive tier code (e.g. `WORLD_CHAMPIONSHIPS`) |
+| divisions | List | `{discipline, ageCategory}` for each discipline and age category with results, e.g. `{"discipline": "WAG", "ageCategory": "SR"}` |
+
+### EventDetailResponse Object
+
+Returned by `GET /api/events/{slug}`. The fields of
+[EventSummaryResponse](#eventsummaryresponse-object), plus:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| venue | String | Venue or arena name, or `null` |
+| figEventNumber | String | FIG-assigned event code, or `null` |
+| apparatusSuppliers | String | Equipment manufacturer(s), or `null` |
+| divisions | List | `{discipline, ageCategory, sessions}`, where `sessions` lists [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) objects in competition order: rounds (qualification, team final, all-around final, apparatus finals), apparatus in Olympic order, and a split round's parts before its combined session |
+
+**Example** (abridged)
+
+```json
+{
+  "slug": "2026-world-championships",
+  "title": "54th Artistic Gymnastics World Championships",
+  "startDate": "2026-10-17",
+  "endDate": "2026-10-25",
+  "city": "Rotterdam",
+  "countryCode": "NED",
+  "venue": "Rotterdam Ahoy",
+  "level": "WORLD_CHAMPIONSHIPS",
+  "figEventNumber": "17247",
+  "apparatusSuppliers": "Spieth",
+  "divisions": [
+    {
+      "discipline": "WAG",
+      "ageCategory": "SR",
+      "sessions": [
+        { "id": 15, "slug": "qualification", "discipline": "WAG", "ageCategory": "SR", "round": "QUAL", "apparatus": null, "part": null, "date": "2026-10-18" },
+        { "id": 11, "slug": "beam-final", "discipline": "WAG", "ageCategory": "SR", "round": "EVENT", "apparatus": "BB", "part": null, "date": "2026-10-25" }
+      ]
+    }
+  ]
+}
+```
+
 ### EventResponse Object
 
-Returned by all endpoints above.
+Returned by the `POST` and `PUT` endpoints.
 
 | Field | Type | Description |
 |-------|------|-------------|
 | id | Long | Unique identifier. |
-| figEventNumber | String | FIG-assigned event code, or no value non FIG-assigned events |
+| figEventNumber | String | FIG-assigned event code, or `null` for non-FIG events |
+| slug | String | The event's name in addresses |
 | title | String | Event name |
 | startDate | LocalDate | First day of competition (ISO 8601, e.g. `2026-04-20`) |
 | endDate | LocalDate | Last day of competition (ISO 8601, e.g. `2026-04-26`) |
 | city | String | Host city |
-| countryCode | String | Host country code represented by the 3-character ISO-3166 value |
+| countryCode | String | Host country as a 3-character IOC code, as used by World Gymnastics (e.g. `GER`, not ISO-3166 `DEU`) |
 | venue | String | Venue or arena name where the event is hosted and `null` if not known |
+| apparatusSuppliers | String | Equipment manufacturer(s) supplying the apparatus, or `null` if not known |
 | level | String | Competitive tier code of the event (e.g. `CONTINENTAL_CHAMPIONSHIPS`, `WORLD_CUP`) or `UNKNOWN` if not known |
 | creationTimestamp | Instant | ISO 8601 UTC timestamp of record creation |
 | lastUpdateTimestamp | Instant | ISO 8601 UTC timestamp of last update |
 
-**Example**
-
-```json
-{
-  "id": 7,
-  "figEventNumber": "FIG-2026-EURO",
-  "title": "2026 European Championships",
-  "startDate": "2026-04-20",
-  "endDate": "2026-04-26",
-  "city": "Stuttgart",
-  "countryCode": "DEU",
-  "venue": "Schleyerhalle",
-  "level": "CONTINENTAL_CHAMPIONSHIPS",
-  "creationTimestamp": "2026-01-05T09:00:00Z",
-  "lastUpdateTimestamp": "2026-01-05T09:00:00Z"
-}
-```
-
----
-
 ### EventRequest Object
 
-Request body for `POST /event` and `PUT /event/{id}`.
+Request body for `POST /api/events` and `PUT /api/events/{id}`.
 
 | Field | Type | Required | Constraints | Description |
 |-------|------|----------|-------------|-------------|
-| figEventNumber | String | No | Max 20 characters | FIG-assigned event code, or no value non FIG-assigned events |
+| figEventNumber | String | No | Max 20 characters | FIG-assigned event code, or no value for non-FIG events |
+| slug | String | Yes | Max 100 characters; lowercase words separated by hyphens | The event's name in addresses |
 | title | String | Yes | Max 200 characters | Event name |
 | startDate | LocalDate | Yes | ISO 8601 | First day of competition |
 | endDate | LocalDate | Yes | ISO 8601 | Last day of competition |
 | city | String | Yes | Max 100 characters | Host city |
-| countryCode | String | Yes | 3-character ISO-3166 code | Host country |
+| countryCode | String | Yes | 3-character IOC code (e.g. `GER`, not ISO-3166 `DEU`) | Host country |
 | venue | String | No | Max 150 characters | Venue/arena name |
+| apparatusSuppliers | String | No | Max 100 characters | Equipment manufacturer(s) supplying the apparatus |
 | level | String | Yes | `EventLevel` enum code | Competitive tier code of the event (e.g. `CONTINENTAL_CHAMPIONSHIPS`, `WORLD_CUP`) or `UNKNOWN` if not known |
-
-**Duplicate check:** `figEventNumber` (when present), otherwise `title` + `startDate`
 
 **Example**
 
 ```json
 {
   "figEventNumber": "FIG-2026-EURO",
+  "slug": "2026-european-championships",
   "title": "2026 European Championships",
   "startDate": "2026-04-20",
   "endDate": "2026-04-26",
   "city": "Stuttgart",
-  "countryCode": "DEU",
+  "countryCode": "GER",
   "venue": "Schleyerhalle",
+  "apparatusSuppliers": "Spieth",
   "level": "CONTINENTAL_CHAMPIONSHIPS"
 }
 ```

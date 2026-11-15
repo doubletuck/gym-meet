@@ -1,6 +1,7 @@
 package doubletuck.meet.repository;
 
 import doubletuck.meet.domain.Athlete;
+import doubletuck.meet.domain.Club;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
@@ -32,6 +33,9 @@ class ParticipantRepositoryTest {
     @Autowired
     private AthleteRepository athleteRepository;
 
+    @Autowired
+    private ClubRepository clubRepository;
+
     private Event testEvent;
     private Athlete testAthlete;
     private Participant testParticipant;
@@ -58,6 +62,19 @@ class ParticipantRepositoryTest {
         assertEquals(testAthlete.getId(), found.get().getAthlete().getId());
         assertEquals("101", found.get().getBibNumber());
         assertEquals("USA", found.get().getNoc());
+        assertNull(found.get().getClub());
+    }
+
+    @Test
+    void testSave_PersistsClub() {
+        Club club = clubRepository.save(new Club("WOGA", "USA"));
+        testParticipant.setClub(club);
+        participantRepository.saveAndFlush(testParticipant);
+
+        Participant found = participantRepository.findById(testParticipant.getId()).orElseThrow();
+
+        assertEquals(club.getId(), found.getClub().getId());
+        assertEquals("WOGA", found.getClub().getName());
     }
 
     @Test
@@ -156,6 +173,7 @@ class ParticipantRepositoryTest {
     private Event savedEvent(String title) {
         Event event = new Event();
         event.setTitle(title);
+        event.setSlug(title.toLowerCase().replaceAll("[^a-z0-9]+", "-"));
         event.setStartDate(LocalDate.of(2026, 4, 20));
         event.setEndDate(LocalDate.of(2026, 4, 26));
         event.setCity("Stuttgart");
@@ -169,6 +187,7 @@ class ParticipantRepositoryTest {
         athlete.setDiscipline(Discipline.WAG);
         athlete.setSurname(surname);
         athlete.setGivenName(givenName);
+        athlete.setBirthYear((short) 2000);
         return athleteRepository.save(athlete);
     }
 }

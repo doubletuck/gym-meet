@@ -42,6 +42,7 @@ class JudgeRepositoryTest {
     void setUp() {
         Event event = new Event();
         event.setTitle("2026 European Championships");
+        event.setSlug("2026-european-championships");
         event.setStartDate(LocalDate.of(2026, 8, 13));
         event.setEndDate(LocalDate.of(2026, 8, 18));
         event.setCity("Stuttgart");
@@ -76,7 +77,8 @@ class JudgeRepositoryTest {
         assertEquals(Apparatus.VT, found.get().getApparatus());
         assertEquals(JudgeFunction.D1, found.get().getFunction());
         assertEquals("Anca", found.get().getGivenName());
-        assertEquals("MIHAILESCU GRIGORAS", found.get().getSurname());
+        // Saved as printed in FIG capitals, stored in written form
+        assertEquals("Mihailescu Grigoras", found.get().getSurname());
         assertEquals("ROU", found.get().getNocCode());
     }
 
@@ -158,6 +160,24 @@ class JudgeRepositoryTest {
         List<Judge> found = judgeRepository.findBySession(testSession);
 
         assertEquals(3, found.size());
+    }
+
+    @Test
+    void testCreate_FailsBecauseDuplicateSessionWideJudge() {
+        Judge president = new Judge();
+        president.setSession(testSession);
+        president.setFunction(JudgeFunction.PRESIDENT);
+        president.setGivenName("Donatella");
+        president.setSurname("SACCHI");
+        judgeRepository.saveAndFlush(president);
+
+        Judge duplicate = new Judge();
+        duplicate.setSession(testSession);
+        duplicate.setFunction(JudgeFunction.PRESIDENT);
+        duplicate.setGivenName("Donatella");
+        duplicate.setSurname("SACCHI");
+
+        assertThrows(DataIntegrityViolationException.class, () -> judgeRepository.saveAndFlush(duplicate));
     }
 
     @Test

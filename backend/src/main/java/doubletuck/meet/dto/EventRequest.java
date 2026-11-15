@@ -1,8 +1,10 @@
 package doubletuck.meet.dto;
 
+import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -10,6 +12,11 @@ import java.time.LocalDate;
 public record EventRequest(
         @Size(max = 20, message = "FIG event number must have 20 or fewer characters")
         String figEventNumber,
+
+        @NotBlank(message = "Slug is required")
+        @Size(max = 100, message = "Slug must have 100 or fewer characters")
+        @Pattern(regexp = Event.SLUG_PATTERN, message = "Slug must be lowercase words separated by hyphens")
+        String slug,
 
         @NotBlank(message = "Title is required")
         @Size(max = 200, message = "Title must have 200 or fewer characters")
@@ -31,6 +38,9 @@ public record EventRequest(
 
         @Size(max = 150, message = "Venue must have 150 or fewer characters")
         String venue,
+
+        @Size(max = 100, message = "Apparatus suppliers must have 100 or fewer characters")
+        String apparatusSuppliers,
 
         @NotNull(message = "Level is required")
         EventLevel level) {

@@ -61,7 +61,8 @@ These apply to every file below.
   expected".
 - **Values are copied as printed**: `0.0` stays `0.0`, `5.70` stays `5.70`,
   `-0.10` keeps its sign, and a leading `!` on a D score (under inquiry) stays
-  part of the value. The exceptions are documented per column (a `+` sign on a
+  part of the value (on import it's stripped and sets
+  `Routine.difficultyInquiry`). The exceptions are documented per column (a `+` sign on a
   bonus and tie markers on ranks are dropped; a vault bonus asterisk becomes
   `Combined Bonus`).
 - **Ties**: duplicate `Rank` values are copied as printed; ranks are never
@@ -100,7 +101,7 @@ One row per discipline+age sub-event making up the competition.
 | Country | The IOC code of the country hosting the event (`GER`, `NED` — not ISO `DEU`, `NLD`) | `Event.countryCode` |
 | Venue | The name of the venue where the event is hosted | `Event.venue` |
 | FIG Event Number | The FIG number that identifies the event if a FIG associated competition | `Event.figEventNumber` |
-| Apparatus Suppliers | The equipment manufacturer for this competition | |
+| Apparatus Suppliers | The equipment manufacturer for this competition | `Event.apparatusSuppliers` |
 
 ## `PARTICIPANTS.csv`
 
@@ -115,9 +116,9 @@ One row per athlete entry.
 | Name | Combined name exactly as printed — `SURNAME Given Name` in FIG sources, `Given Surname` in US Championships | |
 | Surname | Participant's surname | `Athlete.surname` |
 | Given Name | Participant's given name | `Athlete.givenName` |
-| Birth Year | Participant's birth year | `Athlete.birthYear` (only when `Birth Date` is blank) |
+| Birth Year | Participant's birth year. Blank where the source prints none (US Championships) | `Athlete.birthYear` |
 | Birth Date | Participant's full birth date (`YYYY-MM-DD`), when the entry list publishes one (FIG World Championships does; European Championships prints only a year). Blank otherwise | `Athlete.birthDate` |
-| Club | **US Championships only.** The athlete's gym/club as printed | *(not stored — no `Participant`/`Athlete` field yet)* |
+| Club | **US Championships only.** The athlete's gym/club as printed | `Participant.club` → `Club.name` (the club's country is the participant's NOC) |
 
 ## `JUDGES.csv`
 
@@ -126,7 +127,7 @@ one file per discipline+age.
 
 | Column | Description | Entity Mapping |
 |---|---|---|
-| Round | The round of competition the judge is evaluating: [Round](../src/main/java/doubletuck/meet/domain/Round.java) | `Judge.round`  |
+| Round | The round of competition the judge is evaluating: [Round](../src/main/java/doubletuck/meet/domain/Round.java) | `Judge.session` (with `Apparatus`, identifies the session) |
 | Apparatus | The apparatus the judge is evaluating: [Apparatus](../src/main/java/doubletuck/meet/domain/Apparatus.java) | `Judge.apparatus` |
 | Function | The function the judge is in when evaluating: [JudgeFunction](../src/main/java/doubletuck/meet/domain/JudgeFunction.java). Superior Jury roles are written as printed (`President`, `Vice-President`, `Member`) and resolve through `JudgeFunction.find`; reserve judges are `R` (single, unnumbered) or `R1`…`R6`; World Cup panels print `DS1` (Difficulty Supervisor) and, on beam, `pen5` — written as `T2` (mapping table: `instructions-results-parsing.md` §4.7) | `Judge.function` |
 | Name | Combined name of judge as printed | |
@@ -154,7 +155,7 @@ round(s) a column actually appears in.
 | Name | ✓ | ✓ | ✓ | ✓ | As printed on this report — cross-check against `PARTICIPANTS.csv` by Bib rather than trusting a possibly-truncated column here | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | ✓ | ✓ | | *(not stored — already on `Participant.noc`)* |
 | Status | ✓ | ✓ | ✓ | ✓ | `COMPLETED`, `DNS`, or `INVALID_VAULT` — always written explicitly, never blank. Mirrors `Routine.status` being required | `Score.routine.status` |
-| D | ✓ | ✓ | ✓ | ✓ | Difficulty score | `Score.routine.difficulty` |
+| D | ✓ | ✓ | ✓ | ✓ | Difficulty score. A leading `!` marks it under inquiry | `Score.routine.difficulty`, `Score.routine.difficultyInquiry` |
 | E | ✓ | ✓ | ✓ | ✓ | Execution score. Some sources print `E` before `D` (MAG PH and every WAG apparatus at the 2026 Europeans); the CSV always writes to these fixed column names regardless of source order | `Score.routine.execution` |
 | B | ✓ | ✓ | ✓ | ✓ | Bonus. Populated for MAG (blank on every MAG PH row specifically — PH has no bonus). Present but always blank for WAG — kept for column alignment between disciplines rather than omitted | `Score.routine.bonus` |
 | Penalty | ✓ | ✓ | ✓ | ✓ | Blank when no penalty applied — never `0` | `Score.routine.penalty` |
@@ -182,14 +183,14 @@ result, which decides the Vault final.
 | Name | ✓ | ✓ | | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | | *(not stored)* |
 | Status1 | ✓ | ✓ | Status of attempt 1: `COMPLETED`, `DNS`, or `INVALID_VAULT`. Always populated | `Score.routine.status` |
-| D1 | ✓ | ✓ | | `Score.routine.difficulty` |
+| D1 | ✓ | ✓ | | `Score.routine.difficulty`, `Score.routine.difficultyInquiry` |
 | E1 | ✓ | ✓ | | `Score.routine.execution` |
 | B1 | ✓ | ✓ | Bonus applied to attempt 1 itself. Populated for MAG, always blank for WAG so far | `Score.routine.bonus` |
 | Penalty1 | ✓ | ✓ | | `Score.routine.penalty` |
 | SJ Penalty1 | ✓ | ✓ | Superior Jury Penalty, attempt 1 — distinct from the ordinary `Penalty1`. Seen for WAG at the 2026 Europeans | `Score.routine.sjPenalty` |
 | Total1 | ✓ | ✓ | | `Score.routine.score` |
 | Status2 | ✓ | ✓ | Status of attempt 2, **four-state**: blank = no second attempt was expected at all (`Score.secondRoutine` is null); `COMPLETED`; `DNS` = a second attempt was expected (on the double-vault list) but not completed; `INVALID_VAULT` | `Score.secondRoutine.status` |
-| D2 | ✓ | ✓ | | `Score.secondRoutine.difficulty` |
+| D2 | ✓ | ✓ | | `Score.secondRoutine.difficulty`, `Score.secondRoutine.difficultyInquiry` |
 | E2 | ✓ | ✓ | | `Score.secondRoutine.execution` |
 | B2 | ✓ | ✓ | Bonus applied to attempt 2 itself. Same MAG/WAG split as `B1` | `Score.secondRoutine.bonus` |
 | Penalty2 | ✓ | ✓ | | `Score.secondRoutine.penalty` |
@@ -255,7 +256,7 @@ publishes no per-part placement.
 | Bib | Identifies the athlete. **All-Around summary only** | |
 | Name | Athlete name as printed. **All-Around summary only** | |
 | NOC Code | Country/federation the row represents | `TeamResult.noc` |
-| `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG | |
+| `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG | *(not stored — on a team summary, used to work out `Score.countsTowardTeamResult`)* |
 | SJ Penalty | Superior Jury penalty applied to the row as a whole, distinct from an individual routine's `Penalty` | |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |

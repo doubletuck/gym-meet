@@ -7,7 +7,7 @@ This document provides steps for setting up a development environment for develo
 * [Configuring](#configuring)
 * [Building](#building)
 * [Running](#running)
-* [Running in Docker locally](#running-in-docker-locally)
+* [Importing results](#importing-results)
 
 ## Prerequisites
 
@@ -26,8 +26,8 @@ The [src/main/resources/application.yml](../src/main/resources/application.yml) 
 |-----------------------|-------------------------------------------------------------------------------------------|
 | application.yml       | The default properties file. The other environment files can override values in this file. |
 | application-local.yml | Used for local development on a workstation.                                              |
-| application-dev.yml   | Used for deploying to a cloud based dev environment.                                      |
-| application-prod.yml  | Used for deploying to a cloud-based production environment.                               |
+
+Files for deployed environments (e.g. `application-prod.yml`) will be added when there is somewhere to deploy to.
 
 ## Creating the database schema
 Prior to running the application, you will need to have the database started. Review the [Development Setup](development-setup.md) guide if the database is not already set up.
@@ -83,46 +83,20 @@ or
 java -jar target/gym-meet.jar --spring.profiles.active=local
 ```
 
-The app will be accessible via http://localhost:8080. Do http://localhost:8080/actuator to test.
+The app will be accessible via http://localhost:8080.
+
+Reading is public: every `GET` under `/api`, the API description (`/v3/api-docs`, browsable at http://localhost:8080/swagger-ui.html) and the health check. Changing data needs a login: for now Spring Security's default HTTP basic user `user`, with a password generated at startup and printed in the log (`Using generated security password: …`). To test that the app is up:
+```shell
+curl http://localhost:8080/actuator/health
+```
+
+The API is described in [docs/api](api). The front end that reads it is in `frontend/`; see its README for running it.
 
 To stop the server, issue a Control-C command in the shell where the service is running.
 
-## Running in Docker locally
-If running both the app and the database containers, then realize that containers have isolated networks unless explicitly linked or put on the same network. 
-As a result, the `docker-compose` will allow both this app container and the database container to run in concert and communicate with each other.
-
-Using this docker compose option is good when doing local development on other services (i.e., a UI) that interfaces with this service and, thus, needs it to be running.
-
-#### Initiate docker compose
-
+## Importing results
+Competition results are loaded from the files under `data/` by running the app with the `import` profile:
 ```shell
-cd gym-meet
-docker compose up
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=data/2026/2026-WORLD-CHAMPIONSHIPS"
 ```
-
-If you need to rebuild the Docker image and start the container, then use the `-build` flag.
-```shell
-mvn clean package -DskipTests
-docker compose up --build
-```
-
-If you want to run the app container in the background (i.e., detached mode), then use the `-d` flag.
-```shell
-docker compose up -d
-```
-
-#### Stop docker compose
-```shell
-docker compose down
-```
-
-#### Restart docker compose
-```shell
-docker compose start
-```
-
-The app will be accessible via http://localhost:8080. Do http://localhost:8080/actuator to test.
-
-### Building a standalone Docker app image
-Note that your app container won't be able to communicate with the database image locally unless started via docker-compose.
-But, for informational purposes, refer to [app-docker-configuration.md](app-docker-configuration.md) document for information on setting up an app docker container.
+See [import-process.md](import-process.md) for the arguments and what an import does.

@@ -7,6 +7,7 @@ import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.domain.Session;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,4 +35,11 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     List<Session> findByEvent(Event event);
 
     List<Session> findByEventId(Long eventId);
+
+    @Query("select distinct new doubletuck.meet.repository.EventDivision(s.event.id, s.discipline, s.ageCategory) "
+            + "from Session s")
+    List<EventDivision> findEventDivisions();
+
+    List<Session> findByEventAndDisciplineAndAgeCategory(Event event, Discipline discipline,
+            AgeCategory ageCategory);
 }

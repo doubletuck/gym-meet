@@ -68,6 +68,7 @@ class ScoreRepositoryTest {
         athlete.setDiscipline(Discipline.WAG);
         athlete.setSurname("Biles");
         athlete.setGivenName("Simone");
+        athlete.setBirthYear((short) 2000);
         athlete = athleteRepository.save(athlete);
 
         testParticipant = new Participant();
@@ -102,8 +103,19 @@ class ScoreRepositoryTest {
         assertEquals(14.033, found.get().getRoutine().getScore());
         assertEquals(ScoreStatus.COMPLETED, found.get().getRoutine().getStatus());
         assertEquals(14.033, found.get().getTotalScore());
+        assertFalse(found.get().getRoutine().getDifficultyInquiry());
         assertNull(found.get().getSecondRoutine());
         assertTrue(found.get().getCountsTowardTeamResult());
+    }
+
+    @Test
+    void testSave_PersistsDifficultyInquiry() {
+        testScore.getRoutine().setDifficultyInquiry(true);
+        scoreRepository.saveAndFlush(testScore);
+
+        Score found = scoreRepository.findById(testScore.getId()).orElseThrow();
+
+        assertTrue(found.getRoutine().getDifficultyInquiry());
     }
 
     @Test
@@ -280,6 +292,7 @@ class ScoreRepositoryTest {
     private Event savedEvent() {
         Event event = new Event();
         event.setTitle("2026 European Championships");
+        event.setSlug("2026-european-championships");
         event.setStartDate(LocalDate.of(2026, 4, 20));
         event.setEndDate(LocalDate.of(2026, 4, 26));
         event.setCity("Stuttgart");

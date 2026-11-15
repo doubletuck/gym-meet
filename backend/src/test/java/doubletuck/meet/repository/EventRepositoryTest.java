@@ -27,11 +27,13 @@ class EventRepositoryTest {
         testEvent = new Event();
         testEvent.setFigEventNumber("FIG-2026-EURO");
         testEvent.setTitle("2026 European Championships");
+        testEvent.setSlug("2026-european-championships");
         testEvent.setStartDate(LocalDate.of(2026, 4, 20));
         testEvent.setEndDate(LocalDate.of(2026, 4, 26));
         testEvent.setCity("Stuttgart");
         testEvent.setCountryCode("GER");
         testEvent.setVenue("Schleyerhalle");
+        testEvent.setApparatusSuppliers("Spieth");
         testEvent.setLevel(EventLevel.CONTINENTAL_CHAMPIONSHIPS);
         testEvent = eventRepository.save(testEvent);
     }
@@ -48,6 +50,7 @@ class EventRepositoryTest {
         assertEquals("Stuttgart", found.get().getCity());
         assertEquals("GER", found.get().getCountryCode());
         assertEquals("Schleyerhalle", found.get().getVenue());
+        assertEquals("Spieth", found.get().getApparatusSuppliers());
         assertEquals(EventLevel.CONTINENTAL_CHAMPIONSHIPS, found.get().getLevel());
     }
 

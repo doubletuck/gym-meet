@@ -4,11 +4,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,10 +20,13 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @ToString
 @Entity
-@Table(name = "athlete")
+@Table(name = "athlete", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_athlete", columnNames = { "surname", "given_name", "discipline_code" })
+}, indexes = {
+        @Index(name = "ix_athlete_license_number", columnList = "license_number")
+})
 public class Athlete extends BaseEntity {
 
     @Size(max = 20, message = "License number must have 20 or fewer characters")
@@ -44,19 +48,22 @@ public class Athlete extends BaseEntity {
     @Column(name = "given_name", nullable = false, length = 60)
     private String givenName;
 
-    @Size(min = 3, max = 3, message = "Country must be a 3-letter code")
-    @Column(name = "country_code", length = 3)
-    private String country;
+    @Size(max = 50, message = "Birthplace must have 50 or fewer characters")
+    @Column(name = "birthplace", length = 50)
+    private String birthplace;
+
+    @Column(name = "birth_year")
+    private Short birthYear;
 
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    /**
-     * The athlete's birth year, when the source only publishes a year rather
-     * than a full date. Populated only when {@code birthDate} is null --
-     * never redundantly alongside a known {@code birthDate}, since the year
-     * is already recoverable from it.
-     */
-    @Column(name = "birth_year")
-    private Short birthYear;
+    // Names are stored in one form whatever capitalisation the source printed; see PersonName
+    public void setSurname(String surname) {
+        this.surname = PersonName.normalize(surname);
+    }
+
+    public void setGivenName(String givenName) {
+        this.givenName = PersonName.normalize(givenName);
+    }
 }

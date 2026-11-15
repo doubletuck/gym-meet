@@ -9,12 +9,14 @@ import java.time.LocalDate;
 public record EventResponse(
         Long id,
         String figEventNumber,
+        String slug,
         String title,
         LocalDate startDate,
         LocalDate endDate,
         String city,
         String countryCode,
         String venue,
+        String apparatusSuppliers,
         EventLevel level,
         Instant creationTimestamp,
         Instant lastUpdateTimestamp) {
@@ -23,12 +25,14 @@ public record EventResponse(
         return new EventResponse(
                 event.getId(),
                 event.getFigEventNumber(),
+                event.getSlug(),
                 event.getTitle(),
                 event.getStartDate(),
                 event.getEndDate(),
                 event.getCity(),
                 event.getCountryCode(),
                 event.getVenue(),
+                event.getApparatusSuppliers(),
                 event.getLevel(),
                 event.getCreationTimestamp(),
                 event.getLastUpdateTimestamp());
