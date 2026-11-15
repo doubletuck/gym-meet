@@ -21,6 +21,11 @@ npm run dev
 
 The site is at http://localhost:5173.
 
+If a page stays on "Loading…", the browser is likely holding a stale copy of a
+script from before the dev server finished preparing its dependencies (usually
+the first run after `npm install`). Reload without the cache: Cmd+Shift+R in
+Chrome; in Safari, Develop → Empty Caches, then Option+Cmd+R.
+
 ## Commands
 
 | Command | Does |
