@@ -12,5 +12,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByFigEventNumber(String figEventNumber);
 
+    Optional<Event> findBySlug(String slug);
+
     Optional<Event> findByTitleIgnoreCaseAndStartDate(String title, LocalDate startDate);
 }

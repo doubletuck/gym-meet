@@ -1,13 +1,14 @@
 package doubletuck.meet.controller;
 
+import doubletuck.meet.domain.Discipline;
+import doubletuck.meet.domain.EventLevel;
+import doubletuck.meet.dto.EventDetailResponse;
 import doubletuck.meet.dto.EventRequest;
 import doubletuck.meet.dto.EventResponse;
+import doubletuck.meet.dto.EventSummaryResponse;
+import doubletuck.meet.service.EventQueryService;
 import doubletuck.meet.service.EventService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,30 +21,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/event")
+@RequestMapping("/api/events")
 public class EventController {
 
     private final EventService eventService;
+    private final EventQueryService eventQueryService;
 
-    @Autowired
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, EventQueryService eventQueryService) {
         this.eventService = eventService;
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<EventResponse> findById(@PathVariable Long id) {
-        return eventService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        this.eventQueryService = eventQueryService;
     }
 
     @GetMapping
-    public ResponseEntity<Page<EventResponse>> getPaginatedEntities(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(eventService.getPaginatedEntities(pageable));
+    public ResponseEntity<List<EventSummaryResponse>> findEvents(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) EventLevel level,
+            @RequestParam(required = false) Discipline discipline) {
+        return PublicResponses.ok(eventQueryService.findEvents(year, level, discipline));
+    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<EventDetailResponse> findEvent(@PathVariable String slug) {
+        return eventQueryService.findEvent(slug)
+                .map(PublicResponses::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping

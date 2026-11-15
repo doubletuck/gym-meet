@@ -80,7 +80,7 @@ public class EventImporter {
                 manifest.event().disciplines(), manifestFile);
         AgeCategory ageCategory = required(AgeCategory.find(manifest.event().ageCategory()), "ageCategory",
                 manifest.event().ageCategory(), manifestFile);
-        Event event = resolveEvent(manifest.event(), manifestFile, report);
+        Event event = resolveEvent(manifest.event(), manifestFile, discipline, ageCategory, report);
 
         List<Session> existing = sessionRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
                 ageCategory);
@@ -102,7 +102,8 @@ public class EventImporter {
         return report;
     }
 
-    private Event resolveEvent(ImportManifest.ManifestEvent source, Path manifestFile, ImportReport report) {
+    private Event resolveEvent(ImportManifest.ManifestEvent source, Path manifestFile, Discipline discipline,
+            AgeCategory ageCategory, ImportReport report) {
         String figEventNumber = source.figEventNumber() == null || source.figEventNumber().isBlank() ? null
                 : source.figEventNumber().trim();
         Event event = (figEventNumber != null
@@ -119,6 +120,7 @@ public class EventImporter {
         }
 
         event = new Event();
+        event.setSlug(newSlug(manifestFile, discipline, ageCategory));
         event.setFigEventNumber(figEventNumber);
         event.setTitle(source.title());
         event.setStartDate(source.startDate());
@@ -130,6 +132,29 @@ public class EventImporter {
         event.setLevel(required(EventLevel.find(source.level()), "level", source.level(), manifestFile));
         report.count("events created");
         return eventRepository.save(event);
+    }
+
+    /**
+     * The new event's slug: its manifest's prefix without the discipline and age
+     * category, so 2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json gives
+     * 2026-world-championships. When another event already has it -- the 2026 US
+     * Championships' MAG and WAG start on different days, so they are two events
+     * -- the discipline is added.
+     */
+    private String newSlug(Path manifestFile, Discipline discipline, AgeCategory ageCategory) {
+        String suffix = "-" + discipline.name() + "-" + ageCategory.name() + "-IMPORT.JSON";
+        String fileName = manifestFile.getFileName().toString();
+        if (!fileName.toUpperCase().endsWith(suffix)) {
+            throw new ImportException(fileName + ": manifest name doesn't end in " + suffix);
+        }
+        String slug = fileName.substring(0, fileName.length() - suffix.length()).toLowerCase();
+        if (eventRepository.findBySlug(slug).isPresent()) {
+            slug = slug + "-" + discipline.name().toLowerCase();
+        }
+        if (eventRepository.findBySlug(slug).isPresent()) {
+            throw new ImportException(fileName + ": another event already has the slug " + slug);
+        }
+        return slug;
     }
 
     /**

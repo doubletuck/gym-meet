@@ -173,6 +173,7 @@ class ParticipantRepositoryTest {
     private Event savedEvent(String title) {
         Event event = new Event();
         event.setTitle(title);
+        event.setSlug(title.toLowerCase().replaceAll("[^a-z0-9]+", "-"));
         event.setStartDate(LocalDate.of(2026, 4, 20));
         event.setEndDate(LocalDate.of(2026, 4, 26));
         event.setCity("Stuttgart");

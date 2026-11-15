@@ -292,6 +292,7 @@ class ScoreRepositoryTest {
     private Event savedEvent() {
         Event event = new Event();
         event.setTitle("2026 European Championships");
+        event.setSlug("2026-european-championships");
         event.setStartDate(LocalDate.of(2026, 4, 20));
         event.setEndDate(LocalDate.of(2026, 4, 26));
         event.setCity("Stuttgart");

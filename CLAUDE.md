@@ -13,7 +13,7 @@ The backend service is a Spring Boot 4 and Java 25 application. The data is stor
 ### Frontend
 The frontend user interface is in the `frontend` directory.
 
-The frontend user interface does not yet exist, but will be a React, typescript and Vite application when it is implemented.
+The frontend user interface is a React, TypeScript and Vite application, built with React Router 8 (as a single-page app for now), TanStack Query and Tailwind CSS. It reads results from the backend's public read API (`/api/**`); its types are generated from the backend's OpenAPI spec (`npm run api:types`). See `frontend/README.md`.
 
 ## Tests
 
@@ -23,6 +23,9 @@ The frontend user interface does not yet exist, but will be a React, typescript 
 
 ### Backend Testing
 Tests are found in `backend/src/test/java/`. Run them with `mvn -q test` from `backend/`.
+
+### Frontend Testing
+Tests sit beside the code they test (`*.test.ts(x)` under `frontend/app/`). Run them with `npm test` from `frontend/`, and `npm run typecheck` to check types.
 
 ## Competition results data
 
@@ -39,5 +42,9 @@ If changes to the code changes, then any documentation that refers to the change
 | backend/docs/import-process.md | How the importer loads those CSV files into the database: running it, session and athlete matching rules, and the checks it reports. |
 | backend/docs/instructions-results-parsing.md | How results PDFs are turned into those CSV files: techniques, required checks, conventions, and notes per source format. |
 | backend/docs/development-setup.md | Setting up the local development environment. |
+| backend/docs/development-run.md | Running the backend locally, and importing results. |
+| backend/docs/api/api-event.md | The Event API: listing events, an event's sessions, and creating or changing events. |
+| backend/docs/api/api-session.md | The Session API: a session's results as published. |
+| frontend/README.md | Running, testing and the layout of the front end. |
 
 

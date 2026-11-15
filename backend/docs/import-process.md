@@ -35,7 +35,12 @@ names the file and line.
 
 1. **Event.** Found by FIG event number, or by title and start date when there
    is none, and created if not found. Two manifests sharing an event (the 2026
-   Worlds' MAG and WAG) therefore import into one `Event`.
+   Worlds' MAG and WAG) therefore import into one `Event`. A new event's slug is
+   the manifest's prefix without the discipline and age category, lowercased:
+   `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json` gives
+   `2026-world-championships`. When another event already has that slug, the
+   discipline is added (`2026-us-championships-wag`: the 2026 US Championships'
+   MAG and WAG start on different days, so they are two events).
 2. **Participants.** Each entry-list row is matched to an `Athlete` (below) and
    entered into the event. A club is found or created by name within the
    participant's NOC. Some entry lists print a country's NOC only on its first

@@ -9,6 +9,7 @@ import java.time.LocalDate;
 public record EventResponse(
         Long id,
         String figEventNumber,
+        String slug,
         String title,
         LocalDate startDate,
         LocalDate endDate,
@@ -24,6 +25,7 @@ public record EventResponse(
         return new EventResponse(
                 event.getId(),
                 event.getFigEventNumber(),
+                event.getSlug(),
                 event.getTitle(),
                 event.getStartDate(),
                 event.getEndDate(),

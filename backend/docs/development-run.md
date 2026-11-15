@@ -85,10 +85,12 @@ java -jar target/gym-meet.jar --spring.profiles.active=local
 
 The app will be accessible via http://localhost:8080.
 
-Spring Security's defaults are in effect until the app's security is configured: every endpoint requires HTTP basic authentication as the user `user`, with a password generated at startup and printed in the log (`Using generated security password: …`). To test that the app is up:
+Reading is public: every `GET` under `/api`, the API description (`/v3/api-docs`, browsable at http://localhost:8080/swagger-ui.html) and the health check. Changing data needs a login: for now Spring Security's default HTTP basic user `user`, with a password generated at startup and printed in the log (`Using generated security password: …`). To test that the app is up:
 ```shell
-curl -u user:<generated password> http://localhost:8080/actuator
+curl http://localhost:8080/actuator/health
 ```
+
+The API is described in [docs/api](api). The front end that reads it is in `frontend/`; see its README for running it.
 
 To stop the server, issue a Control-C command in the shell where the service is running.
 

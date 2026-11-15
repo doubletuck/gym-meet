@@ -8,8 +8,6 @@ import doubletuck.meet.repository.EventRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +26,6 @@ public class EventService {
         this.eventRepository = eventRepository;
         this.sessionRepository = sessionRepository;
         this.participantRepository = participantRepository;
-    }
-
-    public Optional<EventResponse> findById(Long id) {
-        return eventRepository.findById(id).map(EventResponse::from);
-    }
-
-    public Page<EventResponse> getPaginatedEntities(Pageable pageable) {
-        return eventRepository.findAll(pageable).map(EventResponse::from);
     }
 
     @Transactional
@@ -77,6 +67,11 @@ public class EventService {
                                 "An event with FIG event number '" + request.figEventNumber() + "' already exists");
                     });
         }
+        eventRepository.findBySlug(request.slug())
+                .filter(event -> !event.getId().equals(excludeId))
+                .ifPresent(event -> {
+                    throw new ConflictException("An event with slug '" + request.slug() + "' already exists");
+                });
         eventRepository.findByTitleIgnoreCaseAndStartDate(request.title(), request.startDate())
                 .filter(event -> !event.getId().equals(excludeId))
                 .ifPresent(event -> {
@@ -87,6 +82,7 @@ public class EventService {
 
     private void applyRequest(Event event, EventRequest request) {
         event.setFigEventNumber(request.figEventNumber());
+        event.setSlug(request.slug());
         event.setTitle(request.title());
         event.setStartDate(request.startDate());
         event.setEndDate(request.endDate());

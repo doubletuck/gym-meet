@@ -27,6 +27,7 @@ class EventRepositoryTest {
         testEvent = new Event();
         testEvent.setFigEventNumber("FIG-2026-EURO");
         testEvent.setTitle("2026 European Championships");
+        testEvent.setSlug("2026-european-championships");
         testEvent.setStartDate(LocalDate.of(2026, 4, 20));
         testEvent.setEndDate(LocalDate.of(2026, 4, 26));
         testEvent.setCity("Stuttgart");

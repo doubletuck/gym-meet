@@ -42,6 +42,7 @@ class JudgeRepositoryTest {
     void setUp() {
         Event event = new Event();
         event.setTitle("2026 European Championships");
+        event.setSlug("2026-european-championships");
         event.setStartDate(LocalDate.of(2026, 8, 13));
         event.setEndDate(LocalDate.of(2026, 8, 18));
         event.setCity("Stuttgart");

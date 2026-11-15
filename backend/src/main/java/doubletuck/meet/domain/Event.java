@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,15 +26,25 @@ import java.time.LocalDate;
 @ToString
 @Entity
 @Table(name = "event", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_event", columnNames = { "title", "start_date" })
+        @UniqueConstraint(name = "uk_event", columnNames = { "title", "start_date" }),
+        @UniqueConstraint(name = "uk_event_slug", columnNames = { "slug" })
 }, indexes = {
         @Index(name = "ix_event_fig_event_number", columnList = "fig_event_number")
 })
 public class Event extends BaseEntity {
 
+    public static final String SLUG_PATTERN = "[a-z0-9]+(-[a-z0-9]+)*";
+
     @Size(max = 20, message = "FIG event number must have 20 or fewer characters")
     @Column(name = "fig_event_number", length = 20)
     private String figEventNumber;
+
+    // The event's name in addresses, e.g. 2026-world-championships
+    @NotBlank(message = "Slug is required")
+    @Size(max = 100, message = "Slug must have 100 or fewer characters")
+    @Pattern(regexp = Event.SLUG_PATTERN, message = "Slug must be lowercase words separated by hyphens")
+    @Column(name = "slug", nullable = false, length = 100)
+    private String slug;
 
     @NotBlank(message = "Title is required")
     @Size(max = 200, message = "Title must have 200 or fewer characters")

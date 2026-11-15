@@ -203,6 +203,7 @@ Unique key: `(athlete_id, surname, given_name)`.
 |---|---|---|---|
 | id | Long | No | Generated primary key. |
 | figEventNumber | String | Yes | FIG-assigned event code, when the event is FIG-sanctioned. Null for competitions run entirely by a domestic federation (e.g. a national championship). |
+| slug | String | No | The event's name in addresses, e.g. `2026-world-championships`: lowercase words separated by hyphens, unique across events. The importer takes it from the manifest's name ([import-process.md](import-process.md)). |
 | title | String | No | The event's name, e.g. "2026 European Championships." |
 | startDate | LocalDate | No | First day of competition. |
 | endDate | LocalDate | No | Last day of competition. |
@@ -212,7 +213,7 @@ Unique key: `(athlete_id, surname, given_name)`.
 | apparatusSuppliers | String | Yes | The equipment manufacturer(s) supplying the apparatus, as published (e.g. `Spieth`). |
 | level | EventLevel | No | The competitive tier of this event. Always set — `UNKNOWN` is used instead of leaving this null when the tier can't be confidently classified. |
 
-Unique key: `(title, start_date)`. One `Event` can hold several disciplines'
+Unique keys: `(title, start_date)` and `(slug)`. One `Event` can hold several disciplines'
 sessions (the 2026 Worlds' MAG and WAG share one title, date, and FIG event
 number), while sub-events published under their own titles (the 2026
 Europeans' Senior and Junior championships) are separate `Event`s.

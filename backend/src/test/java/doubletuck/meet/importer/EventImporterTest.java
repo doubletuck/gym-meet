@@ -104,6 +104,28 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_EventSlugComesFromTheManifestName() {
+        importFixture(WORLDS_WAG);
+
+        assertEquals("2026-world-championships", eventRepository.findAll().get(0).getSlug());
+    }
+
+    @Test
+    void testImport_SlugTakenByAnotherEvent_AddsTheDiscipline(@TempDir Path dir) throws IOException {
+        eventImporter.importManifest(writeMinimalMeet(dir.resolve("first"), "5.5", "101"), false);
+        Path second = writeMinimalMeet(dir.resolve("second"), "5.5", "101");
+        for (Path file : List.of(second, second.resolveSibling("MINI-MAG-SR-PARTICIPANTS.csv"),
+                second.resolveSibling("MINI-MAG-SR-SCORES-QUAL-FX.csv"))) {
+            Files.writeString(file, Files.readString(file).replace("2026-03-01", "2026-04-01"));
+        }
+
+        eventImporter.importManifest(second, false);
+
+        assertEquals(List.of("mini", "mini-mag"), eventRepository.findAll().stream().map(Event::getSlug).sorted()
+                .toList());
+    }
+
+    @Test
     void testImport_StoresEveryScoreRowWithoutWarnings() {
         ImportReport report = importFixture(WORLDS_WAG);
 
@@ -404,6 +426,7 @@ class EventImporterTest {
 
     // Two NED athletes, the NOC printed only on the first, and one floor score
     private static Path writeMinimalMeet(Path dir, String difficulty, String scoredBib) throws IOException {
+        Files.createDirectories(dir);
         Files.writeString(dir.resolve("MINI-MAG-SR-IMPORT.json"), """
                 {
                     "event": { "title": "Mini Meet", "disciplines": "MAG", "ageCategory": "SR",
