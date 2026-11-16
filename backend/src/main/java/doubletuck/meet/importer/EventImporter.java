@@ -120,7 +120,7 @@ public class EventImporter {
         }
 
         event = new Event();
-        event.setSlug(newSlug(manifestFile, discipline, ageCategory));
+        event.setSlug(newSlug(source.slug(), manifestFile, discipline, ageCategory));
         event.setFigEventNumber(figEventNumber);
         event.setTitle(source.title());
         event.setStartDate(source.startDate());
@@ -135,21 +135,31 @@ public class EventImporter {
     }
 
     /**
-     * The new event's slug: its manifest's prefix without the discipline and age
-     * category, so 2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json gives
-     * 2026-world-championships. When another event already has it -- the 2026 US
-     * Championships' MAG and WAG start on different days, so they are two events
-     * -- the discipline is added.
+     * The new event's slug: the manifest's, when it gives one -- the 2026 European
+     * Championships are four events in one folder, each named in its manifest.
+     * Otherwise its manifest's prefix without the discipline and age category, so
+     * 2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json gives 2026-world-championships.
+     * When another event already has that -- the 2026 US Championships' MAG and
+     * WAG start on different days, so they are two events -- the discipline is
+     * added.
      */
-    private String newSlug(Path manifestFile, Discipline discipline, AgeCategory ageCategory) {
-        String suffix = "-" + discipline.name() + "-" + ageCategory.name() + "-IMPORT.JSON";
+    private String newSlug(String given, Path manifestFile, Discipline discipline, AgeCategory ageCategory) {
         String fileName = manifestFile.getFileName().toString();
-        if (!fileName.toUpperCase().endsWith(suffix)) {
-            throw new ImportException(fileName + ": manifest name doesn't end in " + suffix);
-        }
-        String slug = fileName.substring(0, fileName.length() - suffix.length()).toLowerCase();
-        if (eventRepository.findBySlug(slug).isPresent()) {
-            slug = slug + "-" + discipline.name().toLowerCase();
+        String slug;
+        if (given != null && !given.isBlank()) {
+            slug = given.trim();
+            if (!slug.matches(Event.SLUG_PATTERN)) {
+                throw new ImportException(fileName + ": slug " + slug + " isn't lowercase words separated by hyphens");
+            }
+        } else {
+            String suffix = "-" + discipline.name() + "-" + ageCategory.name() + "-IMPORT.JSON";
+            if (!fileName.toUpperCase().endsWith(suffix)) {
+                throw new ImportException(fileName + ": manifest name doesn't end in " + suffix);
+            }
+            slug = fileName.substring(0, fileName.length() - suffix.length()).toLowerCase();
+            if (eventRepository.findBySlug(slug).isPresent()) {
+                slug = slug + "-" + discipline.name().toLowerCase();
+            }
         }
         if (eventRepository.findBySlug(slug).isPresent()) {
             throw new ImportException(fileName + ": another event already has the slug " + slug);

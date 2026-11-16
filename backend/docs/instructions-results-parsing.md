@@ -189,8 +189,12 @@ decisions that come up while parsing.
   underscores or simply absent): no row at all.
 - **Entered but didn't perform**: `DNS`, blank scores and rank — including a
   US routine printed `0.00 / 0.000` (scratched).
-- **Invalid vault**: a completed attempt scored `0.000` (Europeans WAG bib
-  111 on vault 1; Worlds MAG ZAPATA's vault 2, whose average was halved).
+- **Invalid vault**: an attempt the judges scored `0.000` (an aborted run, the
+  table not touched): `INVALID_VAULT` with its printed D, E and `0.000` total,
+  and its rank. The zero counts (all-around, team, the two-vault average), and
+  the site shows it with the status. Europeans WAG SR bib 111 and WAG JR bib
+  301 on vault 1; Worlds MAG ZAPATA's vault 2, whose average was halved. Not
+  `DNS` or `UNKNOWN`, even where the source prints no status.
 - **Vault DNF** (vault 1 done, vault 2 not): `Status2=DNS`, blank `Total`.
 - **All-around/team DNF** rows are kept with blank `Rank`/`Total`; a team
   missing a whole apparatus prints a blank column and `DNF` total.
@@ -348,6 +352,14 @@ Parsers: [`parse_2026_world_championships.py`](../tools/results-parsing/parse_20
 - Entry lists: Europeans print birth year; Worlds print full date of birth
   (`Birth Date`).
 - Junior events may have no Team Final and no AA Final (Europeans).
+- Europeans WAG JR vault qualification: the first ranking (`_C73J`, printed
+  14 Aug, pages 206–209) leaves out Lucia Piliarova (bib 430), so every rank
+  below her =22 is one short. The organizers' later tie-break ranking
+  (`_C77B`, printed 16 Aug, pages 210–213) lists her at =22 and has the
+  corrected ranks, which are used. Her vault (D 4.2, E 8.600, 12.800) is
+  taken from the team and all-around pages. The tie-break pages list only
+  tied gymnasts; the all-around and team pages print every all-arounder's
+  vault rank, and the rest follow from their tied neighbours.
 - Checks run at Worlds: all of §3; team/AA blocks against the per-apparatus
   qualification tables proved the icon column order.
 

@@ -126,6 +126,41 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_SlugGivenInTheManifest_IsUsed(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        giveSlug(manifest, "mini-meet-mag-sr");
+
+        eventImporter.importManifest(manifest, false);
+
+        assertEquals("mini-meet-mag-sr", eventRepository.findAll().get(0).getSlug());
+    }
+
+    @Test
+    void testImport_SlugGivenInTheManifest_NotLowercaseWords_IsRejected(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        giveSlug(manifest, "Mini Meet");
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
+        assertTrue(e.getMessage().contains("slug Mini Meet"), e.getMessage());
+    }
+
+    @Test
+    void testImport_SlugGivenInTheManifest_TakenByAnotherEvent_IsRejected(@TempDir Path dir) throws IOException {
+        Path first = writeMinimalMeet(dir.resolve("first"), "5.5", "101");
+        giveSlug(first, "mini-meet");
+        eventImporter.importManifest(first, false);
+        Path second = writeMinimalMeet(dir.resolve("second"), "5.5", "101");
+        for (Path file : List.of(second, second.resolveSibling("MINI-MAG-SR-PARTICIPANTS.csv"),
+                second.resolveSibling("MINI-MAG-SR-SCORES-QUAL-FX.csv"))) {
+            Files.writeString(file, Files.readString(file).replace("2026-03-01", "2026-04-01"));
+        }
+        giveSlug(second, "mini-meet");
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(second, false));
+        assertTrue(e.getMessage().contains("already has the slug mini-meet"), e.getMessage());
+    }
+
+    @Test
     void testImport_StoresEveryScoreRowWithoutWarnings() {
         ImportReport report = importFixture(WORLDS_WAG);
 
@@ -422,6 +457,11 @@ class EventImporterTest {
     private static Session session(List<Session> sessions, Round round, Apparatus apparatus) {
         return sessions.stream().filter(s -> s.getRound() == round && s.getApparatus() == apparatus).findFirst()
                 .orElseThrow(() -> new AssertionError("no " + round + " " + apparatus + " session"));
+    }
+
+    private static void giveSlug(Path manifest, String slug) throws IOException {
+        Files.writeString(manifest, Files.readString(manifest)
+                .replace("\"title\": \"Mini Meet\"", "\"slug\": \"%s\", \"title\": \"Mini Meet\"".formatted(slug)));
     }
 
     // Two NED athletes, the NOC printed only on the first, and one floor score

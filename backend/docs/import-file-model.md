@@ -91,6 +91,7 @@ One row per discipline+age sub-event making up the competition.
 | Column | Description | Entity Mapping |
 |---|---|---|
 | Prefix | The `<PREFIX>` used to name every other file for this sub-event | |
+| Slug | Optional. The event's address on the site, lowercase words separated by hyphens (`2026-european-championships-wag-sr`). Needed when one folder holds several events, as the 2026 European Championships do; without it, the slug comes from the prefix (see [import-process.md](import-process.md)) | `Event.slug` |
 | Title | The sub-event's official title | `Event.title` |
 | Discipline | The discipline of this sub-event covers | `Event.discipline` |
 | Age Category | Age category of this sub-event: [AgeCategory](../src/main/java/doubletuck/meet/domain/AgeCategory.java) | |

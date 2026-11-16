@@ -23,7 +23,7 @@ function routineDetails(routine: Routine): [string, string][] {
     ]),
     ["Penalty", formatValue(routine.penalty)],
     ["Superior Jury penalty", formatValue(routine.sjPenalty)],
-    ["Score", routine.status === "COMPLETED" ? formatScore(routine.score) : statusLabel(routine)],
+    ["Score", scoreText(routine)],
   ];
 }
 
@@ -110,6 +110,30 @@ function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean
 
 function statusLabel(routine: Routine): string {
   return { COMPLETED: "", DNS: "Did not start", INVALID_VAULT: "Invalid vault", UNKNOWN: "Unknown" }[routine.status];
+}
+
+/** A routine's score as text: an invalid vault is scored (0.000) and says so; a routine not done says why. */
+function scoreText(routine: Routine): string {
+  if (routine.status === "COMPLETED") {
+    return formatScore(routine.score);
+  }
+  return routine.score != null ? `${formatScore(routine.score)} (${statusLabel(routine)})` : statusLabel(routine);
+}
+
+/** A routine's score in a cell, with the status beside it when it isn't a completed routine (an invalid vault's 0.000). */
+function RoutineScore({ routine, score = routine.score }: { routine: Routine; score?: number | null }) {
+  if (routine.status === "COMPLETED") {
+    return formatScore(score);
+  }
+  if (score == null) {
+    return <span className="font-normal text-gray-500">{statusLabel(routine)}</span>;
+  }
+  return (
+    <>
+      <span className="mr-1.5 text-xs font-normal whitespace-nowrap text-gray-500">{statusLabel(routine)}</span>
+      {formatScore(score)}
+    </>
+  );
 }
 
 /**
@@ -199,14 +223,14 @@ export function ScoreTable({
       align: "right",
       sortValue: (row) => row.total,
       cell: (row) =>
-        row.routine.status !== "COMPLETED" && row.total == null ? (
-          <span className="text-gray-500">{statusLabel(row.routine)}</span>
-        ) : teamScoring && !row.countsTowardTeam ? (
+        teamScoring && !row.countsTowardTeam ? (
           <span className="text-gray-400" title="Dropped from the team total">
-            {formatScore(row.total)}
+            <RoutineScore routine={row.routine} score={row.total} />
           </span>
         ) : (
-          <span className="font-semibold">{formatScore(row.total)}</span>
+          <span className="font-semibold">
+            <RoutineScore routine={row.routine} score={row.total} />
+          </span>
         ),
     },
   ];
@@ -285,7 +309,7 @@ export function VaultTable({
                 ["E", "Execution", formatScore(routine.execution)],
                 ["B", "Bonus", formatValue(routine.bonus)],
                 ["P", "Penalty", formatValue(routine.penalty)],
-                ["=", "Score", routine.status === "COMPLETED" ? formatScore(routine.score) : ""],
+                ["=", "Score", formatScore(routine.score)],
               ]}
             >
               {routine.status !== "COMPLETED" && <span>{statusLabel(routine)}</span>}
@@ -349,18 +373,7 @@ export function VaultTable({
       align: "right",
       wide: true,
       sortValue: (row) => best(row, (routine) => routine.score, Math.max),
-      cell: (row) => (
-        <PerVault
-          row={row}
-          value={(routine) =>
-            routine.status === "COMPLETED" ? (
-              formatScore(routine.score)
-            ) : (
-              <span className="text-gray-500">{statusLabel(routine)}</span>
-            )
-          }
-        />
-      ),
+      cell: (row) => <PerVault row={row} value={(routine) => <RoutineScore routine={routine} />} />,
     },
     {
       header: "Total",

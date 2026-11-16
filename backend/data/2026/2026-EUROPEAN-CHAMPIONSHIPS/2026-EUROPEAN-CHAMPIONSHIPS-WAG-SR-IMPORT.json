@@ -1,0 +1,41 @@
+{
+    "event" : {
+        "slug" : "2026-european-championships-wag-sr",
+        "title" : "36th Senior European Championships",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-08-13",
+        "endDate" : "2026-08-16",
+        "city" : "Zagreb",
+        "country" : "CRO",
+        "figEventNumber" : "18233",
+        "venue" : "Arena Zagreb",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-BB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-UB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-VT.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-VT.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-TEAM-BB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-TEAM-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-TEAM-UB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SCORES-TEAM-VT.csv"
+    ],
+    "summaries" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-TEAM.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

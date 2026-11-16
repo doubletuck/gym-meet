@@ -165,6 +165,21 @@ describe("ScoreTable", () => {
     expect(order()).toEqual(["A Mid", "A High", "A Low"]);
   });
 
+  it("shows an invalid vault's zero beside its status", async () => {
+    const invalid: ScoreRow = {
+      ...yeo,
+      rank: 109,
+      secondRoutine: null,
+      routine: routine({ status: "INVALID_VAULT", difficulty: 0, execution: 0, score: 0 }),
+      total: 0,
+      qualificationRank: 109,
+    };
+    render(<ScoreTable apparatus="VT" scores={firstVaults([invalid])} qualification={false} teamScoring={false} />);
+
+    const total = within(screen.getByText("Seojeong Yeo").closest("tr")!).getAllByRole("cell").at(-1)!;
+    expect(total).toHaveTextContent("Invalid vault0.000");
+  });
+
   it("shows did not start in place of a total", () => {
     const dns: ScoreRow = { ...yeo, rank: null, secondRoutine: null, routine: routine({ status: "DNS" }), total: null };
     render(<ScoreTable apparatus="PH" scores={[dns]} qualification teamScoring={false} />);
@@ -239,6 +254,19 @@ describe("VaultTable", () => {
       ["Pease", 2],
       ["Pease", null],
     ]);
+  });
+
+  it("shows an invalid second vault's zero beside its status", () => {
+    const zapata: ScoreRow = {
+      ...andrade,
+      secondRoutine: routine({ status: "INVALID_VAULT", difficulty: 0, execution: 0, score: 0 }),
+      combinedBonus: null,
+      total: 7.2,
+    };
+    render(<VaultTable scores={[zapata]} qualification={false} />);
+
+    const score = within(screen.getByText("Rebeca Andrade").closest("tr")!).getAllByRole("cell")[6];
+    expect(score).toHaveTextContent("14.400Invalid vault0.000");
   });
 
   it("sorts D on the better vault and the penalty on the bigger deduction", async () => {
