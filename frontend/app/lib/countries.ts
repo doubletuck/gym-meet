@@ -93,6 +93,106 @@ const COUNTRY_NAMES: Record<string, string> = {
   ZIM: "Zimbabwe",
 };
 
+/**
+ * The ISO 3166 code of each country's flag, for flag-icons. Chinese Taipei is
+ * left out on purpose: it competes under the Chinese Taipei Olympic flag, not
+ * the national flag that flag-icons has.
+ */
+const FLAG_CODES: Record<string, string> = {
+  ALB: "al",
+  ALG: "dz",
+  ARG: "ar",
+  ARM: "am",
+  AUS: "au",
+  AUT: "at",
+  AZE: "az",
+  BEL: "be",
+  BLR: "by",
+  BRA: "br",
+  BUL: "bg",
+  CAN: "ca",
+  CHI: "cl",
+  CHN: "cn",
+  COL: "co",
+  CRC: "cr",
+  CRO: "hr",
+  CYP: "cy",
+  CZE: "cz",
+  DEN: "dk",
+  DOM: "do",
+  ECU: "ec",
+  EGY: "eg",
+  ESA: "sv",
+  ESP: "es",
+  FIN: "fi",
+  FRA: "fr",
+  GBR: "gb",
+  GEO: "ge",
+  GER: "de",
+  GRE: "gr",
+  GUA: "gt",
+  HKG: "hk",
+  HON: "hn",
+  HUN: "hu",
+  INA: "id",
+  IND: "in",
+  IRI: "ir",
+  IRL: "ie",
+  ISL: "is",
+  ISR: "il",
+  ITA: "it",
+  JAM: "jm",
+  JOR: "jo",
+  JPN: "jp",
+  KAZ: "kz",
+  KOR: "kr",
+  KOS: "xk",
+  LAT: "lv",
+  LIE: "li",
+  LTU: "lt",
+  LUX: "lu",
+  MAR: "ma",
+  MAS: "my",
+  MEX: "mx",
+  MGL: "mn",
+  MLT: "mt",
+  MON: "mc",
+  MYA: "mm",
+  NED: "nl",
+  NOR: "no",
+  NZL: "nz",
+  PAN: "pa",
+  PER: "pe",
+  PHI: "ph",
+  POL: "pl",
+  POR: "pt",
+  PUR: "pr",
+  QAT: "qa",
+  ROU: "ro",
+  RSA: "za",
+  RUS: "ru",
+  SGP: "sg",
+  SLO: "si",
+  SRB: "rs",
+  SUI: "ch",
+  SVK: "sk",
+  SWE: "se",
+  THA: "th",
+  TUN: "tn",
+  TUR: "tr",
+  UKR: "ua",
+  USA: "us",
+  UZB: "uz",
+  YEM: "ye",
+  ZIM: "zw",
+};
+
+const FLAG_URLS = import.meta.glob<string>("/node_modules/flag-icons/flags/4x3/*.svg", {
+  eager: true,
+  query: "?no-inline",
+  import: "default",
+});
+
 // FIG's placeholder codes for athletes competing without a country: AIN1, AIN2, WG1, WG2
 const NEUTRAL = /^(AIN|WG)\d*$/;
 
@@ -101,4 +201,10 @@ export function countryName(noc: string): string {
     return "Neutral Athletes";
   }
   return COUNTRY_NAMES[noc] ?? noc;
+}
+
+/** The URL of a country's flag, or undefined for neutral athletes, Chinese Taipei and unknown codes. */
+export function flagUrl(noc: string): string | undefined {
+  const code = FLAG_CODES[noc];
+  return code && FLAG_URLS[`/node_modules/flag-icons/flags/4x3/${code}.svg`];
 }

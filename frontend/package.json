@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",
+    "flag-icons": "^7.6.0",
+    "isbot": "^5",
     "openapi-fetch": "^0.17.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router": "^8.5.1",
-    "isbot": "^5"
+    "react-router": "^8.5.1"
   },
   "devDependencies": {
     "@react-router/dev": "^8.5.1",

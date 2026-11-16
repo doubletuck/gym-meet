@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import type { Athlete, QualificationResult } from "~/api/types";
-import { countryName } from "~/lib/countries";
+import { countryName, flagUrl } from "~/lib/countries";
 import { athleteName } from "~/lib/format";
 
 const QUALIFICATION_LABELS: Record<QualificationResult, string> = {
@@ -38,8 +38,28 @@ export function Gymnast({ athlete, noc, children }: { athlete: Athlete; noc: str
   return (
     <>
       <span className="font-medium">{athleteName(athlete)}</span>
-      <span className="block text-xs text-gray-500">{countryName(noc)}</span>
+      <span className="block text-xs text-gray-500">
+        <Country noc={noc} />
+      </span>
       {children}
+    </>
+  );
+}
+
+/** A country's name after its flag, where it has one; sized to the text around it. */
+export function Country({ noc }: { noc: string }) {
+  const flag = flagUrl(noc);
+  return (
+    <>
+      {flag && (
+        <img
+          src={flag}
+          alt=""
+          loading="lazy"
+          className="mr-1.5 inline-block h-[0.75em] w-[1em] rounded-[1px] align-[-0.05em] ring-1 ring-black/10 dark:ring-white/15"
+        />
+      )}
+      {countryName(noc)}
     </>
   );
 }

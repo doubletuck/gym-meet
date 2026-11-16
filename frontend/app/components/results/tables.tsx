@@ -1,11 +1,10 @@
 import type { ReactNode } from "react";
 
 import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
-import { countryName } from "~/lib/countries";
 import { formatScore, formatValue } from "~/lib/format";
 import { APPARATUS_LABELS } from "~/lib/labels";
 import { ExpandableTable, type Column } from "./ExpandableTable";
-import { DetailList, Gymnast, QualificationBadge, Rank } from "./parts";
+import { Country, DetailList, Gymnast, QualificationBadge, Rank } from "./parts";
 
 /** A D score as published: a leading "!" marks one under inquiry. */
 function difficulty(routine: Routine): string {
@@ -521,7 +520,9 @@ export function TeamTable({
       header: "Team",
       cell: (row) => (
         <>
-          <span className="font-medium">{countryName(row.noc)}</span>
+          <span className="font-medium">
+            <Country noc={row.noc} />
+          </span>
           <PhoneLine items={apparatusItems(apparatus, row.apparatusTotals)} />
         </>
       ),
