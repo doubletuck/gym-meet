@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import type { AllAroundRow, Routine, ScoreRow, TeamRow } from "~/api/types";
-import { AllAroundTable, ScoreTable, TeamTable } from "./tables";
+import { AllAroundTable, firstVaults, ScoreTable, TeamTable, VaultTable, vaultFinalQualifying } from "./tables";
 
 function routine(overrides: Partial<Routine>): Routine {
   return {
@@ -36,27 +36,13 @@ const yeo: ScoreRow = {
 };
 
 describe("ScoreTable", () => {
-  it("shows the first vault in qualification, the two-vault total once expanded", async () => {
-    render(<ScoreTable apparatus="VT" scores={[yeo]} qualification teamScoring={false} rankedOnFirstVault />);
+  it("shows a championship qualification's first vault only, with no qualification column", () => {
+    render(<ScoreTable apparatus="VT" scores={firstVaults([yeo])} qualification={false} teamScoring={false} />);
 
     const row = screen.getByText("Seojeong Yeo").closest("tr")!;
-    expect(within(row).getByText("14.566")).toBeInTheDocument();
-    expect(screen.queryByText("Two-vault total")).not.toBeInTheDocument();
-
-    await userEvent.click(within(row).getByRole("button", { name: "Show details" }));
-
-    expect(screen.getByText("Vault 2")).toBeInTheDocument();
-    expect(screen.getByText("Two-vault total").nextSibling).toHaveTextContent("14.483");
-    expect(screen.getByText("Qualification rank").nextSibling).toHaveTextContent("2");
-    expect(within(row).getByRole("button", { name: "Hide details" })).toHaveAttribute("aria-expanded", "true");
-  });
-
-  it("shows the two-vault total in a vault final", () => {
-    render(
-      <ScoreTable apparatus="VT" scores={[yeo]} qualification={false} teamScoring={false} rankedOnFirstVault={false} />,
-    );
-
-    expect(screen.getByText("14.483")).toBeInTheDocument();
+    expect(within(row).getByRole("cell", { name: "14.566" })).toBeInTheDocument();
+    expect(screen.queryByText("14.483")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
   });
 
   it("fades a score dropped from the team total and marks a D score under inquiry", async () => {
@@ -67,7 +53,7 @@ describe("ScoreTable", () => {
       total: 13.266,
       countsTowardTeam: false,
     };
-    render(<ScoreTable apparatus="BB" scores={[dropped]} qualification teamScoring rankedOnFirstVault />);
+    render(<ScoreTable apparatus="BB" scores={[dropped]} qualification teamScoring />);
 
     expect(screen.getByTitle("Dropped from the team total")).toHaveTextContent("13.266");
     await userEvent.click(screen.getByRole("button", { name: "Show details" }));
@@ -90,7 +76,7 @@ describe("ScoreTable", () => {
     };
 
     const { unmount } = render(
-      <ScoreTable apparatus="PB" scores={[zou, plain]} qualification={false} teamScoring={false} rankedOnFirstVault />,
+      <ScoreTable apparatus="PB" scores={[zou, plain]} qualification={false} teamScoring={false} />,
     );
     expect(screen.getByRole("columnheader", { name: "Bon" })).toBeInTheDocument();
     expect(
@@ -98,7 +84,7 @@ describe("ScoreTable", () => {
     ).toBeInTheDocument();
     unmount();
 
-    render(<ScoreTable apparatus="PB" scores={[plain]} qualification={false} teamScoring={false} rankedOnFirstVault />);
+    render(<ScoreTable apparatus="PB" scores={[plain]} qualification={false} teamScoring={false} />);
     expect(screen.queryByRole("columnheader", { name: "Bon" })).not.toBeInTheDocument();
   });
 
@@ -115,9 +101,7 @@ describe("ScoreTable", () => {
       athlete: { id: 3, surname: "Lin", givenName: "Chaopan" },
       routine: routine({ difficulty: 6, execution: 8, score: 14 }),
     };
-    render(
-      <ScoreTable apparatus="PB" scores={[zou, lin]} qualification={false} teamScoring={false} rankedOnFirstVault />,
-    );
+    render(<ScoreTable apparatus="PB" scores={[zou, lin]} qualification={false} teamScoring={false} />);
 
     const zouCell = screen.getByText("Jingyuan Zou").closest("td")!;
     expect(within(zouCell).getByTitle("Difficulty").parentElement).toHaveTextContent("D 5.8");
@@ -146,15 +130,13 @@ describe("ScoreTable", () => {
     };
 
     const { unmount } = render(
-      <ScoreTable apparatus="UB" scores={[plain]} qualification={false} teamScoring={false} rankedOnFirstVault />,
+      <ScoreTable apparatus="UB" scores={[plain]} qualification={false} teamScoring={false} />,
     );
     expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: "Details" })).not.toBeInTheDocument();
     unmount();
 
-    render(
-      <ScoreTable apparatus="UB" scores={[plain, sj]} qualification={false} teamScoring={false} rankedOnFirstVault />,
-    );
+    render(<ScoreTable apparatus="UB" scores={[plain, sj]} qualification={false} teamScoring={false} />);
     expect(screen.getAllByRole("button", { name: "Show details" })).toHaveLength(1);
     expect(within(screen.getByText("A Penalised").closest("tr")!).getByRole("button")).toBeInTheDocument();
   });
@@ -172,7 +154,6 @@ describe("ScoreTable", () => {
         scores={[row("Low", 5, null), row("High", 6, -0.1), row("Mid", 5.5, -0.3)]}
         qualification={false}
         teamScoring={false}
-        rankedOnFirstVault={false}
       />,
     );
     const order = () => screen.getAllByText(/^A /).map((name) => name.textContent);
@@ -186,10 +167,91 @@ describe("ScoreTable", () => {
 
   it("shows did not start in place of a total", () => {
     const dns: ScoreRow = { ...yeo, rank: null, secondRoutine: null, routine: routine({ status: "DNS" }), total: null };
-    render(<ScoreTable apparatus="PH" scores={[dns]} qualification teamScoring={false} rankedOnFirstVault />);
+    render(<ScoreTable apparatus="PH" scores={[dns]} qualification teamScoring={false} />);
 
     expect(screen.getByText("Did not start")).toBeInTheDocument();
     expect(screen.getByText("–")).toBeInTheDocument();
+  });
+});
+
+describe("VaultTable", () => {
+  // Andrade's 2026 Worlds vault final: (14.400 + 14.133) / 2 plus a 0.2 combined bonus
+  const andrade: ScoreRow = {
+    ...yeo,
+    rank: 1,
+    athlete: { id: 3, surname: "Andrade", givenName: "Rebeca" },
+    noc: "BRA",
+    routine: routine({ difficulty: 5.0, execution: 9.4, score: 14.4 }),
+    secondRoutine: routine({ difficulty: 4.8, execution: 9.333, score: 14.133 }),
+    combinedBonus: 0.2,
+    total: 14.466,
+    qualificationRank: null,
+    qualification: null,
+  };
+  // Pease's second vault is the harder one by penalty, her first by D
+  const pease: ScoreRow = {
+    ...andrade,
+    rank: 2,
+    athlete: { id: 4, surname: "Pease", givenName: "Claire" },
+    noc: "USA",
+    routine: routine({ difficulty: 5.6, execution: 8.766, score: 14.366 }),
+    secondRoutine: routine({ difficulty: 5.0, execution: 9.0, penalty: -0.3, score: 13.7 }),
+    total: 14.233,
+  };
+  const order = () => screen.getAllByText(/^(Rebeca|Claire) /).map((name) => name.textContent);
+
+  it("shows both vaults on their own lines beside one total and its combined bonus", () => {
+    render(<VaultTable scores={[andrade]} qualification={false} />);
+
+    const row = screen.getByText("Rebeca Andrade").closest("tr")!;
+    const [, , vault, d, , , score, total] = within(row).getAllByRole("cell");
+    expect(vault).toHaveTextContent("12");
+    expect(d).toHaveTextContent("5.04.8");
+    expect(score).toHaveTextContent("14.40014.133");
+    expect(total).toHaveTextContent("14.466+0.2");
+    expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
+  });
+
+  it("lists each vault under the gymnast for a phone", () => {
+    render(<VaultTable scores={[pease]} qualification={false} />);
+
+    const cell = screen.getByText("Claire Pease").closest("td")!;
+    const [first, second] = within(cell)
+      .getAllByTitle("Score")
+      .map((score) => score.closest("span.flex"));
+    expect(first).toHaveTextContent("1D 5.6E 8.766= 14.366");
+    expect(second).toHaveTextContent("2D 5.0E 9.000P -0.3= 13.700");
+    expect(within(cell).getByTitle("Combined bonus").parentElement).toHaveTextContent("Bonus +0.2");
+  });
+
+  it("ranks a qualification's two-vault gymnasts for the final, unranked ones last", () => {
+    const oneVault: ScoreRow = { ...andrade, athlete: { id: 5, surname: "Once", givenName: "A" }, secondRoutine: null };
+    const unranked: ScoreRow = { ...pease, rank: 3, qualificationRank: null };
+    const ranked = vaultFinalQualifying([
+      { ...pease, rank: 1, qualificationRank: 2 },
+      oneVault,
+      unranked,
+      { ...andrade, rank: 2, qualificationRank: 1 },
+    ]);
+
+    expect(ranked.map((row) => [row.athlete.surname, row.rank])).toEqual([
+      ["Andrade", 1],
+      ["Pease", 2],
+      ["Pease", null],
+    ]);
+  });
+
+  it("sorts D on the better vault and the penalty on the bigger deduction", async () => {
+    render(<VaultTable scores={[andrade, pease]} qualification={false} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "D" }));
+    expect(order()).toEqual(["Claire Pease", "Rebeca Andrade"]);
+
+    await userEvent.click(screen.getByRole("button", { name: "Pen" }));
+    expect(order()).toEqual(["Claire Pease", "Rebeca Andrade"]);
+
+    await userEvent.click(screen.getByRole("button", { name: "Score" }));
+    expect(order()).toEqual(["Rebeca Andrade", "Claire Pease"]);
   });
 });
 

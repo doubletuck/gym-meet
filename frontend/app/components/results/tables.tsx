@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
 import { countryName } from "~/lib/countries";
 import { formatScore, formatValue } from "~/lib/format";
@@ -30,13 +32,24 @@ function routineDetails(routine: Routine): [string, string][] {
  * Labelled values on a line under a row's name, for a phone, where their
  * columns are hidden. Blanks are left out, and the line wraps between values.
  */
-function PhoneLine({ items }: { items: (readonly [short: string, label: string, value: string])[] }) {
+function PhoneLine({
+  items,
+  lead,
+  children,
+}: {
+  items: (readonly [short: string, label: string, value: string])[];
+  /** Leads the line in bold, e.g. the vault number. */
+  lead?: ReactNode;
+  /** Follows the values, e.g. "Did not start". */
+  children?: ReactNode;
+}) {
   const shown = items.filter(([, , value]) => value !== "");
-  if (shown.length === 0) {
+  if (shown.length === 0 && !children) {
     return null;
   }
   return (
     <span className="mt-0.5 flex flex-wrap gap-x-2.5 text-xs text-gray-500 tabular-nums sm:hidden">
+      {lead != null && <span className="font-semibold">{lead}</span>}
       {shown.map(([short, label, value]) => (
         <span key={short} className="whitespace-nowrap">
           <abbr title={label} className="no-underline">
@@ -45,21 +58,54 @@ function PhoneLine({ items }: { items: (readonly [short: string, label: string, 
           {value}
         </span>
       ))}
+      {children}
     </span>
   );
 }
 
+function vaults(row: ScoreRow): Routine[] {
+  return row.secondRoutine ? [row.routine, row.secondRoutine] : [row.routine];
+}
+
 /**
  * Whether an expanded row would show more than the columns and the phone line:
- * vault's second attempt, an itemized bonus, a Superior Jury penalty, or a
- * qualification rank that differs from the rank.
+ * an itemized bonus, a Superior Jury penalty, or a qualification rank that
+ * differs from the rank.
  */
-function hasMoreDetail(row: ScoreRow, apparatus: Apparatus): boolean {
+function hasMoreDetail(row: ScoreRow): boolean {
   return (
-    apparatus === "VT" ||
-    (row.routine.bonusDetail?.length ?? 0) > 0 ||
-    !!row.routine.sjPenalty ||
+    vaults(row).some((routine) => (routine.bonusDetail?.length ?? 0) > 0 || !!routine.sjPenalty) ||
     (row.qualificationRank != null && row.qualificationRank !== row.rank)
+  );
+}
+
+/** A row's expanded panel: each routine in full, and what else the row carries. */
+function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean }) {
+  return (
+    <div className="space-y-3">
+      {row.secondRoutine ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <p className="mb-1 font-medium">Vault 1</p>
+            <DetailList items={routineDetails(row.routine)} />
+          </div>
+          <div>
+            <p className="mb-1 font-medium">Vault 2</p>
+            <DetailList items={routineDetails(row.secondRoutine)} />
+          </div>
+        </div>
+      ) : (
+        <DetailList items={routineDetails(row.routine)} />
+      )}
+      <DetailList
+        items={[
+          ["Combined bonus", formatValue(row.combinedBonus)],
+          ["Two-vault total", row.secondRoutine ? formatScore(row.total) : ""],
+          ["Qualification rank", row.qualificationRank != null ? String(row.qualificationRank) : ""],
+          ["Team", teamScoring && !row.countsTowardTeam ? "Dropped from the team total" : ""],
+        ]}
+      />
+    </div>
   );
 }
 
@@ -73,28 +119,21 @@ function statusLabel(routine: Routine): string {
  * shown faded. The bonus column appears only when someone earned a bonus,
  * so that a row's D, E, bonus and penalty add up to its total. On a phone,
  * where those columns are hidden, they're on a line under the gymnast instead.
- * Rows expand only when there's more to show (see hasMoreDetail); vault, left
- * for later, always expands and has no phone line.
- *
- * @param rankedOnFirstVault a championship qualification ranks vault on the
- *   first vault, the one that counts for all-around and team, so that is the
- *   total shown; the two-vault total, which decides the vault final, is in
- *   the expanded row
+ * Rows expand only when there's more to show (see hasMoreDetail). Where vault
+ * is decided on two vaults, use VaultTable; for a championship qualification's
+ * first vaults, pass firstVaults.
  */
 export function ScoreTable({
   apparatus,
   scores,
   qualification,
   teamScoring,
-  rankedOnFirstVault,
 }: {
   apparatus: Apparatus;
   scores: ScoreRow[];
   qualification: boolean;
   teamScoring: boolean;
-  rankedOnFirstVault: boolean;
 }) {
-  const shown = (row: ScoreRow) => (rankedOnFirstVault ? row.routine.score : row.total);
   const columns: Column<ScoreRow>[] = [
     {
       header: "#",
@@ -107,16 +146,14 @@ export function ScoreTable({
       header: "Gymnast",
       cell: (row) => (
         <Gymnast athlete={row.athlete} noc={row.noc}>
-          {apparatus !== "VT" && (
-            <PhoneLine
-              items={[
-                ["D", "Difficulty", difficulty(row.routine)],
-                ["E", "Execution", formatScore(row.routine.execution)],
-                ["B", "Bonus", formatValue(row.routine.bonus)],
-                ["P", "Penalty", formatValue(row.routine.penalty)],
-              ]}
-            />
-          )}
+          <PhoneLine
+            items={[
+              ["D", "Difficulty", difficulty(row.routine)],
+              ["E", "Execution", formatScore(row.routine.execution)],
+              ["B", "Bonus", formatValue(row.routine.bonus)],
+              ["P", "Penalty", formatValue(row.routine.penalty)],
+            ]}
+          />
         </Gymnast>
       ),
     },
@@ -161,16 +198,16 @@ export function ScoreTable({
     {
       header: "Total",
       align: "right",
-      sortValue: shown,
+      sortValue: (row) => row.total,
       cell: (row) =>
-        row.routine.status !== "COMPLETED" && shown(row) == null ? (
+        row.routine.status !== "COMPLETED" && row.total == null ? (
           <span className="text-gray-500">{statusLabel(row.routine)}</span>
         ) : teamScoring && !row.countsTowardTeam ? (
           <span className="text-gray-400" title="Dropped from the team total">
-            {formatScore(shown(row))}
+            {formatScore(row.total)}
           </span>
         ) : (
-          <span className="font-semibold">{formatScore(shown(row))}</span>
+          <span className="font-semibold">{formatScore(row.total)}</span>
         ),
     },
   ];
@@ -189,36 +226,213 @@ export function ScoreTable({
       defaultSort="#"
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
-      detail={(row) =>
-        hasMoreDetail(row, apparatus) && (
-          <div className="space-y-3">
-            {row.secondRoutine ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="mb-1 font-medium">Vault 1</p>
-                  <DetailList items={routineDetails(row.routine)} />
-                </div>
-                <div>
-                  <p className="mb-1 font-medium">Vault 2</p>
-                  <DetailList items={routineDetails(row.secondRoutine)} />
-                </div>
-              </div>
-            ) : (
-              <DetailList items={routineDetails(row.routine)} />
-            )}
-            <DetailList
-              items={[
-                ["Combined bonus", formatValue(row.combinedBonus)],
-                ["Two-vault total", row.secondRoutine ? formatScore(row.total) : ""],
-                ["Qualification rank", row.qualificationRank != null ? String(row.qualificationRank) : ""],
-                ["Team", teamScoring && !row.countsTowardTeam ? "Dropped from the team total" : ""],
-              ]}
-            />
-          </div>
-        )
-      }
+      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} teamScoring={teamScoring} />}
     />
   );
+}
+
+/** Each vault's value on its own line, so a row's two vaults read across in line. */
+function PerVault({ row, value }: { row: ScoreRow; value: (routine: Routine, index: number) => ReactNode }) {
+  return vaults(row).map((routine, i) => (
+    <span key={i} className="block">
+      {value(routine, i) || "\u00a0"}
+    </span>
+  ));
+}
+
+/** The better of a row's vaults by this value, the one a vault is sorted on. */
+function best(row: ScoreRow, value: (routine: Routine) => number | null, pick: (...values: number[]) => number) {
+  const values = vaults(row)
+    .map(value)
+    .filter((v) => v != null);
+  return values.length ? pick(...values) : null;
+}
+
+/**
+ * Vault where it's decided on two vaults: a vault final, or the qualification
+ * of an apparatus-format meet (World Cup). Each gymnast's vaults sit on two
+ * lines, beside one rank and one total: the two vaults' average plus any
+ * combined bonus, which is shown under it. D, E, bonus and score sort on the
+ * better vault, the penalty on the bigger deduction. On a phone, each vault
+ * is a line under the gymnast.
+ */
+export function VaultTable({
+  scores,
+  qualification,
+  caption = "Vault results",
+}: {
+  scores: ScoreRow[];
+  qualification: boolean;
+  caption?: string;
+}) {
+  const columns: Column<ScoreRow>[] = [
+    {
+      header: "#",
+      label: "Rank",
+      sortValue: (row) => row.rank,
+      sortFirst: "ascending",
+      cell: (row) => <Rank rank={row.rank} />,
+    },
+    {
+      header: "Gymnast",
+      cell: (row) => (
+        <Gymnast athlete={row.athlete} noc={row.noc}>
+          {vaults(row).map((routine, i) => (
+            <PhoneLine
+              key={i}
+              lead={i + 1}
+              items={[
+                ["D", "Difficulty", difficulty(routine)],
+                ["E", "Execution", formatScore(routine.execution)],
+                ["B", "Bonus", formatValue(routine.bonus)],
+                ["P", "Penalty", formatValue(routine.penalty)],
+                ["=", "Score", routine.status === "COMPLETED" ? formatScore(routine.score) : ""],
+              ]}
+            >
+              {routine.status !== "COMPLETED" && <span>{statusLabel(routine)}</span>}
+            </PhoneLine>
+          ))}
+          <PhoneLine items={[["Bonus", "Combined bonus", combinedBonus(row)]]} />
+        </Gymnast>
+      ),
+    },
+    {
+      header: "V",
+      label: "Vault",
+      align: "right",
+      wide: true,
+      cell: (row) => (
+        <span className="text-gray-400">
+          <PerVault row={row} value={(_, i) => String(i + 1)} />
+        </span>
+      ),
+    },
+    {
+      header: "D",
+      label: "Difficulty",
+      align: "right",
+      wide: true,
+      sortValue: (row) => best(row, (routine) => routine.difficulty, Math.max),
+      cell: (row) => <PerVault row={row} value={difficulty} />,
+    },
+    {
+      header: "E",
+      label: "Execution",
+      align: "right",
+      wide: true,
+      sortValue: (row) => best(row, (routine) => routine.execution, Math.max),
+      cell: (row) => <PerVault row={row} value={(routine) => formatScore(routine.execution)} />,
+    },
+    ...(scores.some((row) => vaults(row).some((routine) => routine.bonus))
+      ? [
+          {
+            header: "Bon",
+            label: "Bonus",
+            align: "right",
+            wide: true,
+            sortValue: (row) => best(row, (routine) => routine.bonus, Math.max),
+            cell: (row) => <PerVault row={row} value={(routine) => formatValue(routine.bonus)} />,
+          } satisfies Column<ScoreRow>,
+        ]
+      : []),
+    {
+      header: "Pen",
+      label: "Penalty",
+      align: "right",
+      wide: true,
+      // Penalties are negative, so the largest deduction comes first
+      sortValue: (row) => best(row, (routine) => routine.penalty, Math.min),
+      sortFirst: "ascending",
+      cell: (row) => <PerVault row={row} value={(routine) => formatValue(routine.penalty)} />,
+    },
+    {
+      header: "Score",
+      align: "right",
+      wide: true,
+      sortValue: (row) => best(row, (routine) => routine.score, Math.max),
+      cell: (row) => (
+        <PerVault
+          row={row}
+          value={(routine) =>
+            routine.status === "COMPLETED" ? (
+              formatScore(routine.score)
+            ) : (
+              <span className="text-gray-500">{statusLabel(routine)}</span>
+            )
+          }
+        />
+      ),
+    },
+    {
+      header: "Total",
+      label: "Average of the two vaults, plus any combined bonus",
+      align: "right",
+      sortValue: (row) => row.total,
+      cell: (row) =>
+        row.total == null && row.routine.status !== "COMPLETED" ? (
+          <span className="text-gray-500">{statusLabel(row.routine)}</span>
+        ) : (
+          <>
+            <span className="font-semibold">{formatScore(row.total)}</span>
+            {row.combinedBonus ? (
+              <span className="hidden text-xs leading-5 text-gray-500 sm:block" title="Combined bonus">
+                {combinedBonus(row)}
+              </span>
+            ) : null}
+          </>
+        ),
+    },
+  ];
+  if (qualification) {
+    columns.push({
+      header: "Q",
+      label: "Qualification",
+      cell: (row) => <QualificationBadge result={row.qualification} />,
+    });
+  }
+
+  return (
+    <ExpandableTable
+      caption={caption}
+      columns={columns}
+      defaultSort="#"
+      rows={scores}
+      rowKey={(row) => `${row.bib}-${row.athlete.id}`}
+      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} teamScoring={false} />}
+    />
+  );
+}
+
+/**
+ * A championship qualification's vault as it counts for team and all-around:
+ * each gymnast's first vault, ranked as published. A second vault, and the
+ * vault final qualification it goes toward, are in vaultFinalQualifying.
+ */
+export function firstVaults(scores: ScoreRow[]): ScoreRow[] {
+  return scores.map((row) => ({
+    ...row,
+    secondRoutine: null,
+    combinedBonus: null,
+    total: row.routine.score,
+    qualificationRank: null,
+    qualification: null,
+  }));
+}
+
+/**
+ * A championship qualification's ranking for the vault final: the gymnasts who
+ * vaulted twice, ranked on their two-vault total by their qualification rank.
+ * Those left unranked (a vault not started) come last.
+ */
+export function vaultFinalQualifying(scores: ScoreRow[]): ScoreRow[] {
+  return scores
+    .filter((row) => row.secondRoutine != null)
+    .map((row) => ({ ...row, rank: row.qualificationRank }))
+    .sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity));
+}
+
+function combinedBonus(row: ScoreRow): string {
+  return row.combinedBonus ? `+${formatValue(row.combinedBonus)}` : "";
 }
 
 function apparatusItems(apparatus: Apparatus[], scores: Partial<Record<string, number>>) {

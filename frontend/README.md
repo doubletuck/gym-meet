@@ -47,5 +47,5 @@ running, and commit the regenerated file.
 | `app/routes.ts` | The pages and their addresses |
 | `app/routes/` | Events list (`/`), an event (`/events/:eventSlug`), a session's results (`/events/:eventSlug/:discipline/:ageCategory/:sessionSlug`, e.g. `/events/2026-world-championships/wag/sr/beam-final`) |
 | `app/api/` | The typed API client, its queries, and the generated types |
-| `app/components/results/` | The results tables, which sort by a tapped column header. On a phone the values of the hidden columns are listed under the gymnast or team (D, E, bonus and penalty; or the apparatus scores); rows expand on tap only where there is more to show, such as the second vault |
+| `app/components/results/` | The results tables, which sort by a tapped column header. On a phone the values of the hidden columns are listed under the gymnast or team (D, E, bonus and penalty; or the apparatus scores); a vault final puts each gymnast's two vaults on two lines. A championship qualification's vault is two views: the first vault, which counts for team and all-around, and the two-vault ranking for the vault final. Rows expand on tap only where there is more to show |
 | `app/lib/` | Labels, country names (IOC codes), and number and date formatting |

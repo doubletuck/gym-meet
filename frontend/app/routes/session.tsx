@@ -4,7 +4,15 @@ import { data, Link, useSearchParams } from "react-router";
 import type { Route } from "./+types/session";
 import { eventQuery, queryClient, sessionResultsQuery } from "~/api/client";
 import type { Apparatus, SessionResults } from "~/api/types";
-import { AllAroundTable, ScoreTable, StandingsTable, TeamTable } from "~/components/results/tables";
+import {
+  AllAroundTable,
+  ScoreTable,
+  StandingsTable,
+  TeamTable,
+  VaultTable,
+  firstVaults,
+  vaultFinalQualifying,
+} from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
 import { APPARATUS_SHORT_LABELS, divisionLabel, sessionLabel } from "~/lib/labels";
 
@@ -31,12 +39,24 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
 
 type View = { key: string; label: string };
 
-/** The views a session's results offer, in the order a results book prints them. */
-function viewsOf(results: SessionResults): View[] {
+const VAULT_FINAL_QUALIFYING = "VT-final";
+
+/**
+ * The views a session's results offer, in the order a results book prints
+ * them. A championship qualification's vault is two views: the first vault,
+ * which counts for team and all-around, and the two-vault ranking for the
+ * vault final.
+ */
+function viewsOf(results: SessionResults, rankedOnFirstVault: boolean): View[] {
   return [
     ...(results.teams.length ? [{ key: "teams", label: "Teams" }] : []),
     ...(results.allAround.length ? [{ key: "all-around", label: "All-around" }] : []),
-    ...results.apparatus.map(({ apparatus }) => ({ key: apparatus, label: APPARATUS_SHORT_LABELS[apparatus] })),
+    ...results.apparatus.flatMap(({ apparatus, scores }) => [
+      { key: apparatus, label: APPARATUS_SHORT_LABELS[apparatus] },
+      ...(apparatus === "VT" && rankedOnFirstVault && scores.some((row) => row.secondRoutine)
+        ? [{ key: VAULT_FINAL_QUALIFYING, label: "Vault Final Qual" }]
+        : []),
+    ]),
     ...results.apparatusStandings.map(({ apparatus }) => ({
       key: `combined-${apparatus}`,
       label: APPARATUS_SHORT_LABELS[apparatus],
@@ -49,10 +69,12 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
   const [searchParams] = useSearchParams();
   const { session } = results;
 
-  const views = viewsOf(results);
-  const current = views.find((view) => view.key === searchParams.get("view")) ?? views[0];
   const qualification = session.round === "QUAL";
   const teamScoring = results.teams.length > 0;
+  // A championship qualification ranks vault on the first vault; elsewhere vault is decided on two
+  const rankedOnFirstVault = qualification && session.apparatus == null;
+  const views = viewsOf(results, rankedOnFirstVault);
+  const current = views.find((view) => view.key === searchParams.get("view")) ?? views[0];
   const apparatusOrder: Apparatus[] = results.apparatus.map(({ apparatus }) => apparatus);
   const allAroundApparatus: Apparatus[] = apparatusOrder.length
     ? apparatusOrder
@@ -106,16 +128,39 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
         )}
         {results.apparatus
           .filter(({ apparatus }) => apparatus === current?.key)
-          .map(({ apparatus, scores }) => (
-            <ScoreTable
-              key={apparatus}
-              apparatus={apparatus}
-              scores={scores}
-              qualification={qualification}
-              teamScoring={teamScoring}
-              rankedOnFirstVault={qualification && session.apparatus == null}
-            />
-          ))}
+          .map(({ apparatus, scores }) =>
+            apparatus !== "VT" ? (
+              <ScoreTable
+                key={apparatus}
+                apparatus={apparatus}
+                scores={scores}
+                qualification={qualification}
+                teamScoring={teamScoring}
+              />
+            ) : rankedOnFirstVault ? (
+              // The vault final's qualifiers are marked in its own view
+              <ScoreTable
+                key={apparatus}
+                apparatus={apparatus}
+                scores={firstVaults(scores)}
+                qualification={false}
+                teamScoring={teamScoring}
+              />
+            ) : (
+              <VaultTable key={apparatus} scores={scores} qualification={qualification} />
+            ),
+          )}
+        {current?.key === VAULT_FINAL_QUALIFYING &&
+          results.apparatus
+            .filter(({ apparatus }) => apparatus === "VT")
+            .map(({ scores }) => (
+              <VaultTable
+                key={VAULT_FINAL_QUALIFYING}
+                scores={vaultFinalQualifying(scores)}
+                qualification
+                caption="Vault final qualification"
+              />
+            ))}
         {results.apparatusStandings
           .filter(({ apparatus }) => `combined-${apparatus}` === current?.key)
           .map(({ apparatus, rows }) => (
