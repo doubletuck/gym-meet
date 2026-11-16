@@ -266,8 +266,10 @@ have no NOC (blank).
 
 - IOC codes, as World Gymnastics uses them (`GER`, `NED`), for NOCs and the
   host country — not ISO.
-- Neutral athletes keep the code printed: `AIN1`/`AIN2` (Cottbus), `WG2`
-  (Europeans); the same athletes appear as `RUS`/`BLR` at Worlds.
+- Neutral athletes keep the code printed: `AIN1`/`AIN2` (Cottbus, "Individual
+  Neutral Athletes"), `WG1`/`WG2` (Europeans, "World Gymnastics 1"/"2"); the
+  same athletes appear as `RUS`/`BLR` at Worlds. Each code is its own group,
+  entering its own team (Europeans' `WG1` and `WG2` teams), so never merge them.
 - Some entry lists print the NOC only on each country's first row.
 - The US Championships prints no NOC; participants are written as `USA`.
 

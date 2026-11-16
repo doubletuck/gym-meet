@@ -40,8 +40,9 @@ describe("sessionLabel", () => {
 describe("countryName", () => {
   it("names IOC codes, neutral codes, and falls back to the code", () => {
     expect(countryName("GER")).toBe("Germany");
-    expect(countryName("AIN2")).toBe("Neutral Athletes");
-    expect(countryName("WG1")).toBe("Neutral Athletes");
+    expect(countryName("WG1")).toBe("World Gymnastics 1");
+    expect(countryName("WG2")).toBe("World Gymnastics 2");
+    expect(countryName("AIN2")).toBe("Individual Neutral Athletes (AIN2)");
     expect(countryName("XYZ")).toBe("XYZ");
   });
 });

@@ -193,12 +193,19 @@ const FLAG_URLS = import.meta.glob<string>("/node_modules/flag-icons/flags/4x3/*
   import: "default",
 });
 
-// FIG's placeholder codes for athletes competing without a country: AIN1, AIN2, WG1, WG2
-const NEUTRAL = /^(AIN|WG)\d*$/;
-
+/**
+ * A country's name, or a neutral athletes' group as the results print it. Each
+ * code is its own group (WG1 and WG2 enter separate teams), so they're told
+ * apart: Europeans print "World Gymnastics 1"; Cottbus prints "Individual
+ * Neutral Athletes" for both AIN1 and AIN2, so the code is added.
+ */
 export function countryName(noc: string): string {
-  if (NEUTRAL.test(noc)) {
-    return "Neutral Athletes";
+  const worldGymnastics = /^WG(\d+)$/.exec(noc);
+  if (worldGymnastics) {
+    return `World Gymnastics ${worldGymnastics[1]}`;
+  }
+  if (/^AIN\d*$/.test(noc)) {
+    return noc === "AIN" ? "Individual Neutral Athletes" : `Individual Neutral Athletes (${noc})`;
   }
   return COUNTRY_NAMES[noc] ?? noc;
 }

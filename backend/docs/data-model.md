@@ -129,7 +129,7 @@ Final round itself — the two `AA`s aren't related beyond sharing a name.)
 
 #### `Country`
 
-No enumerator or type will be used. Countries are the three-letter **IOC codes** World Gymnastics uses (`GER`, `NED`, `CRO`) — not ISO-3166 (`DEU`, `NLD`, `HRV`) — for both NOCs and an event's host country. At times, there will be FIG neutral athletes who are not associated with a country for the competition; they're published under a placeholder code, which can be four characters (`AIN1`, `AIN2` — Individual Neutral Athletes — at the 2026 Cottbus World Cup; `WG2` at the 2026 Europeans), so `Participant.noc` and `TeamResult.noc` accept 3–4 characters.
+No enumerator or type will be used. Countries are the three-letter **IOC codes** World Gymnastics uses (`GER`, `NED`, `CRO`) — not ISO-3166 (`DEU`, `NLD`, `HRV`) — for both NOCs and an event's host country. At times, there will be FIG neutral athletes who are not associated with a country for the competition; they're published under a placeholder code, which can be four characters (`AIN1`, `AIN2` — Individual Neutral Athletes — at the 2026 Cottbus World Cup; `WG1`, `WG2` — World Gymnastics 1 and 2, each entering its own team — at the 2026 Europeans), so `Participant.noc` and `TeamResult.noc` accept 3–4 characters.
 
 #### `JudgeFunction`
 
