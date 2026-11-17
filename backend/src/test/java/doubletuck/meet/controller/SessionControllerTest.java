@@ -114,6 +114,39 @@ class SessionControllerTest {
     }
 
     @Test
+    void testFindResults_SplitRoundCombinedSession_HasEachPart() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
+        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
+
+        mockMvc.perform(get("/api/sessions/{id}/results", wholeRound))
+                .andExpect(jsonPath("$.session.date").value("2026-08-06"))
+                .andExpect(jsonPath("$.session.endDate").value("2026-08-08"))
+                // Each part's scores summed, as the combined floor standings publish it
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.FX").value(26.7))
+                // Vault's standings are the two-vault title, so its sum is the only combined all-around vault
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.VT").value(26.35))
+                .andExpect(jsonPath("$.allAround[0].parts[*].part", contains(1, 2)))
+                .andExpect(jsonPath("$.allAround[0].parts[0].total").value(81.773))
+                .andExpect(jsonPath("$.allAround[0].parts[0].apparatusScores.FX").value(13.7))
+                .andExpect(jsonPath("$.allAround[0].parts[1].total").value(82.123))
+                .andExpect(jsonPath("$.allAround[0].parts[1].apparatusScores.FX").value(13.0))
+                .andExpect(jsonPath("$.apparatusStandings[?(@.apparatus == 'PH')].rows[?(@.athlete.surname == "
+                        + "'Hoopes')].parts[*].score", contains(15.641, 15.175)));
+    }
+
+    @Test
+    void testFindResults_SplitRoundPart_HasNoParts() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
+        Long partOne = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, 1);
+
+        mockMvc.perform(get("/api/sessions/{id}/results", partOne))
+                .andExpect(jsonPath("$.session.endDate").value(nullValue()))
+                .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Moldauer')].apparatusScores.FX")
+                        .value(13.7))
+                .andExpect(jsonPath("$.allAround[0].parts", empty()));
+    }
+
+    @Test
     void testFindResults_Unknown_NotFound() throws Exception {
         mockMvc.perform(get("/api/sessions/{id}/results", -1)).andExpect(status().isNotFound());
     }

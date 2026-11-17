@@ -39,7 +39,9 @@ export default function Event({ params }: Route.ComponentProps) {
                     className="flex items-baseline justify-between gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
                   >
                     <span>{sessionLabel(session)}</span>
-                    <span className="shrink-0 text-sm text-gray-500">{formatSessionDate(session.date)}</span>
+                    <span className="shrink-0 text-sm text-gray-500">
+                      {formatSessionDate(session.date, session.endDate)}
+                    </span>
                   </Link>
                 </li>
               ))}

@@ -106,20 +106,31 @@ public class EventImporter {
             AgeCategory ageCategory, ImportReport report) {
         String figEventNumber = source.figEventNumber() == null || source.figEventNumber().isBlank() ? null
                 : source.figEventNumber().trim();
-        Event event = (figEventNumber != null
-                ? eventRepository.findByFigEventNumber(figEventNumber)
-                : eventRepository.findByTitleIgnoreCaseAndStartDate(source.title(), source.startDate()))
-                .orElse(null);
-        if (event != null) {
-            if (!event.getTitle().equalsIgnoreCase(source.title())
-                    || !event.getStartDate().equals(source.startDate())) {
-                report.warn("existing event " + event.getId() + " (" + event.getTitle() + ", " + event.getStartDate()
-                        + ") matched by FIG event number has a different title or start date than the manifest");
+        if (figEventNumber != null) {
+            Event event = eventRepository.findByFigEventNumber(figEventNumber).orElse(null);
+            if (event != null) {
+                if (!event.getTitle().equalsIgnoreCase(source.title())
+                        || !event.getStartDate().equals(source.startDate())) {
+                    report.warn("existing event " + event.getId() + " (" + event.getTitle() + ", "
+                            + event.getStartDate()
+                            + ") matched by FIG event number has a different title or start date than the manifest");
+                }
+                return event;
             }
-            return event;
+        } else {
+            List<Event> overlapping = eventRepository
+                    .findByTitleIgnoreCaseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(source.title(),
+                            source.endDate(), source.startDate());
+            if (overlapping.size() > 1) {
+                throw new ImportException(manifestFile.getFileName() + ": " + overlapping.size()
+                        + " events titled " + source.title() + " overlap the manifest's dates");
+            }
+            if (!overlapping.isEmpty()) {
+                return widenDates(overlapping.getFirst(), source, report);
+            }
         }
 
-        event = new Event();
+        Event event = new Event();
         event.setSlug(newSlug(source.slug(), manifestFile, discipline, ageCategory));
         event.setFigEventNumber(figEventNumber);
         event.setTitle(source.title());
@@ -135,13 +146,29 @@ public class EventImporter {
     }
 
     /**
+     * A meet's disciplines can run on different days under one title -- the
+     * 2026 US Championships' MAG on 6-8 August and WAG on 7-9 August -- so the
+     * event comes to span all of them.
+     */
+    private Event widenDates(Event event, ImportManifest.ManifestEvent source, ImportReport report) {
+        if (source.startDate().isBefore(event.getStartDate()) || source.endDate().isAfter(event.getEndDate())) {
+            if (source.startDate().isBefore(event.getStartDate())) {
+                event.setStartDate(source.startDate());
+            }
+            if (source.endDate().isAfter(event.getEndDate())) {
+                event.setEndDate(source.endDate());
+            }
+            report.count("event dates widened");
+        }
+        return event;
+    }
+
+    /**
      * The new event's slug: the manifest's, when it gives one -- the 2026 European
      * Championships are four events in one folder, each named in its manifest.
      * Otherwise its manifest's prefix without the discipline and age category, so
      * 2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json gives 2026-world-championships.
-     * When another event already has that -- the 2026 US Championships' MAG and
-     * WAG start on different days, so they are two events -- the discipline is
-     * added.
+     * When another event already has that, the discipline is added.
      */
     private String newSlug(String given, Path manifestFile, Discipline discipline, AgeCategory ageCategory) {
         String fileName = manifestFile.getFileName().toString();

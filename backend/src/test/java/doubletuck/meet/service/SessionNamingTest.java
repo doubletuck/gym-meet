@@ -25,7 +25,7 @@ class SessionNamingTest {
     }
 
     @Test
-    void testOrder_RoundsThenOlympicApparatusThenParts() {
+    void testOrder_RoundsThenOlympicApparatusThenCombinedBeforeParts() {
         List<String> ordered = Stream.of(
                         session(Round.EVENT, Apparatus.HB, null),
                         session(Round.EVENT, Apparatus.FX, null),
@@ -37,8 +37,8 @@ class SessionNamingTest {
                 .map(SessionNaming::slug)
                 .toList();
 
-        assertEquals(List.of("qualification", "all-around-final-part-1", "all-around-final-part-2",
-                "all-around-final", "floor-final", "high-bar-final"), ordered);
+        assertEquals(List.of("qualification", "all-around-final", "all-around-final-part-1",
+                "all-around-final-part-2", "floor-final", "high-bar-final"), ordered);
     }
 
     private static Session session(Round round, Apparatus apparatus, Integer part) {

@@ -77,8 +77,11 @@ public record SessionResultsResponse(
     }
 
     /**
-     * @param apparatusScores each apparatus's score in this session, for those the athlete scored on; empty
-     *                        for a split round's combined total
+     * @param apparatusScores each apparatus's score in this session, for those the athlete scored on; for a
+     *                        split round's combined session, the sum of the parts' scores, where the athlete
+     *                        scored on it in every part
+     * @param parts           for a split round's combined session, the athlete's result in each part;
+     *                        otherwise empty
      */
     public record AllAroundRow(
             @Nullable Integer rank,
@@ -87,7 +90,11 @@ public record SessionResultsResponse(
             String noc,
             @Nullable Double total,
             @Nullable QualificationResult qualification,
-            Map<Apparatus, Double> apparatusScores) {
+            Map<Apparatus, Double> apparatusScores,
+            List<PartResult> parts) {
+    }
+
+    public record PartResult(int part, @Nullable Double total, Map<Apparatus, Double> apparatusScores) {
     }
 
     /** @param apparatusTotals the sum of the scores counting toward the team on each apparatus */
@@ -102,7 +109,14 @@ public record SessionResultsResponse(
     public record ApparatusStandings(Apparatus apparatus, List<ApparatusStandingRow> rows) {
     }
 
+    /**
+     * @param parts the athlete's result on the apparatus in each part of the round: for two vaults, their
+     *              combination
+     */
     public record ApparatusStandingRow(@Nullable Integer rank, @Nullable String bib, AthleteRef athlete, String noc,
-            @Nullable Double total) {
+            @Nullable Double total, List<PartScore> parts) {
+    }
+
+    public record PartScore(int part, @Nullable Double score) {
     }
 }

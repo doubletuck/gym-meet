@@ -104,6 +104,31 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_SameTitleOverlappingDates_SharesOneEventSpanningBoth(@TempDir Path dir) throws IOException {
+        Path seniors = writeMinimalMeet(dir.resolve("seniors"), "5.5", "101");
+        Files.writeString(seniors, Files.readString(seniors)
+                .replace("\"endDate\": \"2026-03-01\"", "\"endDate\": \"2026-03-02\""));
+        eventImporter.importManifest(seniors, false);
+        // Juniors from the 2nd to the 3rd
+        Path juniors = writeMinimalMeet(dir.resolve("juniors"), "5.5", "101");
+        for (Path file : List.of(juniors, juniors.resolveSibling("MINI-MAG-SR-PARTICIPANTS.csv"),
+                juniors.resolveSibling("MINI-MAG-SR-SCORES-QUAL-FX.csv"))) {
+            Files.writeString(file, Files.readString(file).replace("2026-03-01", "2026-03-02")
+                    .replace("\"ageCategory\": \"SR\"", "\"ageCategory\": \"JR\"").replace(",SR,", ",JR,")
+                    .replace("\"endDate\": \"2026-03-02\"", "\"endDate\": \"2026-03-03\"")
+                    .replace("DE VRIES", "JANSEN").replace("BAKKER", "VISSER"));
+        }
+
+        ImportReport report = eventImporter.importManifest(juniors, false);
+
+        List<Event> events = eventRepository.findAll();
+        assertEquals(1, events.size());
+        assertEquals(LocalDate.of(2026, 3, 1), events.get(0).getStartDate());
+        assertEquals(LocalDate.of(2026, 3, 3), events.get(0).getEndDate());
+        assertEquals(1, report.getCount("event dates widened"));
+    }
+
+    @Test
     void testImport_EventSlugComesFromTheManifestName() {
         importFixture(WORLDS_WAG);
 

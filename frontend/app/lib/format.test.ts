@@ -25,6 +25,7 @@ describe("dates", () => {
     // Intl sets the dash between thin spaces
     expect(formatDateRange("2026-10-17", "2026-10-25")).toBe("17\u2009–\u200925 Oct 2026");
     expect(formatSessionDate("2026-10-17")).toBe("Sat 17 Oct");
+    expect(formatSessionDate("2026-08-06", "2026-08-08")).toBe("Thu 6 Aug\u2009–\u2009Sat 8 Aug");
   });
 });
 

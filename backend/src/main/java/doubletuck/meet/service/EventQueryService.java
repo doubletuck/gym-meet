@@ -67,12 +67,14 @@ public class EventQueryService {
     }
 
     private EventDetailResponse detail(Event event) {
-        Map<DivisionKey, List<SessionSummaryResponse>> sessions = sessionRepository.findByEvent(event).stream()
+        List<Session> all = sessionRepository.findByEvent(event);
+        Map<DivisionKey, List<SessionSummaryResponse>> sessions = all.stream()
                 .sorted(Comparator.comparing(Session::getDiscipline).thenComparing(Session::getAgeCategory)
                         .thenComparing(SessionNaming.order()))
                 .collect(Collectors.groupingBy(session -> new DivisionKey(session.getDiscipline(),
                                 session.getAgeCategory()), LinkedHashMap::new,
-                        Collectors.mapping(SessionSummaryResponse::from, Collectors.toList())));
+                        Collectors.mapping(session -> SessionSummaryResponse.from(session, all),
+                                Collectors.toList())));
         List<EventDetailResponse.DivisionSessions> divisions = sessions.entrySet().stream()
                 .map(entry -> new EventDetailResponse.DivisionSessions(entry.getKey().discipline(),
                         entry.getKey().ageCategory(), entry.getValue()))

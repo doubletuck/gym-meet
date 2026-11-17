@@ -89,7 +89,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
       </nav>
       <h1 className="mt-2 text-2xl font-semibold">{loaderData.title}</h1>
       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {divisionLabel(session.discipline, session.ageCategory)} · {formatSessionDate(session.date)}
+        {divisionLabel(session.discipline, session.ageCategory)} · {formatSessionDate(session.date, session.endDate)}
       </p>
 
       {views.length > 1 && (

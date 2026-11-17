@@ -33,9 +33,13 @@ A manifest covers one discipline and age category of a competition (e.g. the
 anywhere in its files rolls back everything from that manifest, and the error
 names the file and line.
 
-1. **Event.** Found by FIG event number, or by title and start date when there
-   is none, and created if not found. Two manifests sharing an event (the 2026
-   Worlds' MAG and WAG) therefore import into one `Event`. A new event's slug is
+1. **Event.** Found by FIG event number, or when there is none, by title and
+   overlapping dates; created if not found. Two manifests sharing an event (the
+   2026 Worlds' MAG and WAG) therefore import into one `Event`. A meet's
+   disciplines can run on different days under one title (the 2026 US
+   Championships: MAG 6–8 August, WAG 7–9 August), so a manifest that matches
+   on title and overlapping dates widens the event's dates to cover its own.
+   More than one event matching is an error. A new event's slug is
    the manifest's `slug`, when it has one: the 2026 European Championships are
    four events (one per discipline and age category, each with its own FIG
    number) in one folder, so each manifest names its own, e.g.
@@ -43,8 +47,7 @@ names the file and line.
    error. Without one, the slug is the manifest's prefix without the discipline
    and age category, lowercased: `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json`
    gives `2026-world-championships`. When another event already has that slug,
-   the discipline is added (`2026-us-championships-wag`: the 2026 US
-   Championships' MAG and WAG start on different days, so they are two events).
+   the discipline is added (`2026-world-championships-wag`).
 2. **Participants.** Each entry-list row is matched to an `Athlete` (below) and
    entered into the event. A club is found or created by name within the
    participant's NOC. Some entry lists print a country's NOC only on its first

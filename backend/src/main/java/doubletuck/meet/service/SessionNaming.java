@@ -55,13 +55,14 @@ public final class SessionNaming {
 
     /**
      * Rounds in competition order, apparatus in Olympic order, and a split
-     * round's parts before its combined (whole-round) session.
+     * round's combined (whole-round) session before its parts, since it holds
+     * the result the round is decided on.
      */
     public static Comparator<Session> order() {
         return Comparator.comparingInt((Session session) -> ROUND_ORDER.indexOf(session.getRound()))
                 .thenComparingInt(session -> session.getApparatus() == null ? -1
                         : apparatusOrder(session.getDiscipline()).indexOf(session.getApparatus()))
-                .thenComparing(Session::getPart, Comparator.nullsLast(Comparator.naturalOrder()));
+                .thenComparing(Session::getPart, Comparator.nullsFirst(Comparator.naturalOrder()));
     }
 
     private static String apparatusSlug(Apparatus apparatus) {

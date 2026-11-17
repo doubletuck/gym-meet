@@ -447,11 +447,36 @@ function combinedBonus(row: ScoreRow): string {
   return row.combinedBonus ? `+${formatValue(row.combinedBonus)}` : "";
 }
 
+/**
+ * A score over its part-by-part scores, for a round held in parts and decided
+ * on the combined result (e.g. a two-day all-around).
+ */
+function WithParts({ score, parts }: { score: ReactNode; parts: { part: number; score?: number | null }[] }) {
+  const shown = parts.filter((part) => part.score != null);
+  return (
+    <>
+      {score}
+      {shown.map(({ part, score }) => (
+        <span key={part} className="block text-xs font-normal whitespace-nowrap text-gray-500">
+          <abbr title={`Part ${part}`} className="no-underline">
+            P{part}
+          </abbr>{" "}
+          {formatScore(score)}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function apparatusItems(apparatus: Apparatus[], scores: Partial<Record<string, number>>) {
   return apparatus.map((app) => [app, APPARATUS_LABELS[app], formatScore(scores[app])] as const);
 }
 
-/** All-around results; on a phone, each gymnast's apparatus scores are on a line under their name. */
+/**
+ * All-around results; on a phone, each gymnast's apparatus scores are on a line
+ * under their name. A round held in parts lists each part's scores under the
+ * combined ones.
+ */
 export function AllAroundTable({
   rows,
   apparatus,
@@ -483,13 +508,23 @@ export function AllAroundTable({
       align: "right",
       wide: true,
       sortValue: (row) => row.apparatusScores[app],
-      cell: (row) => formatScore(row.apparatusScores[app]),
+      cell: (row) => (
+        <WithParts
+          score={formatScore(row.apparatusScores[app])}
+          parts={row.parts.map((part) => ({ part: part.part, score: part.apparatusScores[app] }))}
+        />
+      ),
     })),
     {
       header: "Total",
       align: "right",
       sortValue: (row) => row.total,
-      cell: (row) => <span className="font-semibold">{formatScore(row.total)}</span>,
+      cell: (row) => (
+        <WithParts
+          score={<span className="font-semibold">{formatScore(row.total)}</span>}
+          parts={row.parts.map((part) => ({ part: part.part, score: part.total }))}
+        />
+      ),
     },
   ];
   if (qualification) {
@@ -568,7 +603,7 @@ export function TeamTable({
   );
 }
 
-/** A split round's combined standings on one apparatus (e.g. US Championships' two-day titles). */
+/** A split round's combined standings on one apparatus, each part's score under the total. */
 export function StandingsTable({ apparatus, rows }: { apparatus: Apparatus; rows: ApparatusStandingRow[] }) {
   return (
     <ExpandableTable
@@ -579,7 +614,9 @@ export function StandingsTable({ apparatus, rows }: { apparatus: Apparatus; rows
         {
           header: "Total",
           align: "right",
-          cell: (row) => <span className="font-semibold">{formatScore(row.total)}</span>,
+          cell: (row) => (
+            <WithParts score={<span className="font-semibold">{formatScore(row.total)}</span>} parts={row.parts} />
+          ),
         },
       ]}
       rows={rows}

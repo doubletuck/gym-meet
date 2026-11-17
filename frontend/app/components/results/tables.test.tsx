@@ -2,8 +2,16 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import type { AllAroundRow, Routine, ScoreRow, TeamRow } from "~/api/types";
-import { AllAroundTable, firstVaults, ScoreTable, TeamTable, VaultTable, vaultFinalQualifying } from "./tables";
+import type { AllAroundRow, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
+import {
+  AllAroundTable,
+  firstVaults,
+  ScoreTable,
+  StandingsTable,
+  TeamTable,
+  VaultTable,
+  vaultFinalQualifying,
+} from "./tables";
 
 function routine(overrides: Partial<Routine>): Routine {
   return {
@@ -293,6 +301,7 @@ describe("AllAroundTable", () => {
       total,
       qualification: null,
       apparatusScores: { VT },
+      parts: [],
     };
   }
   const rows = [
@@ -340,6 +349,41 @@ describe("AllAroundTable", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "#" }));
     expect(order()).toEqual(["A First", "A Second", "A Unranked"]);
+  });
+
+  it("lists each part's scores under the combined ones for a round held in parts", () => {
+    const combined: AllAroundRow = {
+      ...allAround(5, "Moldauer", 26.7, 163.896),
+      parts: [
+        { part: 1, total: 81.773, apparatusScores: { VT: 13.7 } },
+        { part: 2, total: 82.123, apparatusScores: { VT: 13.0 } },
+      ],
+    };
+    render(<AllAroundTable rows={[combined]} apparatus={["VT"]} qualification={false} />);
+
+    const [, , vault, total] = screen.getAllByRole("cell");
+    expect(vault).toHaveTextContent("26.700P1 13.700P2 13.000");
+    expect(total).toHaveTextContent("163.896P1 81.773P2 82.123");
+    expect(within(total).getByTitle("Part 1")).toHaveTextContent("P1");
+  });
+});
+
+describe("StandingsTable", () => {
+  it("lists each part's score under the combined total", () => {
+    const row: ApparatusStandingRow = {
+      rank: 1,
+      bib: "12",
+      athlete: { id: 1, surname: "Hoopes", givenName: "Patrick" },
+      noc: "USA",
+      total: 30.816,
+      parts: [
+        { part: 1, score: 15.641 },
+        { part: 2, score: 15.175 },
+      ],
+    };
+    render(<StandingsTable apparatus="PH" rows={[row]} />);
+
+    expect(screen.getAllByRole("cell").at(-1)).toHaveTextContent("30.816P1 15.641P2 15.175");
   });
 });
 

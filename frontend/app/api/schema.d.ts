@@ -143,6 +143,7 @@ export interface components {
       apparatusScores: {
         [key: string]: number;
       };
+      parts: components["schemas"]["PartResult"][];
     };
     ApparatusScores: {
       /** @enum {string} */
@@ -157,6 +158,7 @@ export interface components {
       noc: string;
       /** Format: double */
       total: number | null;
+      parts: components["schemas"]["PartScore"][];
     };
     ApparatusStandings: {
       /** @enum {string} */
@@ -177,6 +179,21 @@ export interface components {
     EventRef: {
       slug: string;
       title: string;
+    };
+    PartResult: {
+      /** Format: int32 */
+      part: number;
+      /** Format: double */
+      total: number | null;
+      apparatusScores: {
+        [key: string]: number;
+      };
+    };
+    PartScore: {
+      /** Format: int32 */
+      part: number;
+      /** Format: double */
+      score: number | null;
     };
     Routine: {
       /** @enum {string} */
@@ -238,6 +255,8 @@ export interface components {
       part: number | null;
       /** Format: date */
       date: string;
+      /** Format: date */
+      endDate: string | null;
     };
     TeamRow: {
       /** Format: int32 */
