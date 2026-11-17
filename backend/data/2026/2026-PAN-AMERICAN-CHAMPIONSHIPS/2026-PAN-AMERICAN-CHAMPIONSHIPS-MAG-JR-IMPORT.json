@@ -1,0 +1,40 @@
+{
+    "event" : {
+        "slug" : "2026-pan-american-championships-jr",
+        "title" : "2026 Junior Pan American Championships",
+        "disciplines" : "MAG",
+        "ageCategory" : "JR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-06-18",
+        "endDate" : "2026-06-20",
+        "city" : "Rio de Janeiro",
+        "country" : "BRA",
+        "figEventNumber" : "18529",
+        "venue" : "Parque Ol\u00edmpico - Arena Carioca 01",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-FX.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-HB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-PB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-PH.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-SR.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-VT.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-FX.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-HB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-PB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-PH.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-SR.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SUMMARY-QUAL-AA.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

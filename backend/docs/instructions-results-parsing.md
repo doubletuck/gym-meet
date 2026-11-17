@@ -201,7 +201,14 @@ decisions that come up while parsing.
   and its rank. The zero counts (all-around, team, the two-vault average), and
   the site shows it with the status. Europeans WAG SR bib 111 and WAG JR bib
   301 on vault 1; Worlds MAG ZAPATA's vault 2, whose average was halved. Not
-  `DNS` or `UNKNOWN`, even where the source prints no status.
+  `DNS` or `UNKNOWN`, even where the source prints no status. sporttech.io
+  prints a bare `0` with no D or E (§5.4): D and E stay blank, `Total` is `0`.
+- **A bare zero on another apparatus** (Junior Pan Americans MAG CERNA's rings:
+  `0`, no D or E, counted in Ecuador's team total): `COMPLETED`, blank D/E,
+  `Total` `0`, its printed rank.
+- **sporttech.io distinguishes `—` from `DNS`**: `—` is no routine (a team's
+  non-competing member, an apparatus a team didn't use them on) and gets no row;
+  `… … DNS` is an entered routine not performed and gets a `DNS` row.
 - **Vault DNF** (vault 1 done, vault 2 not): `Status2=DNS`, blank `Total`.
 - **All-around/team DNF** rows are kept with blank `Rank`/`Total`; a team
   missing a whole apparatus prints a blank column and `DNF` total.
@@ -232,6 +239,10 @@ decisions that come up while parsing.
   rank, Q/R). Join them by bib; a double-list bib missing from the single list
   is an error. Take names from the single list (the double list's column
   truncates). Vault 1 must be identical in both.
+- **No single-vault list** (Junior Pan Americans): every vaulter's first vault
+  comes from the all-around report, with `Rank` blank (no vault ranking of the
+  field is published); the double list adds vault 2, `Total`, Q/R and
+  `Qualification Rank`, and its vault 1 must match the all-around report's.
 - **Per-attempt vs combined bonus**: MAG prints a per-vault bonus inside each
   vault score (`B1`/`B2`). WAG's +0.2 applies to the combined result
   (`Combined Bonus`) — printed as a `*` on the total (Europeans), its own
@@ -248,6 +259,14 @@ decisions that come up while parsing.
   reserves).
 - `Qualification Rank` on every `QUAL` row: the double-vault rank for vault,
   equal to `Rank` elsewhere.
+- **Numbered qualifiers** (`Q1`…`Q8`, sporttech.io) are written as `Q`; the
+  number is the qualifier's order (it skips athletes left out by the
+  two-per-country rule) — check it runs 1…8 in rank order. Those left-out
+  athletes print no marker, so their `Qualification` stays blank rather than
+  `NR`.
+- **A marker on an all-around ranking with no all-around final** (Junior Pan
+  Americans: `Q` beside the top eight, two per country) isn't recorded — it
+  qualifies to nothing in the meet.
 - **Markers not printed on the results table** but named on the final's start
   list (8 finalists + ordered reserves): take them from the start list, record
   it as a source file, and check the Q set equals the final's athletes.
@@ -260,6 +279,9 @@ decisions that come up while parsing.
 | `Time Judge`, `Time Judge 1`, `Time 1` | `T`, `T1`, `T1` |
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
+| `AS` / `SA` (Pan American panel supervisor) | `SV`, with the panel's apparatus |
+| Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
+| Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
 | `DS1` (World Cup panel) | `DS1` — Difficulty Supervisor |
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
@@ -267,7 +289,8 @@ decisions that come up while parsing.
 
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
-have no NOC (blank).
+have no NOC (blank). Judges credited to a continental union print it as their
+federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank.
 
 ### 4.8 Countries
 
@@ -287,8 +310,8 @@ Map the meet onto `Session`s (`data-model.md` §3) before parsing:
 | Structure | Sessions | Example |
 |---|---|---|
 | Championship | `QUAL`, `TEAM`, `AA`, `EVENT` per apparatus | Worlds, Europeans |
-| Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors |
-| All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG |
+| Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
+| All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
 
@@ -454,13 +477,72 @@ the average.
   USHIOKU, but the results page — confirmed by other published results — has
   BELAK 3rd (13.516 with the combined bonus). The CSV follows the results page.
 
+### 5.4 Organizer book with sporttech.io results (Junior Pan American Championships)
+
+The organizer's media book: schedule, entry lists, start lists, judges, finalists
+and medal pages from the organizer (English and Spanish), and every results
+table printed by sporttech.io (footer "Generated by sporttech.io official
+scoring system at …"). No report codes — the parser
+([`parse_2026_pan_american_championships.py`](../tools/results-parsing/parse_2026_pan_american_championships.py))
+names each report's pages and checks them against the printed title ("Event
+Final (vault)") or the legend's apparatus. Every per-apparatus qualification
+table is titled "All-Around", whatever the apparatus.
+
+**Structure.** Juniors: qualification decides the team and all-around titles
+(medals on qualification day), then apparatus finals. Teams of four, three
+counting; a fifth member is entered and listed but competes on nothing.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC | full legal name, `Given SURNAME` short form (used as `Name`), FIG licence (`En tramite` = pending → blank), bib, birth year |
+| All-Around (multi-apparatus) | every routine (D, E, Total; Pen and B on the line below, by position), AA total and rank |
+| Team competitions – qualification | team apparatus totals, team score, each member's scores (cross-checked) |
+| All-Around (one apparatus) | that apparatus's qualification table, with `Q1`…`Q8`/`R1`…`R3` |
+| Two-vault list | both vaults inline (`D B E Pen Total`, then the average; WAG adds a `VB` column) |
+| Finalistas / finals start list | finalists and ordered reserves per apparatus (cross-checked against Q/R) |
+| Event Final (…) | the finals |
+
+**Gotchas**
+
+- Values: `—` no routine, `… … DNS` did not start, a bare `0` a zero score
+  (§4.3); AA totals `DNF`/`DNS`/`—`.
+- The `Pen`/`B` line sits under each routine's D/E columns: assign by position
+  and sign; arithmetic proves the assignment.
+- Q/R markers print beside the rank, after it (`7. Q #256` on the AA ranking),
+  or on the line below (vault list) — all handled; the AA ranking's `Q`s aren't
+  recorded (§4.6).
+- Team member rows leave a skipped apparatus blank and are left-aligned under
+  the team totals; values are placed by nearest start position.
+- PB and HB tables also list non-competing team members (`—`) whom the
+  all-around report leaves out.
+- Results print `SURNAME Given` with spellings that differ from the entry list
+  (`GARCIA` / `GARCÍA`, `IBANEZ` / `IBAÑEZ SANCHEZ`, `VALENTINA` for the
+  athlete entered as Marcela Valentina Nolasco Muñóz); identity is checked as
+  every results surname word appearing in the entry's full legal name.
+- The WAG uneven bars qualification table stops at rank 50 (p. 99): RIVEROS
+  (207) and VAN DINTER (205) are missing; their routines are taken from the
+  all-around report with no rank (`MISSING_ROWS` in the parser).
+- The uneven bars final prints no overall `Total` column.
+- Judges: MAG prints `SURNAME, Given` and names its Superior Jury with no
+  function; WAG prints `SURNAME Given` with Spanish functions (§4.7) and stray
+  `#`/digits before names (stripped). Panels are icons — MAG FX/PH, SR/VT,
+  PB/HB; WAG VT/UB, BB/FX.
+- The book's entry-count page is headed "SENIOR" but holds the junior counts
+  (46 men, 58 women), which match the entry lists.
+
 ## 6. Open items
 
-1. **Invalid vault appearance.** Only two cases seen, both a plain `0.000`
-   with no marker; watch for a source that marks it differently.
+1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
+   and no marker; sporttech.io a bare `0` with no D or E. Watch for a source
+   that marks it differently.
 2. **Europeans MAG all-around summaries** (`SUMMARY-QUAL-AA`,
    `SUMMARY-FINAL-AA`) were never built; the reports exist in that PDF.
 3. **Europeans files were built by hand** before the parsers existed and lack
    the newer `Birth Date` column; there is no parser to regenerate them.
 4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
    different contexts; kept separate for now.
+5. **Junior Pan Americans gaps**: the WAG uneven bars ranks of RIVEROS (207)
+   and VAN DINTER (205) are blank until the missing table page (or sporttech.io's
+   live results) is found; MAG bib 435 is entered as Marat GONZALEZ but printed
+   "GONZALEZ Abraham" on the PB/HB tables (no routines, so only `PARTICIPANTS`
+   is affected).

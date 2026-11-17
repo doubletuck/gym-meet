@@ -162,7 +162,7 @@ round(s) a column actually appears in.
 | Penalty | ✓ | ✓ | ✓ | ✓ | Blank when no penalty applied — never `0` | `Score.routine.penalty` |
 | SJ Penalty | ✓ | ✓ | ✓ | ✓ | Superior Jury Penalty, distinct from `Penalty`. Not observed with a non-blank value on any non-vault apparatus so far | `Score.routine.sjPenalty` |
 | Total | ✓ | ✓ | ✓ | ✓ | Blank when `Status` is `DNS` | `Score.routine.score` (and `Score.totalScore`, which equals it for a single routine) |
-| Qualification | ✓ | | | | `Q`/`R1`–`R4`/`NR`/blank, matching `QualificationResult` exactly. Only meaningful where there's a further round to qualify into. Where the qualification table prints no markers but the final's start list names the finalists and ordered reserves (2026 Cottbus World Cup), they're taken from the start list | `Score.qualificationResult` |
+| Qualification | ✓ | | | | `Q`/`R1`–`R4`/`NR`/blank, matching `QualificationResult` exactly. Only meaningful where there's a further round to qualify into. Sources that number the qualifiers (`Q1`…`Q8`, sporttech.io) are written as `Q`. Where the qualification table prints no markers but the final's start list names the finalists and ordered reserves (2026 Cottbus World Cup), they're taken from the start list | `Score.qualificationResult` |
 | Qualification Rank | ✓ | | | | Placement in the ranking that decides the apparatus final. On every non-vault apparatus that's the same ranking as `Rank`, so the value is always equal to `Rank` — written out anyway so every `QUAL` file pairs `Qualification` with its own rank, vault included | `Score.qualificationRank` |
 
 ### Vault, double-attempt shape (`QUAL` and `EVENT` rounds only)
@@ -179,7 +179,7 @@ result, which decides the Vault final.
 |---|:-:|:-:|---|---|
 | Round | ✓ | ✓ | | `Session.round` |
 | Apparatus | ✓ | ✓ | | `Score.apparatus` |
-| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1). `EVENT`: the final's placement | `Score.rank` |
+| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1); blank where the source has no single-vault list (2026 Junior Pan Americans, whose first vaults come from the all-around report). `EVENT`: the final's placement | `Score.rank` |
 | Bib | ✓ | ✓ | | *(join key)* |
 | Name | ✓ | ✓ | | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | | *(not stored)* |
