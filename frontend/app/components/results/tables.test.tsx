@@ -34,6 +34,7 @@ const yeo: ScoreRow = {
   bib: "525",
   athlete: { id: 1, surname: "Yeo", givenName: "Seojeong" },
   noc: "KOR",
+  club: null,
   routine: routine({ difficulty: 5.4, execution: 9.166, score: 14.566 }),
   secondRoutine: routine({ difficulty: 5.0, execution: 9.0, score: 14.0 }),
   combinedBonus: 0.2,
@@ -298,6 +299,7 @@ describe("AllAroundTable", () => {
       bib: surname,
       athlete: { id: rank ?? 0, surname, givenName: "A" },
       noc: "USA",
+      club: null,
       total,
       qualification: null,
       apparatusScores: { VT },
@@ -375,6 +377,7 @@ describe("StandingsTable", () => {
       bib: "12",
       athlete: { id: 1, surname: "Hoopes", givenName: "Patrick" },
       noc: "USA",
+      club: null,
       total: 30.816,
       parts: [
         { part: 1, score: 15.641 },

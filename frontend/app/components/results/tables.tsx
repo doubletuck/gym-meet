@@ -168,7 +168,7 @@ export function ScoreTable({
     {
       header: "Gymnast",
       cell: (row) => (
-        <Gymnast athlete={row.athlete} noc={row.noc}>
+        <Gymnast athlete={row.athlete} noc={row.noc} club={row.club}>
           <PhoneLine
             items={[
               ["D", "Difficulty", difficulty(row.routine)],
@@ -299,7 +299,7 @@ export function VaultTable({
     {
       header: "Gymnast",
       cell: (row) => (
-        <Gymnast athlete={row.athlete} noc={row.noc}>
+        <Gymnast athlete={row.athlete} noc={row.noc} club={row.club}>
           {vaults(row).map((routine, i) => (
             <PhoneLine
               key={i}
@@ -497,7 +497,7 @@ export function AllAroundTable({
     {
       header: "Gymnast",
       cell: (row) => (
-        <Gymnast athlete={row.athlete} noc={row.noc}>
+        <Gymnast athlete={row.athlete} noc={row.noc} club={row.club}>
           <PhoneLine items={apparatusItems(apparatus, row.apparatusScores)} />
         </Gymnast>
       ),
@@ -610,7 +610,7 @@ export function StandingsTable({ apparatus, rows }: { apparatus: Apparatus; rows
       caption={`${APPARATUS_LABELS[apparatus]} combined standings`}
       columns={[
         { header: "#", label: "Rank", cell: (row) => <Rank rank={row.rank} /> },
-        { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} /> },
+        { header: "Gymnast", cell: (row) => <Gymnast athlete={row.athlete} noc={row.noc} club={row.club} /> },
         {
           header: "Total",
           align: "right",

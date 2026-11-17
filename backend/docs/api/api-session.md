@@ -55,7 +55,7 @@ Which parts are filled depends on the round:
 | apparatus | List | `{apparatus, scores}` for each apparatus with scores, in Olympic order (MAG: FX, PH, SR, VT, PB, HB; WAG: VT, UB, BB, FX); `scores` is a list of [ScoreRow](#scorerow-object) ranked as published, unranked rows (e.g. did not start) last |
 | allAround | List | [AllAroundRow](#allaroundrow-object) objects ranked as published |
 | teams | List | [TeamRow](#teamrow-object) objects ranked as published |
-| apparatusStandings | List | `{apparatus, rows}`: a split round's combined standings on each apparatus; each row is `{rank, bib, athlete, noc, total, parts}`, with `rank`, `bib` and `total` nullable, and `parts` the athlete's result on the apparatus in each part as `{part, score}` (for two vaults, their combination) |
+| apparatusStandings | List | `{apparatus, rows}`: a split round's combined standings on each apparatus; each row is `{rank, bib, athlete, noc, club, total, parts}`, with `rank`, `bib`, `club` and `total` nullable, and `parts` the athlete's result on the apparatus in each part as `{part, score}` (for two vaults, their combination) |
 
 ### SessionSummaryResponse Object
 
@@ -81,6 +81,7 @@ One athlete's result on one apparatus.
 | bib | String, nullable | Bib number |
 | athlete | Object | `{id, surname, givenName}`; names in written form ("Blakely", "McDonald") |
 | noc | String | The country the athlete competed for (IOC code) |
+| club | String, nullable | The club the athlete entered for, where the entry list names one (national meets); `null` otherwise |
 | routine | [Routine](#routine-object) | The routine; for vault, the first attempt |
 | secondRoutine | [Routine](#routine-object), nullable | Vault's second attempt, when one was expected |
 | combinedBonus | Double, nullable | A bonus on the combined two-vault result |
@@ -111,6 +112,7 @@ One athlete's result on one apparatus.
 | bib | String, nullable | Bib number |
 | athlete | Object | `{id, surname, givenName}` |
 | noc | String | IOC code |
+| club | String, nullable | As on [ScoreRow](#scorerow-object) |
 | total | Double, nullable | All-around total as published |
 | qualification | String, nullable | Qualification to the all-around final, in qualification |
 | apparatusScores | Map | Score on each apparatus in this session, keyed by apparatus code. For a split round's combined session, the sum of the parts' scores, on the apparatus the athlete scored on in every part: the combined apparatus standings can't stand in, since vault's is the two-vault title, not the all-around's one vault a day |

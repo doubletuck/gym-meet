@@ -112,7 +112,7 @@ public class SessionResultsService {
     private static ScoreRow scoreRow(Score score) {
         Participant participant = score.getParticipant();
         return new ScoreRow(score.getRank(), participant.getBibNumber(), athlete(participant), participant.getNoc(),
-                routine(score.getRoutine()), routine(score.getSecondRoutine()), score.getCombinedBonus(),
+                club(participant), routine(score.getRoutine()), routine(score.getSecondRoutine()), score.getCombinedBonus(),
                 score.getTotalScore(), score.getQualificationRank(), score.getQualificationResult(),
                 score.getCountsTowardTeamResult());
     }
@@ -158,8 +158,8 @@ public class SessionResultsService {
             }
         }
         return new AllAroundRow(result.getRank(), participant.getBibNumber(), athlete(participant),
-                participant.getNoc(), result.getTotalScore(), result.getQualificationResult(), apparatusScores,
-                partResults);
+                participant.getNoc(), club(participant), result.getTotalScore(), result.getQualificationResult(),
+                apparatusScores, partResults);
     }
 
     private static Map<Apparatus, Double> apparatusScores(Participant participant, List<Score> scores,
@@ -189,7 +189,7 @@ public class SessionResultsService {
                         .map(score -> new PartScore(part.number(), score.getTotalScore())))
                 .toList();
         return new ApparatusStandingRow(result.getRank(), participant.getBibNumber(), athlete(participant),
-                participant.getNoc(), result.getTotalScore(), partScores);
+                participant.getNoc(), club(participant), result.getTotalScore(), partScores);
     }
 
     private static TeamRow teamRow(TeamResult result, List<Score> scores, List<Apparatus> order) {
@@ -213,6 +213,10 @@ public class SessionResultsService {
     private static double sum(List<Double> scores) {
         BigDecimal sum = scores.stream().map(BigDecimal::valueOf).reduce(BigDecimal.ZERO, BigDecimal::add);
         return sum.setScale(3, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    private static String club(Participant participant) {
+        return participant.getClub() == null ? null : participant.getClub().getName();
     }
 
     private static AthleteRef athlete(Participant participant) {

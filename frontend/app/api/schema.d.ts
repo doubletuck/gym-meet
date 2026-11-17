@@ -136,6 +136,7 @@ export interface components {
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
+      club: string | null;
       /** Format: double */
       total: number | null;
       /** @enum {string|null} */
@@ -156,6 +157,7 @@ export interface components {
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
+      club: string | null;
       /** Format: double */
       total: number | null;
       parts: components["schemas"]["PartScore"][];
@@ -219,6 +221,7 @@ export interface components {
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
+      club: string | null;
       routine: components["schemas"]["Routine"];
       secondRoutine: components["schemas"]["Routine"] | null;
       /** Format: double */

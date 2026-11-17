@@ -67,6 +67,8 @@ class SessionControllerTest {
         mockMvc.perform(get("/api/sessions/{id}/results", qualification))
                 .andExpect(jsonPath("$.apparatus[*].apparatus", contains("VT", "UB", "BB", "FX")))
                 .andExpect(jsonPath("$.teams[0].noc").value("CHN"))
+                // FIG entry lists name no clubs
+                .andExpect(jsonPath("$.allAround[0].club").value(nullValue()))
                 .andExpect(jsonPath("$.teams[0].rank").value(1))
                 .andExpect(jsonPath("$.teams[0].total").value(164.996))
                 .andExpect(jsonPath("$.teams[0].qualification").value("Q"))
@@ -125,6 +127,7 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.allAround[0].apparatusScores.FX").value(26.7))
                 // Vault's standings are the two-vault title, so its sum is the only combined all-around vault
                 .andExpect(jsonPath("$.allAround[0].apparatusScores.VT").value(26.35))
+                .andExpect(jsonPath("$.allAround[0].club").value("U of Oklahoma"))
                 .andExpect(jsonPath("$.allAround[0].parts[*].part", contains(1, 2)))
                 .andExpect(jsonPath("$.allAround[0].parts[0].total").value(81.773))
                 .andExpect(jsonPath("$.allAround[0].parts[0].apparatusScores.FX").value(13.7))
@@ -143,7 +146,9 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.session.endDate").value(nullValue()))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Moldauer')].apparatusScores.FX")
                         .value(13.7))
-                .andExpect(jsonPath("$.allAround[0].parts", empty()));
+                .andExpect(jsonPath("$.allAround[0].parts", empty()))
+                .andExpect(jsonPath("$.apparatus[0].scores[?(@.athlete.surname == 'Moldauer')].club")
+                        .value("U of Oklahoma"));
     }
 
     @Test

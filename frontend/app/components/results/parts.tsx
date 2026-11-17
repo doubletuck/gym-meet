@@ -33,33 +33,53 @@ export function QualificationBadge({ result }: { result: QualificationResult | n
   );
 }
 
-/** The gymnast's name over their country, the way a narrow results column reads best. */
-export function Gymnast({ athlete, noc, children }: { athlete: Athlete; noc: string; children?: ReactNode }) {
+/**
+ * The gymnast's name over their country, the way a narrow results column reads
+ * best; over their club instead where the entry names one (national meets,
+ * where the country is everyone's).
+ */
+export function Gymnast({
+  athlete,
+  noc,
+  club,
+  children,
+}: {
+  athlete: Athlete;
+  noc: string;
+  club?: string | null;
+  children?: ReactNode;
+}) {
   return (
     <>
       <span className="font-medium">{athleteName(athlete)}</span>
       <span className="block text-xs text-gray-500">
-        <Country noc={noc} />
+        <Country noc={noc} club={club} />
       </span>
       {children}
     </>
   );
 }
 
-/** A country's name after its flag, where it has one; sized to the text around it. */
-export function Country({ noc }: { noc: string }) {
+/**
+ * A country's name after its flag, where it has one; sized to the text around
+ * it. Given a club, the club is named and the flag stands for the country,
+ * which is named in full only when there's no flag.
+ */
+export function Country({ noc, club }: { noc: string; club?: string | null }) {
   const flag = flagUrl(noc);
+  const country = countryName(noc);
   return (
     <>
       {flag && (
         <img
           src={flag}
-          alt=""
+          alt={club ? country : ""}
+          title={club ? country : undefined}
           loading="lazy"
           className="mr-1.5 inline-block h-[0.75em] w-[1em] rounded-[1px] align-[-0.05em] ring-1 ring-black/10 dark:ring-white/15"
         />
       )}
-      {countryName(noc)}
+      {club ? (flag ? club : `${club} · ${country}`) : country}
     </>
   );
 }
