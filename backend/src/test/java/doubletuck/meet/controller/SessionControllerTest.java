@@ -4,6 +4,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.importer.EventImporter;
+import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.SessionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ class SessionControllerTest {
 
     @Autowired
     private SessionRepository sessionRepository;
+
+    @Autowired
+    private ScoreRepository scoreRepository;
 
     @Test
     void testFindResults_ApparatusFinalRankedAsPublished() throws Exception {
@@ -135,6 +139,24 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.allAround[0].parts[1].apparatusScores.FX").value(13.0))
                 .andExpect(jsonPath("$.apparatusStandings[?(@.apparatus == 'PH')].rows[?(@.athlete.surname == "
                         + "'Hoopes')].parts[*].score", contains(15.641, 15.175)));
+    }
+
+    @Test
+    void testFindResults_SplitRoundCombinedSession_ApparatusSkippedInAPart_ShowsTheOtherPartAlone()
+            throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
+        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
+        Long partTwo = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, 2);
+        // As if Moldauer hadn't vaulted on day 2
+        scoreRepository.delete(scoreRepository.findBySessionId(partTwo).stream()
+                .filter(score -> score.getApparatus() == Apparatus.VT
+                        && score.getParticipant().getAthlete().getSurname().equals("Moldauer"))
+                .findFirst().orElseThrow());
+
+        mockMvc.perform(get("/api/sessions/{id}/results", wholeRound))
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.VT").value(13.75))
+                .andExpect(jsonPath("$.allAround[0].parts[0].apparatusScores.VT").value(13.75))
+                .andExpect(jsonPath("$.allAround[0].parts[1].apparatusScores.VT").doesNotExist());
     }
 
     @Test

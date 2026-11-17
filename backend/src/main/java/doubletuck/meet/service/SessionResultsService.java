@@ -151,8 +151,9 @@ public class SessionResultsService {
             // A combined session has no scores of its own. Its apparatus standings can't stand in: vault's
             // is the two-vault title, not the all-around's one vault a day
             for (Apparatus app : order) {
-                List<Double> each = partResults.stream().map(part -> part.apparatusScores().get(app)).toList();
-                if (each.stream().allMatch(Objects::nonNull)) {
+                List<Double> each = partResults.stream().map(part -> part.apparatusScores().get(app))
+                        .filter(Objects::nonNull).toList();
+                if (!each.isEmpty()) {
                     apparatusScores.put(app, sum(each));
                 }
             }

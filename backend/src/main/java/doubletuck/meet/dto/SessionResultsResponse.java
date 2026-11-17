@@ -82,8 +82,8 @@ public record SessionResultsResponse(
     /**
      * @param club            as on {@link ScoreRow}
      * @param apparatusScores each apparatus's score in this session, for those the athlete scored on; for a
-     *                        split round's combined session, the sum of the parts' scores, where the athlete
-     *                        scored on it in every part
+     *                        split round's combined session, the sum of the parts' scores, over the parts
+     *                        the athlete competed it in
      * @param parts           for a split round's combined session, the athlete's result in each part;
      *                        otherwise empty
      */

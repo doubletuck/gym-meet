@@ -115,7 +115,7 @@ One athlete's result on one apparatus.
 | club | String, nullable | As on [ScoreRow](#scorerow-object) |
 | total | Double, nullable | All-around total as published |
 | qualification | String, nullable | Qualification to the all-around final, in qualification |
-| apparatusScores | Map | Score on each apparatus in this session, keyed by apparatus code. For a split round's combined session, the sum of the parts' scores, on the apparatus the athlete scored on in every part: the combined apparatus standings can't stand in, since vault's is the two-vault title, not the all-around's one vault a day |
+| apparatusScores | Map | Score on each apparatus in this session, keyed by apparatus code. For a split round's combined session, the sum of the parts' scores, over the parts the athlete competed the apparatus in (one part's score alone when they skipped it in the other): the combined apparatus standings can't stand in, since vault's is the two-vault title, not the all-around's one vault a day |
 | parts | List | For a split round's combined session, the athlete's result in each part they took part in, as `{part, total, apparatusScores}`; otherwise empty |
 
 ### TeamRow Object
