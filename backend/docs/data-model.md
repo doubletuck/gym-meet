@@ -21,6 +21,7 @@ erDiagram
     SESSION ||--o{ ALL_AROUND_RESULT : "all-around standings"
     SESSION ||--o{ APPARATUS_RESULT : "multi-part apparatus standings"
     SESSION ||--o{ JUDGE : judged
+    EVENT ||--o{ IMPORT_RUN : "imported by"
 ```
 
 `Event` is the named competition ("2026 European Championships"). `Session` is a
@@ -333,6 +334,24 @@ Not an entity — a group of columns embedded in `Score` twice (`routine`,
 | sjPenalty | Double | Yes | Superior Jury penalty applied to this routine, distinct from `penalty`. |
 | score | Double | Yes | This routine's own result. Null when `status` is `DNS`. |
 | status | ScoreStatus | No | Whether the routine was completed, not started, or (vault) invalidated. Required whenever the `Routine` exists. |
+
+### `ImportRun`
+
+One import of a manifest (one discipline and age category of an event), so
+what is in the database can be checked against the files it came from (see
+[import-process.md](import-process.md#what-has-been-imported)).
+
+| Field | Type | Nullable | Description |
+|---|---|---|---|
+| id | Long | No | Generated primary key. |
+| manifest | String | No | The manifest's file name, e.g. `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json`. |
+| eventId | Long, FK → `Event` | Yes | The event imported into. Set to null if the event is deleted, so the record stays. |
+| discipline | Discipline | No | The manifest's discipline. |
+| ageCategory | AgeCategory | No | The manifest's age category. |
+| contentHash | String | No | SHA-256 (hex) of the manifest and every file it lists, in the order it lists them. |
+| replaced | Boolean | No | Whether it replaced an earlier import of the same discipline and age category. |
+| warningCount | Integer | No | How many warnings the import reported. |
+| report | Text | No | The import's report as logged: counts, new athletes and warnings. |
 
 ## 4. Vault: two scored attempts, one row
 

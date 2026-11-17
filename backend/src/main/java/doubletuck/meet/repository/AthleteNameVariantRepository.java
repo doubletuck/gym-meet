@@ -6,6 +6,7 @@ import doubletuck.meet.domain.Discipline;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -14,6 +15,8 @@ public interface AthleteNameVariantRepository extends JpaRepository<AthleteNameV
     List<AthleteNameVariant> findByAthlete(Athlete athlete);
 
     List<AthleteNameVariant> findByAthleteId(Long athleteId);
+
+    List<AthleteNameVariant> findByAthleteIn(Collection<Athlete> athletes);
 
     List<AthleteNameVariant> findBySurnameIgnoreCaseAndGivenNameIgnoreCaseAndAthleteDiscipline(String surname,
             String givenName, Discipline discipline);

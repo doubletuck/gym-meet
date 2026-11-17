@@ -7,6 +7,7 @@ import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
+import doubletuck.meet.domain.ImportRun;
 import doubletuck.meet.domain.Judge;
 import doubletuck.meet.domain.JudgeFunction;
 import doubletuck.meet.domain.Participant;
@@ -19,6 +20,7 @@ import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.EventRepository;
+import doubletuck.meet.repository.ImportRunRepository;
 import doubletuck.meet.repository.JudgeRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
@@ -49,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({ EventImporter.class, ParticipantImporter.class, ScoreImporter.class, SummaryImporter.class,
-        JudgeImporter.class, ResultReconciler.class, AthleteMatcher.class, SessionService.class })
+        JudgeImporter.class, ResultReconciler.class, AthleteMatcher.class, SessionService.class, ImportLog.class })
 class EventImporterTest {
 
     private static final String WORLDS_WAG = "worlds/2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
@@ -84,6 +86,12 @@ class EventImporterTest {
 
     @Autowired
     private JudgeRepository judgeRepository;
+
+    @Autowired
+    private ImportRunRepository importRunRepository;
+
+    @Autowired
+    private ImportLog importLog;
 
     @Test
     void testImport_BothDisciplinesShareOneEvent() {
@@ -126,6 +134,37 @@ class EventImporterTest {
         assertEquals(LocalDate.of(2026, 3, 1), events.get(0).getStartDate());
         assertEquals(LocalDate.of(2026, 3, 3), events.get(0).getEndDate());
         assertEquals(1, report.getCount("event dates widened"));
+    }
+
+    @Test
+    void testImport_RecordsTheRun(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        eventImporter.importManifest(manifest, false);
+        eventImporter.importManifest(manifest, true);
+
+        List<ImportRun> runs = importRunRepository.findAll();
+        assertEquals(2, runs.size());
+        ImportRun last = runs.get(1);
+        assertEquals("MINI-MAG-SR-IMPORT.json", last.getManifest());
+        assertEquals("mini", last.getEvent().getSlug());
+        assertEquals(Discipline.MAG, last.getDiscipline());
+        assertFalse(runs.get(0).isReplaced());
+        assertTrue(last.isReplaced());
+        assertEquals(0, last.getWarningCount());
+        assertTrue(last.getReport().startsWith("MINI-MAG-SR-IMPORT.json"), last.getReport());
+    }
+
+    @Test
+    void testImportStatus_UpToDateUntilAListedFileChanges(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        assertEquals(ImportLog.State.NOT_IMPORTED, importLog.status(manifest).state());
+
+        eventImporter.importManifest(manifest, false);
+        assertEquals(ImportLog.State.UP_TO_DATE, importLog.status(manifest).state());
+
+        Path scores = dir.resolve("MINI-MAG-SR-SCORES-QUAL-FX.csv");
+        Files.writeString(scores, Files.readString(scores).replace("8.500", "8.600"));
+        assertEquals(ImportLog.State.CHANGED, importLog.status(manifest).state());
     }
 
     @Test

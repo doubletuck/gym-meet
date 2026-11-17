@@ -171,6 +171,13 @@ decisions that come up while parsing.
   - US Championships prints `Given Surname` in mixed case; its Surname/Given
     split was curated by hand and is read from the existing `PARTICIPANTS`.
 - **Strip decoration**: a leading `*` on US names.
+- **Linking a different spelling.** The importer matches athletes by FIG
+  licence, else by exact name (import-process.md, Matching athletes). A source
+  that prints no licences and another form of a name (US Championships' "Fred
+  Richard" for Worlds' "Frederick Richard") would create a second athlete. Put
+  the athlete's licence, from an international entry list, in that row's
+  `FIG License`: the import then links them and keeps the printed name as a
+  variant. The US parser keeps the column when it rewrites `PARTICIPANTS`.
 - **Judges have no master file**, so `JUDGES` derives the split itself.
 
 ### 4.2 Ranks and markers

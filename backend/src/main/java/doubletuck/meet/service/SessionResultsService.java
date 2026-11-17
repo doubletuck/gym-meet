@@ -117,7 +117,7 @@ public class SessionResultsService {
                 score.getCountsTowardTeamResult());
     }
 
-    private static SessionResultsResponse.Routine routine(Routine routine) {
+    static SessionResultsResponse.Routine routine(Routine routine) {
         if (routine == null) {
             return null;
         }

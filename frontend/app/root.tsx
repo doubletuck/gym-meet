@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { isRouteErrorResponse, Link, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import { isRouteErrorResponse, Link, Links, Meta, NavLink, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 import type { Route } from "./+types/root";
 import { queryClient } from "./api/client";
@@ -33,14 +33,33 @@ export default function App() {
   );
 }
 
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  isActive
+    ? "font-medium text-gray-900 dark:text-gray-100"
+    : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100";
+
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="border-b border-gray-200 dark:border-gray-800">
-        <div className="mx-auto flex max-w-5xl items-center px-4 py-3">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
           <Link to="/" className="text-lg font-semibold tracking-tight">
             Gym Meet
           </Link>
+          <nav aria-label="Main">
+            <ul className="flex gap-4 text-sm">
+              <li>
+                <NavLink to="/" end className={navLinkClass}>
+                  Competitions
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/athletes" className={navLinkClass}>
+                  Athletes
+                </NavLink>
+              </li>
+            </ul>
+          </nav>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>

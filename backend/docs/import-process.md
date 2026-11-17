@@ -19,12 +19,35 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
 |---|---|
 | `--import.path` | A manifest (`*-IMPORT.json`), or a directory searched recursively for them — a single meet's folder, or a whole year. Can be given more than once. |
 | `--import.replace` | Reimport a discipline and age category that is already in the database (see [Importing again](#importing-again)). Without it, that is an error. |
+| `--import.status` | Import nothing; report each manifest as up to date, changed since it was imported, or not imported (see [What has been imported](#what-has-been-imported)). |
 
 The app imports and then exits; it doesn't start the web server. For each
 manifest it logs a report: how many of each record it created, how many
 athletes it created rather than matched, and any warnings. Each manifest is
 imported on its own, so one failing doesn't stop the others; the run exits with
 an error if any failed.
+
+## What has been imported
+
+Each manifest imported is recorded as an `ImportRun` in the same transaction:
+its event, discipline and age category, whether it replaced an earlier import,
+its warning count and report, and a SHA-256 hash of the manifest and every file
+it lists. A failed import leaves no record, as it leaves no results.
+
+`--import.status` compares each manifest's files with its latest import's hash:
+
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
+  -Dspring-boot.run.arguments="--import.path=data/2026 --import.status"
+```
+
+```text
+2026-WORLD-CHAMPIONSHIPS-MAG-SR-IMPORT.json: up to date, imported 2026-11-17T01:56:53Z
+2026-US-CHAMPIONSHIPS-WAG-SR-IMPORT.json: changed since it was imported 2026-11-17T01:56:51Z
+```
+
+A changed manifest is brought up to date by importing it again with
+`--import.replace`. Changing a file's line endings counts as a change.
 
 ## What a manifest import does
 

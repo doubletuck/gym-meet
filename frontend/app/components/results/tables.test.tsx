@@ -1,5 +1,7 @@
-import { render, screen, within } from "@testing-library/react";
+import { render as renderInPage, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactElement } from "react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
 import type { AllAroundRow, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
@@ -12,6 +14,9 @@ import {
   VaultTable,
   vaultFinalQualifying,
 } from "./tables";
+
+// Gymnast names link to their athlete pages, so the tables render inside a router
+const render = (ui: ReactElement) => renderInPage(<MemoryRouter>{ui}</MemoryRouter>);
 
 function routine(overrides: Partial<Routine>): Routine {
   return {

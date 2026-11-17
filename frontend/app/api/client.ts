@@ -33,6 +33,18 @@ export const eventQuery = (slug: string) =>
     queryFn: async () => orThrow(await api.GET("/api/events/{slug}", { params: { path: { slug } } })),
   });
 
+export const athleteSearchQuery = (q: string) =>
+  queryOptions({
+    queryKey: ["athletes", "search", q],
+    queryFn: async () => orThrow(await api.GET("/api/athletes", { params: { query: { q } } })),
+  });
+
+export const athleteQuery = (id: number) =>
+  queryOptions({
+    queryKey: ["athletes", id],
+    queryFn: async () => orThrow(await api.GET("/api/athletes/{id}", { params: { path: { id } } })),
+  });
+
 export const sessionResultsQuery = (id: number) =>
   queryOptions({
     queryKey: ["sessions", id, "results"],

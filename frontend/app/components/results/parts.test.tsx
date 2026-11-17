@@ -1,7 +1,20 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import { Country } from "./parts";
+import { Country, Gymnast } from "./parts";
+
+describe("Gymnast", () => {
+  it("links the name to the athlete's page", () => {
+    render(
+      <MemoryRouter>
+        <Gymnast athlete={{ id: 7, surname: "Nemour", givenName: "Kaylia" }} noc="ALG" />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole("link", { name: "Kaylia Nemour" })).toHaveAttribute("href", "/athletes/7");
+  });
+});
 
 describe("Country", () => {
   it("names the country after its flag", () => {

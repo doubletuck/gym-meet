@@ -14,6 +14,11 @@ export type AllAroundRow = Schemas["AllAroundRow"];
 export type TeamRow = Schemas["TeamRow"];
 export type ApparatusStandingRow = Schemas["ApparatusStandingRow"];
 export type Athlete = Schemas["AthleteRef"];
+export type AthleteSummary = Schemas["AthleteSummaryResponse"];
+export type AthleteDetail = Schemas["AthleteResponse"];
+export type AthleteEntry = Schemas["Entry"];
+export type EntrySession = Schemas["EntrySession"];
+export type ApparatusScore = Schemas["ApparatusScore"];
 
 export type Discipline = SessionSummary["discipline"];
 export type AgeCategory = SessionSummary["ageCategory"];

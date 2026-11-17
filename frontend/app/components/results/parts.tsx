@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router";
 
-import type { Athlete, QualificationResult } from "~/api/types";
+import type { Athlete, QualificationResult, Routine } from "~/api/types";
 import { countryName, flagUrl } from "~/lib/countries";
-import { athleteName } from "~/lib/format";
+import { athleteName, formatScore } from "~/lib/format";
 
 const QUALIFICATION_LABELS: Record<QualificationResult, string> = {
   Q: "Qualified",
@@ -34,9 +35,9 @@ export function QualificationBadge({ result }: { result: QualificationResult | n
 }
 
 /**
- * The gymnast's name over their country, the way a narrow results column reads
- * best; over their club instead where the entry names one (national meets,
- * where the country is everyone's).
+ * The gymnast's name, linking to their athlete page, over their country, the
+ * way a narrow results column reads best; over their club instead where the
+ * entry names one (national meets, where the country is everyone's).
  */
 export function Gymnast({
   athlete,
@@ -51,7 +52,14 @@ export function Gymnast({
 }) {
   return (
     <>
-      <span className="font-medium">{athleteName(athlete)}</span>
+      <Link
+        to={`/athletes/${athlete.id}`}
+        // The row expands on a tap; following the link shouldn't also toggle it
+        onClick={(e) => e.stopPropagation()}
+        className="font-medium hover:underline"
+      >
+        {athleteName(athlete)}
+      </Link>
       <span className="block text-xs text-gray-500">
         <Country noc={noc} club={club} />
       </span>
@@ -80,6 +88,26 @@ export function Country({ noc, club }: { noc: string; club?: string | null }) {
         />
       )}
       {club ? (flag ? club : `${club} · ${country}`) : country}
+    </>
+  );
+}
+
+export function statusLabel(routine: Routine): string {
+  return { COMPLETED: "", DNS: "Did not start", INVALID_VAULT: "Invalid vault", UNKNOWN: "Unknown" }[routine.status];
+}
+
+/** A routine's score in a cell, with the status beside it when it isn't a completed routine (an invalid vault's 0.000). */
+export function RoutineScore({ routine, score = routine.score }: { routine: Routine; score?: number | null }) {
+  if (routine.status === "COMPLETED") {
+    return formatScore(score);
+  }
+  if (score == null) {
+    return <span className="font-normal text-gray-500">{statusLabel(routine)}</span>;
+  }
+  return (
+    <>
+      <span className="mr-1.5 text-xs font-normal whitespace-nowrap text-gray-500">{statusLabel(routine)}</span>
+      {formatScore(score)}
     </>
   );
 }

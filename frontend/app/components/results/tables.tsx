@@ -4,7 +4,7 @@ import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, 
 import { formatScore, formatValue } from "~/lib/format";
 import { APPARATUS_LABELS } from "~/lib/labels";
 import { ExpandableTable, type Column } from "./ExpandableTable";
-import { Country, DetailList, Gymnast, QualificationBadge, Rank } from "./parts";
+import { Country, DetailList, Gymnast, QualificationBadge, Rank, RoutineScore, statusLabel } from "./parts";
 
 /** A D score as published: a leading "!" marks one under inquiry. */
 function difficulty(routine: Routine): string {
@@ -108,32 +108,12 @@ function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean
   );
 }
 
-function statusLabel(routine: Routine): string {
-  return { COMPLETED: "", DNS: "Did not start", INVALID_VAULT: "Invalid vault", UNKNOWN: "Unknown" }[routine.status];
-}
-
 /** A routine's score as text: an invalid vault is scored (0.000) and says so; a routine not done says why. */
 function scoreText(routine: Routine): string {
   if (routine.status === "COMPLETED") {
     return formatScore(routine.score);
   }
   return routine.score != null ? `${formatScore(routine.score)} (${statusLabel(routine)})` : statusLabel(routine);
-}
-
-/** A routine's score in a cell, with the status beside it when it isn't a completed routine (an invalid vault's 0.000). */
-function RoutineScore({ routine, score = routine.score }: { routine: Routine; score?: number | null }) {
-  if (routine.status === "COMPLETED") {
-    return formatScore(score);
-  }
-  if (score == null) {
-    return <span className="font-normal text-gray-500">{statusLabel(routine)}</span>;
-  }
-  return (
-    <>
-      <span className="mr-1.5 text-xs font-normal whitespace-nowrap text-gray-500">{statusLabel(routine)}</span>
-      {formatScore(score)}
-    </>
-  );
 }
 
 /**

@@ -43,6 +43,7 @@ public class EventImporter {
     private final SummaryImporter summaryImporter;
     private final JudgeImporter judgeImporter;
     private final ResultReconciler resultReconciler;
+    private final ImportLog importLog;
 
     EventImporter(EventRepository eventRepository, SessionRepository sessionRepository,
             ParticipantRepository participantRepository, ScoreRepository scoreRepository,
@@ -50,7 +51,7 @@ public class EventImporter {
             AllAroundResultRepository allAroundResultRepository,
             ApparatusResultRepository apparatusResultRepository, SessionService sessionService,
             ParticipantImporter participantImporter, ScoreImporter scoreImporter, SummaryImporter summaryImporter,
-            JudgeImporter judgeImporter, ResultReconciler resultReconciler) {
+            JudgeImporter judgeImporter, ResultReconciler resultReconciler, ImportLog importLog) {
         this.eventRepository = eventRepository;
         this.sessionRepository = sessionRepository;
         this.participantRepository = participantRepository;
@@ -65,6 +66,7 @@ public class EventImporter {
         this.summaryImporter = summaryImporter;
         this.judgeImporter = judgeImporter;
         this.resultReconciler = resultReconciler;
+        this.importLog = importLog;
     }
 
     /**
@@ -84,7 +86,8 @@ public class EventImporter {
 
         List<Session> existing = sessionRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
                 ageCategory);
-        if (!existing.isEmpty()) {
+        boolean replaced = !existing.isEmpty();
+        if (replaced) {
             if (!replace) {
                 throw new ImportException(manifestFile.getFileName() + ": " + event.getTitle() + " " + discipline
                         + " " + ageCategory + " is already imported; import with replace to load it again");
@@ -99,6 +102,7 @@ public class EventImporter {
         manifest.summaries().forEach(file -> summaryImporter.importFile(context, file));
         manifest.judges().forEach(file -> judgeImporter.importFile(context, file));
         resultReconciler.reconcile(context);
+        importLog.record(manifestFile, manifest, event, discipline, ageCategory, replaced, report);
         return report;
     }
 
