@@ -1,0 +1,36 @@
+{
+    "event" : {
+        "slug" : "2026-european-championships-wag-jr",
+        "title" : "36th Junior European Championships",
+        "disciplines" : "WAG",
+        "ageCategory" : "JR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-08-13",
+        "endDate" : "2026-08-16",
+        "city" : "Zagreb",
+        "country" : "CRO",
+        "figEventNumber" : "18234",
+        "venue" : "Arena Zagreb",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-BB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-UB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-VT.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-BB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-UB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-AA.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

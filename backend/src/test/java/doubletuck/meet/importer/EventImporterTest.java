@@ -7,6 +7,7 @@ import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
+import doubletuck.meet.domain.ImportRun;
 import doubletuck.meet.domain.Judge;
 import doubletuck.meet.domain.JudgeFunction;
 import doubletuck.meet.domain.Participant;
@@ -19,6 +20,7 @@ import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.EventRepository;
+import doubletuck.meet.repository.ImportRunRepository;
 import doubletuck.meet.repository.JudgeRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
@@ -49,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({ EventImporter.class, ParticipantImporter.class, ScoreImporter.class, SummaryImporter.class,
-        JudgeImporter.class, ResultReconciler.class, AthleteMatcher.class, SessionService.class })
+        JudgeImporter.class, ResultReconciler.class, AthleteMatcher.class, SessionService.class, ImportLog.class })
 class EventImporterTest {
 
     private static final String WORLDS_WAG = "worlds/2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
@@ -85,6 +87,12 @@ class EventImporterTest {
     @Autowired
     private JudgeRepository judgeRepository;
 
+    @Autowired
+    private ImportRunRepository importRunRepository;
+
+    @Autowired
+    private ImportLog importLog;
+
     @Test
     void testImport_BothDisciplinesShareOneEvent() {
         importFixture(WORLDS_WAG);
@@ -101,6 +109,62 @@ class EventImporterTest {
         assertEquals(EventLevel.WORLD_CHAMPIONSHIPS, worlds.getLevel());
         assertTrue(sessionRepository.findByEvent(worlds).stream().anyMatch(s -> s.getDiscipline() == Discipline.WAG));
         assertTrue(sessionRepository.findByEvent(worlds).stream().anyMatch(s -> s.getDiscipline() == Discipline.MAG));
+    }
+
+    @Test
+    void testImport_SameTitleOverlappingDates_SharesOneEventSpanningBoth(@TempDir Path dir) throws IOException {
+        Path seniors = writeMinimalMeet(dir.resolve("seniors"), "5.5", "101");
+        Files.writeString(seniors, Files.readString(seniors)
+                .replace("\"endDate\": \"2026-03-01\"", "\"endDate\": \"2026-03-02\""));
+        eventImporter.importManifest(seniors, false);
+        // Juniors from the 2nd to the 3rd
+        Path juniors = writeMinimalMeet(dir.resolve("juniors"), "5.5", "101");
+        for (Path file : List.of(juniors, juniors.resolveSibling("MINI-MAG-SR-PARTICIPANTS.csv"),
+                juniors.resolveSibling("MINI-MAG-SR-SCORES-QUAL-FX.csv"))) {
+            Files.writeString(file, Files.readString(file).replace("2026-03-01", "2026-03-02")
+                    .replace("\"ageCategory\": \"SR\"", "\"ageCategory\": \"JR\"").replace(",SR,", ",JR,")
+                    .replace("\"endDate\": \"2026-03-02\"", "\"endDate\": \"2026-03-03\"")
+                    .replace("DE VRIES", "JANSEN").replace("BAKKER", "VISSER"));
+        }
+
+        ImportReport report = eventImporter.importManifest(juniors, false);
+
+        List<Event> events = eventRepository.findAll();
+        assertEquals(1, events.size());
+        assertEquals(LocalDate.of(2026, 3, 1), events.get(0).getStartDate());
+        assertEquals(LocalDate.of(2026, 3, 3), events.get(0).getEndDate());
+        assertEquals(1, report.getCount("event dates widened"));
+    }
+
+    @Test
+    void testImport_RecordsTheRun(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        eventImporter.importManifest(manifest, false);
+        eventImporter.importManifest(manifest, true);
+
+        List<ImportRun> runs = importRunRepository.findAll();
+        assertEquals(2, runs.size());
+        ImportRun last = runs.get(1);
+        assertEquals("MINI-MAG-SR-IMPORT.json", last.getManifest());
+        assertEquals("mini", last.getEvent().getSlug());
+        assertEquals(Discipline.MAG, last.getDiscipline());
+        assertFalse(runs.get(0).isReplaced());
+        assertTrue(last.isReplaced());
+        assertEquals(0, last.getWarningCount());
+        assertTrue(last.getReport().startsWith("MINI-MAG-SR-IMPORT.json"), last.getReport());
+    }
+
+    @Test
+    void testImportStatus_UpToDateUntilAListedFileChanges(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        assertEquals(ImportLog.State.NOT_IMPORTED, importLog.status(manifest).state());
+
+        eventImporter.importManifest(manifest, false);
+        assertEquals(ImportLog.State.UP_TO_DATE, importLog.status(manifest).state());
+
+        Path scores = dir.resolve("MINI-MAG-SR-SCORES-QUAL-FX.csv");
+        Files.writeString(scores, Files.readString(scores).replace("8.500", "8.600"));
+        assertEquals(ImportLog.State.CHANGED, importLog.status(manifest).state());
     }
 
     @Test
@@ -123,6 +187,41 @@ class EventImporterTest {
 
         assertEquals(List.of("mini", "mini-mag"), eventRepository.findAll().stream().map(Event::getSlug).sorted()
                 .toList());
+    }
+
+    @Test
+    void testImport_SlugGivenInTheManifest_IsUsed(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        giveSlug(manifest, "mini-meet-mag-sr");
+
+        eventImporter.importManifest(manifest, false);
+
+        assertEquals("mini-meet-mag-sr", eventRepository.findAll().get(0).getSlug());
+    }
+
+    @Test
+    void testImport_SlugGivenInTheManifest_NotLowercaseWords_IsRejected(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        giveSlug(manifest, "Mini Meet");
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
+        assertTrue(e.getMessage().contains("slug Mini Meet"), e.getMessage());
+    }
+
+    @Test
+    void testImport_SlugGivenInTheManifest_TakenByAnotherEvent_IsRejected(@TempDir Path dir) throws IOException {
+        Path first = writeMinimalMeet(dir.resolve("first"), "5.5", "101");
+        giveSlug(first, "mini-meet");
+        eventImporter.importManifest(first, false);
+        Path second = writeMinimalMeet(dir.resolve("second"), "5.5", "101");
+        for (Path file : List.of(second, second.resolveSibling("MINI-MAG-SR-PARTICIPANTS.csv"),
+                second.resolveSibling("MINI-MAG-SR-SCORES-QUAL-FX.csv"))) {
+            Files.writeString(file, Files.readString(file).replace("2026-03-01", "2026-04-01"));
+        }
+        giveSlug(second, "mini-meet");
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(second, false));
+        assertTrue(e.getMessage().contains("already has the slug mini-meet"), e.getMessage());
     }
 
     @Test
@@ -422,6 +521,11 @@ class EventImporterTest {
     private static Session session(List<Session> sessions, Round round, Apparatus apparatus) {
         return sessions.stream().filter(s -> s.getRound() == round && s.getApparatus() == apparatus).findFirst()
                 .orElseThrow(() -> new AssertionError("no " + round + " " + apparatus + " session"));
+    }
+
+    private static void giveSlug(Path manifest, String slug) throws IOException {
+        Files.writeString(manifest, Files.readString(manifest)
+                .replace("\"title\": \"Mini Meet\"", "\"slug\": \"%s\", \"title\": \"Mini Meet\"".formatted(slug)));
     }
 
     // Two NED athletes, the NOC printed only on the first, and one floor score

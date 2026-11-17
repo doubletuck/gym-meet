@@ -161,7 +161,7 @@ Returned by `GET /api/events/{slug}`. The fields of
 | venue | String | Venue or arena name, or `null` |
 | figEventNumber | String | FIG-assigned event code, or `null` |
 | apparatusSuppliers | String | Equipment manufacturer(s), or `null` |
-| divisions | List | `{discipline, ageCategory, sessions}`, where `sessions` lists [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) objects in competition order: rounds (qualification, team final, all-around final, apparatus finals), apparatus in Olympic order, and a split round's parts before its combined session |
+| divisions | List | `{discipline, ageCategory, sessions}`, where `sessions` lists [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) objects in competition order: rounds (qualification, team final, all-around final, apparatus finals), apparatus in Olympic order, and a split round's combined session before its parts, since it holds the result the round is decided on |
 
 **Example** (abridged)
 

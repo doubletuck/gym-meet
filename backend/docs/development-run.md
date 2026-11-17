@@ -99,4 +99,4 @@ Competition results are loaded from the files under `data/` by running the app w
 ```shell
 mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=data/2026/2026-WORLD-CHAMPIONSHIPS"
 ```
-See [import-process.md](import-process.md) for the arguments and what an import does.
+See [import-process.md](import-process.md) for the arguments and what an import does. Add `--import.status` to check which manifests are imported and up to date, without importing.

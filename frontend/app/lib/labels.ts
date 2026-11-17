@@ -70,3 +70,11 @@ export function sessionLabel(session: Pick<SessionSummary, "round" | "apparatus"
 export function divisionPath(discipline: Discipline, ageCategory: AgeCategory): string {
   return `${discipline.toLowerCase()}/${ageCategory.toLowerCase()}`;
 }
+
+/** A session's results page: "/events/2026-world-championships/wag/sr/beam-final". */
+export function sessionPath(
+  eventSlug: string,
+  session: Pick<SessionSummary, "discipline" | "ageCategory" | "slug">,
+): string {
+  return `/events/${eventSlug}/${divisionPath(session.discipline, session.ageCategory)}/${session.slug}`;
+}

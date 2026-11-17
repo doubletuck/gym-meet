@@ -14,6 +14,8 @@ import doubletuck.meet.dto.SessionResultsResponse.ApparatusScores;
 import doubletuck.meet.dto.SessionResultsResponse.ApparatusStandingRow;
 import doubletuck.meet.dto.SessionResultsResponse.ApparatusStandings;
 import doubletuck.meet.dto.SessionResultsResponse.AthleteRef;
+import doubletuck.meet.dto.SessionResultsResponse.PartResult;
+import doubletuck.meet.dto.SessionResultsResponse.PartScore;
 import doubletuck.meet.dto.SessionResultsResponse.ScoreRow;
 import doubletuck.meet.dto.SessionResultsResponse.TeamRow;
 import doubletuck.meet.dto.SessionSummaryResponse;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,6 +66,13 @@ public class SessionResultsService {
     private SessionResultsResponse results(Session session) {
         List<Apparatus> order = SessionNaming.apparatusOrder(session.getDiscipline());
         List<Score> scores = scoreRepository.findResultsBySession(session);
+        List<Session> division = sessionRepository.findByEventAndDisciplineAndAgeCategory(session.getEvent(),
+                session.getDiscipline(), session.getAgeCategory());
+        List<Part> parts = SplitRound.parts(session, division).stream()
+                .map(part -> new Part(part.getPart(), scoreRepository.findResultsBySession(part),
+                        allAroundResultRepository.findResultsBySession(part)))
+                .toList();
+        List<ApparatusResult> standings = apparatusResultRepository.findResultsBySession(session);
 
         List<ApparatusScores> apparatus = order.stream()
                 .map(app -> new ApparatusScores(app, scores.stream()
@@ -76,7 +86,7 @@ public class SessionResultsService {
         List<AllAroundRow> allAround = allAroundResultRepository.findResultsBySession(session).stream()
                 .sorted(byRank(AllAroundResult::getRank, AllAroundResult::getTotalScore,
                         AllAroundResult::getParticipant))
-                .map(result -> allAroundRow(result, scores, order))
+                .map(result -> allAroundRow(result, scores, parts, order))
                 .toList();
 
         List<TeamRow> teams = teamResultRepository.findBySession(session).stream()
@@ -84,33 +94,30 @@ public class SessionResultsService {
                 .map(result -> teamRow(result, scores, order))
                 .toList();
 
-        List<ApparatusResult> standings = apparatusResultRepository.findResultsBySession(session);
         List<ApparatusStandings> apparatusStandings = order.stream()
                 .map(app -> new ApparatusStandings(app, standings.stream()
                         .filter(result -> result.getApparatus() == app)
                         .sorted(byRank(ApparatusResult::getRank, ApparatusResult::getTotalScore,
                                 ApparatusResult::getParticipant))
-                        .map(result -> new ApparatusStandingRow(result.getRank(),
-                                result.getParticipant().getBibNumber(), athlete(result.getParticipant()),
-                                result.getParticipant().getNoc(), result.getTotalScore()))
+                        .map(result -> standingRow(result, parts))
                         .toList()))
                 .filter(list -> !list.rows().isEmpty())
                 .toList();
 
         return new SessionResultsResponse(
                 new SessionResultsResponse.EventRef(session.getEvent().getSlug(), session.getEvent().getTitle()),
-                SessionSummaryResponse.from(session), apparatus, allAround, teams, apparatusStandings);
+                SessionSummaryResponse.from(session, division), apparatus, allAround, teams, apparatusStandings);
     }
 
     private static ScoreRow scoreRow(Score score) {
         Participant participant = score.getParticipant();
         return new ScoreRow(score.getRank(), participant.getBibNumber(), athlete(participant), participant.getNoc(),
-                routine(score.getRoutine()), routine(score.getSecondRoutine()), score.getCombinedBonus(),
+                club(participant), routine(score.getRoutine()), routine(score.getSecondRoutine()), score.getCombinedBonus(),
                 score.getTotalScore(), score.getQualificationRank(), score.getQualificationResult(),
                 score.getCountsTowardTeamResult());
     }
 
-    private static SessionResultsResponse.Routine routine(Routine routine) {
+    static SessionResultsResponse.Routine routine(Routine routine) {
         if (routine == null) {
             return null;
         }
@@ -119,17 +126,71 @@ public class SessionResultsService {
                 routine.getBonusDetail(), routine.getPenalty(), routine.getSjPenalty(), routine.getScore());
     }
 
-    private static AllAroundRow allAroundRow(AllAroundResult result, List<Score> scores, List<Apparatus> order) {
+    /** A part of a split round, with its scores and all-around results. */
+    private record Part(int number, List<Score> scores, List<AllAroundResult> allAround) {
+    }
+
+    private static AllAroundRow allAroundRow(AllAroundResult result, List<Score> scores, List<Part> parts,
+            List<Apparatus> order) {
         Participant participant = result.getParticipant();
+        Map<Apparatus, Double> apparatusScores = apparatusScores(participant, scores, order);
+        List<PartResult> partResults = new ArrayList<>();
+        for (Part part : parts) {
+            Double total = part.allAround().stream()
+                    .filter(other -> other.getParticipant().equals(participant))
+                    .map(AllAroundResult::getTotalScore)
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+            Map<Apparatus, Double> partScores = apparatusScores(participant, part.scores(), order);
+            if (total != null || !partScores.isEmpty()) {
+                partResults.add(new PartResult(part.number(), total, partScores));
+            }
+        }
+        if (!parts.isEmpty() && partResults.size() == parts.size()) {
+            // A combined session has no scores of its own. Its apparatus standings can't stand in: vault's
+            // is the two-vault title, not the all-around's one vault a day
+            for (Apparatus app : order) {
+                List<Double> each = partResults.stream().map(part -> part.apparatusScores().get(app))
+                        .filter(Objects::nonNull).toList();
+                if (!each.isEmpty()) {
+                    apparatusScores.put(app, sum(each));
+                }
+            }
+        }
+        return new AllAroundRow(result.getRank(), participant.getBibNumber(), athlete(participant),
+                participant.getNoc(), club(participant), result.getTotalScore(), result.getQualificationResult(),
+                apparatusScores, partResults);
+    }
+
+    private static Map<Apparatus, Double> apparatusScores(Participant participant, List<Score> scores,
+            List<Apparatus> order) {
         Map<Apparatus, Double> apparatusScores = new LinkedHashMap<>();
-        order.forEach(app -> scores.stream()
-                .filter(score -> score.getParticipant().equals(participant) && score.getApparatus() == app)
+        order.forEach(app -> routineScore(participant, app, scores)
+                .ifPresent(score -> apparatusScores.put(app, score)));
+        return apparatusScores;
+    }
+
+    private static Optional<Double> routineScore(Participant participant, Apparatus apparatus, List<Score> scores) {
+        return scores.stream()
+                .filter(score -> score.getParticipant().equals(participant) && score.getApparatus() == apparatus)
                 .map(score -> score.getRoutine().getScore())
                 .filter(Objects::nonNull)
-                .findFirst()
-                .ifPresent(score -> apparatusScores.put(app, score)));
-        return new AllAroundRow(result.getRank(), participant.getBibNumber(), athlete(participant),
-                participant.getNoc(), result.getTotalScore(), result.getQualificationResult(), apparatusScores);
+                .findFirst();
+    }
+
+    /** Each part's score is the result the apparatus is decided on: for two vaults, their combination. */
+    private static ApparatusStandingRow standingRow(ApparatusResult result, List<Part> parts) {
+        Participant participant = result.getParticipant();
+        List<PartScore> partScores = parts.stream()
+                .flatMap(part -> part.scores().stream()
+                        .filter(score -> score.getParticipant().equals(participant)
+                                && score.getApparatus() == result.getApparatus() && score.getTotalScore() != null)
+                        .findFirst().stream()
+                        .map(score -> new PartScore(part.number(), score.getTotalScore())))
+                .toList();
+        return new ApparatusStandingRow(result.getRank(), participant.getBibNumber(), athlete(participant),
+                participant.getNoc(), club(participant), result.getTotalScore(), partScores);
     }
 
     private static TeamRow teamRow(TeamResult result, List<Score> scores, List<Apparatus> order) {
@@ -142,13 +203,21 @@ public class SessionResultsService {
                     .filter(Objects::nonNull)
                     .toList();
             if (!counted.isEmpty()) {
-                // Summed in decimal: binary doubles would print 41.232000000000006
-                BigDecimal sum = counted.stream().map(BigDecimal::valueOf).reduce(BigDecimal.ZERO, BigDecimal::add);
-                apparatusTotals.put(app, sum.setScale(3, RoundingMode.HALF_UP).doubleValue());
+                apparatusTotals.put(app, sum(counted));
             }
         }
         return new TeamRow(result.getRank(), result.getNoc(), result.getTotalScore(),
                 result.getQualificationResult(), apparatusTotals);
+    }
+
+    // Summed in decimal: binary doubles would print 41.232000000000006
+    private static double sum(List<Double> scores) {
+        BigDecimal sum = scores.stream().map(BigDecimal::valueOf).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return sum.setScale(3, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    private static String club(Participant participant) {
+        return participant.getClub() == null ? null : participant.getClub().getName();
     }
 
     private static AthleteRef athlete(Participant participant) {

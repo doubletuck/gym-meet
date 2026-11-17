@@ -19,12 +19,35 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
 |---|---|
 | `--import.path` | A manifest (`*-IMPORT.json`), or a directory searched recursively for them — a single meet's folder, or a whole year. Can be given more than once. |
 | `--import.replace` | Reimport a discipline and age category that is already in the database (see [Importing again](#importing-again)). Without it, that is an error. |
+| `--import.status` | Import nothing; report each manifest as up to date, changed since it was imported, or not imported (see [What has been imported](#what-has-been-imported)). |
 
 The app imports and then exits; it doesn't start the web server. For each
 manifest it logs a report: how many of each record it created, how many
 athletes it created rather than matched, and any warnings. Each manifest is
 imported on its own, so one failing doesn't stop the others; the run exits with
 an error if any failed.
+
+## What has been imported
+
+Each manifest imported is recorded as an `ImportRun` in the same transaction:
+its event, discipline and age category, whether it replaced an earlier import,
+its warning count and report, and a SHA-256 hash of the manifest and every file
+it lists. A failed import leaves no record, as it leaves no results.
+
+`--import.status` compares each manifest's files with its latest import's hash:
+
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
+  -Dspring-boot.run.arguments="--import.path=data/2026 --import.status"
+```
+
+```text
+2026-WORLD-CHAMPIONSHIPS-MAG-SR-IMPORT.json: up to date, imported 2026-11-17T01:56:53Z
+2026-US-CHAMPIONSHIPS-WAG-SR-IMPORT.json: changed since it was imported 2026-11-17T01:56:51Z
+```
+
+A changed manifest is brought up to date by importing it again with
+`--import.replace`. Changing a file's line endings counts as a change.
 
 ## What a manifest import does
 
@@ -33,14 +56,21 @@ A manifest covers one discipline and age category of a competition (e.g. the
 anywhere in its files rolls back everything from that manifest, and the error
 names the file and line.
 
-1. **Event.** Found by FIG event number, or by title and start date when there
-   is none, and created if not found. Two manifests sharing an event (the 2026
-   Worlds' MAG and WAG) therefore import into one `Event`. A new event's slug is
-   the manifest's prefix without the discipline and age category, lowercased:
-   `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json` gives
-   `2026-world-championships`. When another event already has that slug, the
-   discipline is added (`2026-us-championships-wag`: the 2026 US Championships'
-   MAG and WAG start on different days, so they are two events).
+1. **Event.** Found by FIG event number, or when there is none, by title and
+   overlapping dates; created if not found. Two manifests sharing an event (the
+   2026 Worlds' MAG and WAG) therefore import into one `Event`. A meet's
+   disciplines can run on different days under one title (the 2026 US
+   Championships: MAG 6–8 August, WAG 7–9 August), so a manifest that matches
+   on title and overlapping dates widens the event's dates to cover its own.
+   More than one event matching is an error. A new event's slug is
+   the manifest's `slug`, when it has one: the 2026 European Championships are
+   four events (one per discipline and age category, each with its own FIG
+   number) in one folder, so each manifest names its own, e.g.
+   `2026-european-championships-wag-sr`. A slug another event already has is an
+   error. Without one, the slug is the manifest's prefix without the discipline
+   and age category, lowercased: `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json`
+   gives `2026-world-championships`. When another event already has that slug,
+   the discipline is added (`2026-world-championships-wag`).
 2. **Participants.** Each entry-list row is matched to an `Athlete` (below) and
    entered into the event. A club is found or created by name within the
    participant's NOC. Some entry lists print a country's NOC only on its first

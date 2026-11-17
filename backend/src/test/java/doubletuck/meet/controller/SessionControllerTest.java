@@ -4,6 +4,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.importer.EventImporter;
+import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.SessionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ class SessionControllerTest {
     @Autowired
     private SessionRepository sessionRepository;
 
+    @Autowired
+    private ScoreRepository scoreRepository;
+
     @Test
     void testFindResults_ApparatusFinalRankedAsPublished() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_WAG);
@@ -67,6 +71,8 @@ class SessionControllerTest {
         mockMvc.perform(get("/api/sessions/{id}/results", qualification))
                 .andExpect(jsonPath("$.apparatus[*].apparatus", contains("VT", "UB", "BB", "FX")))
                 .andExpect(jsonPath("$.teams[0].noc").value("CHN"))
+                // FIG entry lists name no clubs
+                .andExpect(jsonPath("$.allAround[0].club").value(nullValue()))
                 .andExpect(jsonPath("$.teams[0].rank").value(1))
                 .andExpect(jsonPath("$.teams[0].total").value(164.996))
                 .andExpect(jsonPath("$.teams[0].qualification").value("Q"))
@@ -111,6 +117,60 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.allAround[0].total").value(163.896))
                 .andExpect(jsonPath("$.apparatusStandings[?(@.apparatus == 'PH')].rows[?(@.athlete.surname == "
                         + "'Hoopes')].total").value(30.816));
+    }
+
+    @Test
+    void testFindResults_SplitRoundCombinedSession_HasEachPart() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
+        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
+
+        mockMvc.perform(get("/api/sessions/{id}/results", wholeRound))
+                .andExpect(jsonPath("$.session.date").value("2026-08-06"))
+                .andExpect(jsonPath("$.session.endDate").value("2026-08-08"))
+                // Each part's scores summed, as the combined floor standings publish it
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.FX").value(26.7))
+                // Vault's standings are the two-vault title, so its sum is the only combined all-around vault
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.VT").value(26.35))
+                .andExpect(jsonPath("$.allAround[0].club").value("U of Oklahoma"))
+                .andExpect(jsonPath("$.allAround[0].parts[*].part", contains(1, 2)))
+                .andExpect(jsonPath("$.allAround[0].parts[0].total").value(81.773))
+                .andExpect(jsonPath("$.allAround[0].parts[0].apparatusScores.FX").value(13.7))
+                .andExpect(jsonPath("$.allAround[0].parts[1].total").value(82.123))
+                .andExpect(jsonPath("$.allAround[0].parts[1].apparatusScores.FX").value(13.0))
+                .andExpect(jsonPath("$.apparatusStandings[?(@.apparatus == 'PH')].rows[?(@.athlete.surname == "
+                        + "'Hoopes')].parts[*].score", contains(15.641, 15.175)));
+    }
+
+    @Test
+    void testFindResults_SplitRoundCombinedSession_ApparatusSkippedInAPart_ShowsTheOtherPartAlone()
+            throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
+        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
+        Long partTwo = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, 2);
+        // As if Moldauer hadn't vaulted on day 2
+        scoreRepository.delete(scoreRepository.findBySessionId(partTwo).stream()
+                .filter(score -> score.getApparatus() == Apparatus.VT
+                        && score.getParticipant().getAthlete().getSurname().equals("Moldauer"))
+                .findFirst().orElseThrow());
+
+        mockMvc.perform(get("/api/sessions/{id}/results", wholeRound))
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.VT").value(13.75))
+                .andExpect(jsonPath("$.allAround[0].parts[0].apparatusScores.VT").value(13.75))
+                .andExpect(jsonPath("$.allAround[0].parts[1].apparatusScores.VT").doesNotExist());
+    }
+
+    @Test
+    void testFindResults_SplitRoundPart_HasNoParts() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
+        Long partOne = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, 1);
+
+        mockMvc.perform(get("/api/sessions/{id}/results", partOne))
+                .andExpect(jsonPath("$.session.endDate").value(nullValue()))
+                .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Moldauer')].apparatusScores.FX")
+                        .value(13.7))
+                .andExpect(jsonPath("$.allAround[0].parts", empty()))
+                .andExpect(jsonPath("$.apparatus[0].scores[?(@.athlete.surname == 'Moldauer')].club")
+                        .value("U of Oklahoma"));
     }
 
     @Test

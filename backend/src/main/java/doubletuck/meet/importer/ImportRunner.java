@@ -20,7 +20,8 @@ import java.util.stream.Stream;
  * {@code --import.path=<manifest, or a directory searched for *-IMPORT.json>}
  * (repeatable) and optionally {@code --import.replace}. Each manifest is
  * imported on its own, so one failing doesn't stop the rest; the run fails if
- * any did.
+ * any did. With {@code --import.status}, nothing is imported: each manifest is
+ * reported as imported and up to date, changed since, or not imported.
  */
 @Component
 @Profile("import")
@@ -29,9 +30,11 @@ class ImportRunner implements ApplicationRunner {
     private static final Logger log = LoggerFactory.getLogger(ImportRunner.class);
 
     private final EventImporter eventImporter;
+    private final ImportLog importLog;
 
-    ImportRunner(EventImporter eventImporter) {
+    ImportRunner(EventImporter eventImporter, ImportLog importLog) {
         this.eventImporter = eventImporter;
+        this.importLog = importLog;
     }
 
     @Override
@@ -45,6 +48,10 @@ class ImportRunner implements ApplicationRunner {
         List<Path> manifests = paths.stream().flatMap(path -> manifests(Path.of(path))).toList();
         if (manifests.isEmpty()) {
             throw new IllegalArgumentException("No *-IMPORT.json manifests found under " + paths);
+        }
+        if (args.containsOption("import.status")) {
+            manifests.forEach(manifest -> log.info(status(manifest)));
+            return;
         }
 
         List<String> failures = new ArrayList<>();
@@ -60,6 +67,16 @@ class ImportRunner implements ApplicationRunner {
         if (!failures.isEmpty()) {
             throw new IllegalStateException("Failed to import " + failures);
         }
+    }
+
+    private String status(Path manifest) {
+        ImportLog.Status status = importLog.status(manifest);
+        String name = manifest.getFileName().toString();
+        return switch (status.state()) {
+            case NOT_IMPORTED -> name + ": not imported";
+            case UP_TO_DATE -> name + ": up to date, imported " + status.lastRun().getCreationTimestamp();
+            case CHANGED -> name + ": changed since it was imported " + status.lastRun().getCreationTimestamp();
+        };
     }
 
     private static Stream<Path> manifests(Path path) {

@@ -43,6 +43,7 @@ public class EventImporter {
     private final SummaryImporter summaryImporter;
     private final JudgeImporter judgeImporter;
     private final ResultReconciler resultReconciler;
+    private final ImportLog importLog;
 
     EventImporter(EventRepository eventRepository, SessionRepository sessionRepository,
             ParticipantRepository participantRepository, ScoreRepository scoreRepository,
@@ -50,7 +51,7 @@ public class EventImporter {
             AllAroundResultRepository allAroundResultRepository,
             ApparatusResultRepository apparatusResultRepository, SessionService sessionService,
             ParticipantImporter participantImporter, ScoreImporter scoreImporter, SummaryImporter summaryImporter,
-            JudgeImporter judgeImporter, ResultReconciler resultReconciler) {
+            JudgeImporter judgeImporter, ResultReconciler resultReconciler, ImportLog importLog) {
         this.eventRepository = eventRepository;
         this.sessionRepository = sessionRepository;
         this.participantRepository = participantRepository;
@@ -65,6 +66,7 @@ public class EventImporter {
         this.summaryImporter = summaryImporter;
         this.judgeImporter = judgeImporter;
         this.resultReconciler = resultReconciler;
+        this.importLog = importLog;
     }
 
     /**
@@ -84,7 +86,8 @@ public class EventImporter {
 
         List<Session> existing = sessionRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
                 ageCategory);
-        if (!existing.isEmpty()) {
+        boolean replaced = !existing.isEmpty();
+        if (replaced) {
             if (!replace) {
                 throw new ImportException(manifestFile.getFileName() + ": " + event.getTitle() + " " + discipline
                         + " " + ageCategory + " is already imported; import with replace to load it again");
@@ -99,6 +102,7 @@ public class EventImporter {
         manifest.summaries().forEach(file -> summaryImporter.importFile(context, file));
         manifest.judges().forEach(file -> judgeImporter.importFile(context, file));
         resultReconciler.reconcile(context);
+        importLog.record(manifestFile, manifest, event, discipline, ageCategory, replaced, report);
         return report;
     }
 
@@ -106,21 +110,32 @@ public class EventImporter {
             AgeCategory ageCategory, ImportReport report) {
         String figEventNumber = source.figEventNumber() == null || source.figEventNumber().isBlank() ? null
                 : source.figEventNumber().trim();
-        Event event = (figEventNumber != null
-                ? eventRepository.findByFigEventNumber(figEventNumber)
-                : eventRepository.findByTitleIgnoreCaseAndStartDate(source.title(), source.startDate()))
-                .orElse(null);
-        if (event != null) {
-            if (!event.getTitle().equalsIgnoreCase(source.title())
-                    || !event.getStartDate().equals(source.startDate())) {
-                report.warn("existing event " + event.getId() + " (" + event.getTitle() + ", " + event.getStartDate()
-                        + ") matched by FIG event number has a different title or start date than the manifest");
+        if (figEventNumber != null) {
+            Event event = eventRepository.findByFigEventNumber(figEventNumber).orElse(null);
+            if (event != null) {
+                if (!event.getTitle().equalsIgnoreCase(source.title())
+                        || !event.getStartDate().equals(source.startDate())) {
+                    report.warn("existing event " + event.getId() + " (" + event.getTitle() + ", "
+                            + event.getStartDate()
+                            + ") matched by FIG event number has a different title or start date than the manifest");
+                }
+                return event;
             }
-            return event;
+        } else {
+            List<Event> overlapping = eventRepository
+                    .findByTitleIgnoreCaseAndStartDateLessThanEqualAndEndDateGreaterThanEqual(source.title(),
+                            source.endDate(), source.startDate());
+            if (overlapping.size() > 1) {
+                throw new ImportException(manifestFile.getFileName() + ": " + overlapping.size()
+                        + " events titled " + source.title() + " overlap the manifest's dates");
+            }
+            if (!overlapping.isEmpty()) {
+                return widenDates(overlapping.getFirst(), source, report);
+            }
         }
 
-        event = new Event();
-        event.setSlug(newSlug(manifestFile, discipline, ageCategory));
+        Event event = new Event();
+        event.setSlug(newSlug(source.slug(), manifestFile, discipline, ageCategory));
         event.setFigEventNumber(figEventNumber);
         event.setTitle(source.title());
         event.setStartDate(source.startDate());
@@ -135,21 +150,47 @@ public class EventImporter {
     }
 
     /**
-     * The new event's slug: its manifest's prefix without the discipline and age
-     * category, so 2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json gives
-     * 2026-world-championships. When another event already has it -- the 2026 US
-     * Championships' MAG and WAG start on different days, so they are two events
-     * -- the discipline is added.
+     * A meet's disciplines can run on different days under one title -- the
+     * 2026 US Championships' MAG on 6-8 August and WAG on 7-9 August -- so the
+     * event comes to span all of them.
      */
-    private String newSlug(Path manifestFile, Discipline discipline, AgeCategory ageCategory) {
-        String suffix = "-" + discipline.name() + "-" + ageCategory.name() + "-IMPORT.JSON";
-        String fileName = manifestFile.getFileName().toString();
-        if (!fileName.toUpperCase().endsWith(suffix)) {
-            throw new ImportException(fileName + ": manifest name doesn't end in " + suffix);
+    private Event widenDates(Event event, ImportManifest.ManifestEvent source, ImportReport report) {
+        if (source.startDate().isBefore(event.getStartDate()) || source.endDate().isAfter(event.getEndDate())) {
+            if (source.startDate().isBefore(event.getStartDate())) {
+                event.setStartDate(source.startDate());
+            }
+            if (source.endDate().isAfter(event.getEndDate())) {
+                event.setEndDate(source.endDate());
+            }
+            report.count("event dates widened");
         }
-        String slug = fileName.substring(0, fileName.length() - suffix.length()).toLowerCase();
-        if (eventRepository.findBySlug(slug).isPresent()) {
-            slug = slug + "-" + discipline.name().toLowerCase();
+        return event;
+    }
+
+    /**
+     * The new event's slug: the manifest's, when it gives one -- the 2026 European
+     * Championships are four events in one folder, each named in its manifest.
+     * Otherwise its manifest's prefix without the discipline and age category, so
+     * 2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json gives 2026-world-championships.
+     * When another event already has that, the discipline is added.
+     */
+    private String newSlug(String given, Path manifestFile, Discipline discipline, AgeCategory ageCategory) {
+        String fileName = manifestFile.getFileName().toString();
+        String slug;
+        if (given != null && !given.isBlank()) {
+            slug = given.trim();
+            if (!slug.matches(Event.SLUG_PATTERN)) {
+                throw new ImportException(fileName + ": slug " + slug + " isn't lowercase words separated by hyphens");
+            }
+        } else {
+            String suffix = "-" + discipline.name() + "-" + ageCategory.name() + "-IMPORT.JSON";
+            if (!fileName.toUpperCase().endsWith(suffix)) {
+                throw new ImportException(fileName + ": manifest name doesn't end in " + suffix);
+            }
+            slug = fileName.substring(0, fileName.length() - suffix.length()).toLowerCase();
+            if (eventRepository.findBySlug(slug).isPresent()) {
+                slug = slug + "-" + discipline.name().toLowerCase();
+            }
         }
         if (eventRepository.findBySlug(slug).isPresent()) {
             throw new ImportException(fileName + ": another event already has the slug " + slug);

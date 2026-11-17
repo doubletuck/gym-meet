@@ -92,8 +92,10 @@ class Output:
     def manifest(self, prefix, event):
         """`<prefix>-IMPORT.json`: the EVENT.csv row plus every file written for this prefix."""
         files = sorted(os.listdir(self.dir))
+        # An optional Slug names the event's address, for a folder holding several events
+        slug = {'slug': event['Slug']} if event.get('Slug') else {}
         manifest = {
-            'event': {'title': event['Title'], 'disciplines': event['Disciplines'],
+            'event': {**slug, 'title': event['Title'], 'disciplines': event['Disciplines'],
                       'ageCategory': event['Age Category'], 'level': event['Level'],
                       'startDate': event['Start Date'], 'endDate': event['End Date'], 'city': event['City'],
                       'country': event['Country'], 'figEventNumber': event['FIG Event Number'],

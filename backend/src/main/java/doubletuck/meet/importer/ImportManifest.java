@@ -18,7 +18,9 @@ public record ImportManifest(
         List<String> scores,
         List<String> summaries) {
 
+    /** @param slug the event's address; optional, see EventImporter for the default */
     public record ManifestEvent(
+            String slug,
             String title,
             String disciplines,
             String ageCategory,

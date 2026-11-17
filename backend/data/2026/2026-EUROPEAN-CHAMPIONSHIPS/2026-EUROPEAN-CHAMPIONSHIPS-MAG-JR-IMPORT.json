@@ -1,0 +1,45 @@
+{
+    "event" : {
+        "slug" : "2026-european-championships-mag-jr",
+        "title" : "37th Junior European Championships",
+        "disciplines" : "MAG",
+        "ageCategory" : "JR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-08-19",
+        "endDate" : "2026-08-23",
+        "city" : "Zagreb",
+        "country" : "CRO",
+        "figEventNumber" : "18236",
+        "venue" : "Arena Zagreb",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-AA-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-AA-HB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-AA-PB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-AA-PH.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-AA-SR.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-AA-VT.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-HB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-PB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-PH.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-SR.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-EVENT-VT.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-FX.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-HB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-PB.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-PH.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-SR.csv",
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

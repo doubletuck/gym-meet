@@ -45,7 +45,8 @@ running, and commit the regenerated file.
 | Path | Holds |
 |---|---|
 | `app/routes.ts` | The pages and their addresses |
-| `app/routes/` | Events list (`/`), an event (`/events/:eventSlug`), a session's results (`/events/:eventSlug/:discipline/:ageCategory/:sessionSlug`, e.g. `/events/2026-world-championships/wag/sr/beam-final`) |
+| `app/routes/` | Events list (`/`), an event (`/events/:eventSlug`), a session's results (`/events/:eventSlug/:discipline/:ageCategory/:sessionSlug`, e.g. `/events/2026-world-championships/wag/sr/beam-final`), athlete search (`/athletes?q=`) and an athlete's page (`/athletes/:athleteId`) |
 | `app/api/` | The typed API client, its queries, and the generated types |
-| `app/components/results/` | The results tables, whose rows expand on tap to show D, E, penalties and the second vault |
-| `app/lib/` | Labels, country names (IOC codes), and number and date formatting |
+| `app/components/results/` | The results tables, which sort by a tapped column header. On a phone the values of the hidden columns are listed under the gymnast or team (D, E, bonus and penalty; or the apparatus scores); a vault final puts each gymnast's two vaults on two lines. A championship qualification's vault is two views: the first vault, which counts for team and all-around, and the two-vault ranking for the vault final. A round held in parts (a two-day all-around) shows each part's scores, labelled P1, P2, under the combined ones. Gymnast names link to their athlete pages. Gymnasts are shown with their club where the entry names one (national meets), the flag standing for the country, and with their country otherwise. Rows expand on tap only where there is more to show |
+| `app/components/athletes/` | The athlete page's personal bests, and their results at each meet by session; each links to the results page it came from |
+| `app/lib/` | Labels, country names and flags (by IOC code; flags from `flag-icons`, by ISO code), and number and date formatting |

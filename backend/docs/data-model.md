@@ -21,6 +21,7 @@ erDiagram
     SESSION ||--o{ ALL_AROUND_RESULT : "all-around standings"
     SESSION ||--o{ APPARATUS_RESULT : "multi-part apparatus standings"
     SESSION ||--o{ JUDGE : judged
+    EVENT ||--o{ IMPORT_RUN : "imported by"
 ```
 
 `Event` is the named competition ("2026 European Championships"). `Session` is a
@@ -129,7 +130,7 @@ Final round itself — the two `AA`s aren't related beyond sharing a name.)
 
 #### `Country`
 
-No enumerator or type will be used. Countries are the three-letter **IOC codes** World Gymnastics uses (`GER`, `NED`, `CRO`) — not ISO-3166 (`DEU`, `NLD`, `HRV`) — for both NOCs and an event's host country. At times, there will be FIG neutral athletes who are not associated with a country for the competition; they're published under a placeholder code, which can be four characters (`AIN1`, `AIN2` — Individual Neutral Athletes — at the 2026 Cottbus World Cup; `WG2` at the 2026 Europeans), so `Participant.noc` and `TeamResult.noc` accept 3–4 characters.
+No enumerator or type will be used. Countries are the three-letter **IOC codes** World Gymnastics uses (`GER`, `NED`, `CRO`) — not ISO-3166 (`DEU`, `NLD`, `HRV`) — for both NOCs and an event's host country. At times, there will be FIG neutral athletes who are not associated with a country for the competition; they're published under a placeholder code, which can be four characters (`AIN1`, `AIN2` — Individual Neutral Athletes — at the 2026 Cottbus World Cup; `WG1`, `WG2` — World Gymnastics 1 and 2, each entering its own team — at the 2026 Europeans), so `Participant.noc` and `TeamResult.noc` accept 3–4 characters.
 
 #### `JudgeFunction`
 
@@ -333,6 +334,24 @@ Not an entity — a group of columns embedded in `Score` twice (`routine`,
 | sjPenalty | Double | Yes | Superior Jury penalty applied to this routine, distinct from `penalty`. |
 | score | Double | Yes | This routine's own result. Null when `status` is `DNS`. |
 | status | ScoreStatus | No | Whether the routine was completed, not started, or (vault) invalidated. Required whenever the `Routine` exists. |
+
+### `ImportRun`
+
+One import of a manifest (one discipline and age category of an event), so
+what is in the database can be checked against the files it came from (see
+[import-process.md](import-process.md#what-has-been-imported)).
+
+| Field | Type | Nullable | Description |
+|---|---|---|---|
+| id | Long | No | Generated primary key. |
+| manifest | String | No | The manifest's file name, e.g. `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json`. |
+| eventId | Long, FK → `Event` | Yes | The event imported into. Set to null if the event is deleted, so the record stays. |
+| discipline | Discipline | No | The manifest's discipline. |
+| ageCategory | AgeCategory | No | The manifest's age category. |
+| contentHash | String | No | SHA-256 (hex) of the manifest and every file it lists, in the order it lists them. |
+| replaced | Boolean | No | Whether it replaced an earlier import of the same discipline and age category. |
+| warningCount | Integer | No | How many warnings the import reported. |
+| report | Text | No | The import's report as logged: counts, new athletes and warnings. |
 
 ## 4. Vault: two scored attempts, one row
 

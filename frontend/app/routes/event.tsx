@@ -5,7 +5,7 @@ import type { Route } from "./+types/event";
 import { eventQuery, queryClient } from "~/api/client";
 import { countryName } from "~/lib/countries";
 import { formatDateRange, formatSessionDate } from "~/lib/format";
-import { divisionLabel, divisionPath, LEVEL_LABELS, sessionLabel } from "~/lib/labels";
+import { divisionLabel, LEVEL_LABELS, sessionLabel, sessionPath } from "~/lib/labels";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   return queryClient.ensureQueryData(eventQuery(params.eventSlug));
@@ -35,11 +35,13 @@ export default function Event({ params }: Route.ComponentProps) {
               {division.sessions.map((session) => (
                 <li key={session.id}>
                   <Link
-                    to={`/events/${event.slug}/${divisionPath(division.discipline, division.ageCategory)}/${session.slug}`}
+                    to={sessionPath(event.slug, session)}
                     className="flex items-baseline justify-between gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
                   >
                     <span>{sessionLabel(session)}</span>
-                    <span className="shrink-0 text-sm text-gray-500">{formatSessionDate(session.date)}</span>
+                    <span className="shrink-0 text-sm text-gray-500">
+                      {formatSessionDate(session.date, session.endDate)}
+                    </span>
                   </Link>
                 </li>
               ))}

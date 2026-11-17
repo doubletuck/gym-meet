@@ -68,6 +68,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/athletes": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["search"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/athletes/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["findAthlete"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -136,6 +168,7 @@ export interface components {
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
+      club: string | null;
       /** Format: double */
       total: number | null;
       /** @enum {string|null} */
@@ -143,6 +176,7 @@ export interface components {
       apparatusScores: {
         [key: string]: number;
       };
+      parts: components["schemas"]["PartResult"][];
     };
     ApparatusScores: {
       /** @enum {string} */
@@ -155,8 +189,10 @@ export interface components {
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
+      club: string | null;
       /** Format: double */
       total: number | null;
+      parts: components["schemas"]["PartScore"][];
     };
     ApparatusStandings: {
       /** @enum {string} */
@@ -177,6 +213,21 @@ export interface components {
     EventRef: {
       slug: string;
       title: string;
+    };
+    PartResult: {
+      /** Format: int32 */
+      part: number;
+      /** Format: double */
+      total: number | null;
+      apparatusScores: {
+        [key: string]: number;
+      };
+    };
+    PartScore: {
+      /** Format: int32 */
+      part: number;
+      /** Format: double */
+      score: number | null;
     };
     Routine: {
       /** @enum {string} */
@@ -202,6 +253,7 @@ export interface components {
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
+      club: string | null;
       routine: components["schemas"]["Routine"];
       secondRoutine: components["schemas"]["Routine"] | null;
       /** Format: double */
@@ -238,6 +290,8 @@ export interface components {
       part: number | null;
       /** Format: date */
       date: string;
+      /** Format: date */
+      endDate: string | null;
     };
     TeamRow: {
       /** Format: int32 */
@@ -314,6 +368,99 @@ export interface components {
       figEventNumber: string | null;
       apparatusSuppliers: string | null;
       divisions: components["schemas"]["DivisionSessions"][];
+    };
+    AthleteSummaryResponse: {
+      /** Format: int64 */
+      id: number;
+      surname: string;
+      givenName: string;
+      /** @enum {string} */
+      discipline: "MAG" | "WAG";
+      noc: string | null;
+    };
+    AllAroundBest: {
+      /** Format: double */
+      total: number;
+      event: components["schemas"]["EntryEvent"];
+      session: components["schemas"]["SessionSummaryResponse"];
+    };
+    AllAroundResult: {
+      /** Format: int32 */
+      rank: number | null;
+      /** Format: double */
+      total: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+    };
+    ApparatusScore: {
+      /** @enum {string} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
+      /** Format: int32 */
+      rank: number | null;
+      routine: components["schemas"]["Routine"];
+      secondRoutine: components["schemas"]["Routine"] | null;
+      /** Format: double */
+      combinedBonus: number | null;
+      /** Format: double */
+      total: number | null;
+      /** Format: int32 */
+      qualificationRank: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+    };
+    ApparatusStanding: {
+      /** @enum {string} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
+      /** Format: int32 */
+      rank: number | null;
+      /** Format: double */
+      total: number | null;
+    };
+    AthleteResponse: {
+      /** Format: int64 */
+      id: number;
+      surname: string;
+      givenName: string;
+      /** @enum {string} */
+      discipline: "MAG" | "WAG";
+      /** Format: int32 */
+      birthYear: number | null;
+      otherNames: string[];
+      personalBests: components["schemas"]["PersonalBest"][];
+      allAroundBest: components["schemas"]["AllAroundBest"] | null;
+      entries: components["schemas"]["Entry"][];
+    };
+    Entry: {
+      event: components["schemas"]["EntryEvent"];
+      noc: string;
+      club: string | null;
+      sessions: components["schemas"]["EntrySession"][];
+    };
+    EntryEvent: {
+      slug: string;
+      title: string;
+      /** Format: date */
+      startDate: string;
+      /** Format: date */
+      endDate: string;
+    };
+    EntrySession: {
+      session: components["schemas"]["SessionSummaryResponse"];
+      allAround: components["schemas"]["AllAroundResult"] | null;
+      scores: components["schemas"]["ApparatusScore"][];
+      apparatusStandings: components["schemas"]["ApparatusStanding"][];
+    };
+    PersonalBest: {
+      /** @enum {string} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
+      /** Format: double */
+      score: number;
+      /** Format: double */
+      difficulty: number | null;
+      /** Format: double */
+      execution: number | null;
+      event: components["schemas"]["EntryEvent"];
+      session: components["schemas"]["SessionSummaryResponse"];
     };
   };
   responses: never;
@@ -469,6 +616,50 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["EventDetailResponse"];
+        };
+      };
+    };
+  };
+  search: {
+    parameters: {
+      query: {
+        q: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AthleteSummaryResponse"][];
+        };
+      };
+    };
+  };
+  findAthlete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AthleteResponse"];
         };
       };
     };

@@ -171,6 +171,13 @@ decisions that come up while parsing.
   - US Championships prints `Given Surname` in mixed case; its Surname/Given
     split was curated by hand and is read from the existing `PARTICIPANTS`.
 - **Strip decoration**: a leading `*` on US names.
+- **Linking a different spelling.** The importer matches athletes by FIG
+  licence, else by exact name (import-process.md, Matching athletes). A source
+  that prints no licences and another form of a name (US Championships' "Fred
+  Richard" for Worlds' "Frederick Richard") would create a second athlete. Put
+  the athlete's licence, from an international entry list, in that row's
+  `FIG License`: the import then links them and keeps the printed name as a
+  variant. The US parser keeps the column when it rewrites `PARTICIPANTS`.
 - **Judges have no master file**, so `JUDGES` derives the split itself.
 
 ### 4.2 Ranks and markers
@@ -189,8 +196,12 @@ decisions that come up while parsing.
   underscores or simply absent): no row at all.
 - **Entered but didn't perform**: `DNS`, blank scores and rank — including a
   US routine printed `0.00 / 0.000` (scratched).
-- **Invalid vault**: a completed attempt scored `0.000` (Europeans WAG bib
-  111 on vault 1; Worlds MAG ZAPATA's vault 2, whose average was halved).
+- **Invalid vault**: an attempt the judges scored `0.000` (an aborted run, the
+  table not touched): `INVALID_VAULT` with its printed D, E and `0.000` total,
+  and its rank. The zero counts (all-around, team, the two-vault average), and
+  the site shows it with the status. Europeans WAG SR bib 111 and WAG JR bib
+  301 on vault 1; Worlds MAG ZAPATA's vault 2, whose average was halved. Not
+  `DNS` or `UNKNOWN`, even where the source prints no status.
 - **Vault DNF** (vault 1 done, vault 2 not): `Status2=DNS`, blank `Total`.
 - **All-around/team DNF** rows are kept with blank `Rank`/`Total`; a team
   missing a whole apparatus prints a blank column and `DNF` total.
@@ -262,8 +273,10 @@ have no NOC (blank).
 
 - IOC codes, as World Gymnastics uses them (`GER`, `NED`), for NOCs and the
   host country — not ISO.
-- Neutral athletes keep the code printed: `AIN1`/`AIN2` (Cottbus), `WG2`
-  (Europeans); the same athletes appear as `RUS`/`BLR` at Worlds.
+- Neutral athletes keep the code printed: `AIN1`/`AIN2` (Cottbus, "Individual
+  Neutral Athletes"), `WG1`/`WG2` (Europeans, "World Gymnastics 1"/"2"); the
+  same athletes appear as `RUS`/`BLR` at Worlds. Each code is its own group,
+  entering its own team (Europeans' `WG1` and `WG2` teams), so never merge them.
 - Some entry lists print the NOC only on each country's first row.
 - The US Championships prints no NOC; participants are written as `USA`.
 
@@ -348,6 +361,14 @@ Parsers: [`parse_2026_world_championships.py`](../tools/results-parsing/parse_20
 - Entry lists: Europeans print birth year; Worlds print full date of birth
   (`Birth Date`).
 - Junior events may have no Team Final and no AA Final (Europeans).
+- Europeans WAG JR vault qualification: the first ranking (`_C73J`, printed
+  14 Aug, pages 206–209) leaves out Lucia Piliarova (bib 430), so every rank
+  below her =22 is one short. The organizers' later tie-break ranking
+  (`_C77B`, printed 16 Aug, pages 210–213) lists her at =22 and has the
+  corrected ranks, which are used. Her vault (D 4.2, E 8.600, 12.800) is
+  taken from the team and all-around pages. The tie-break pages list only
+  tied gymnasts; the all-around and team pages print every all-arounder's
+  vault rank, and the rest follow from their tied neighbours.
 - Checks run at Worlds: all of §3; team/AA blocks against the per-apparatus
   qualification tables proved the icon column order.
 

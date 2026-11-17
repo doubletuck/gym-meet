@@ -1,5 +1,7 @@
 package doubletuck.meet.config;
 
+import doubletuck.meet.dto.AthleteResponse;
+import doubletuck.meet.dto.AthleteSummaryResponse;
 import doubletuck.meet.dto.EventDetailResponse;
 import doubletuck.meet.dto.EventSummaryResponse;
 import doubletuck.meet.dto.SessionResultsResponse;
@@ -22,7 +24,8 @@ import java.util.stream.Stream;
 public class OpenApiConfig {
 
     private static final List<Class<?>> RESPONSES = List.of(EventSummaryResponse.class, EventDetailResponse.class,
-            SessionSummaryResponse.class, SessionResultsResponse.class);
+            SessionSummaryResponse.class, SessionResultsResponse.class, AthleteSummaryResponse.class,
+            AthleteResponse.class);
 
     /**
      * Describes the read API's responses exactly, so the front end's generated

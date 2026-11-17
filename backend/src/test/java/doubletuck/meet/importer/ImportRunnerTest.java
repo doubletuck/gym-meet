@@ -10,8 +10,10 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,7 +23,8 @@ class ImportRunnerTest {
     private Path dir;
 
     private final EventImporter eventImporter = mock(EventImporter.class);
-    private final ImportRunner runner = new ImportRunner(eventImporter);
+    private final ImportLog importLog = mock(ImportLog.class);
+    private final ImportRunner runner = new ImportRunner(eventImporter, importLog);
 
     @Test
     void testRun_ImportsEveryManifestUnderTheDirectory() throws IOException {
@@ -48,6 +51,17 @@ class ImportRunnerTest {
 
         verify(eventImporter).importManifest(passing, true);
         assertTrue(e.getMessage().contains("A-MAG-SR-IMPORT.json"), e.getMessage());
+    }
+
+    @Test
+    void testRun_Status_ChecksEachManifestAndImportsNothing() throws IOException {
+        Path worlds = manifest("2026-WORLDS/2026-WORLDS-MAG-SR-IMPORT.json");
+        when(importLog.status(worlds)).thenReturn(new ImportLog.Status(ImportLog.State.NOT_IMPORTED, null));
+
+        runner.run(new DefaultApplicationArguments("--import.path=" + dir, "--import.status"));
+
+        verify(importLog).status(worlds);
+        verify(eventImporter, never()).importManifest(any(), anyBoolean());
     }
 
     @Test
