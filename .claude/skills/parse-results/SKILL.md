@@ -13,15 +13,22 @@ the accumulated knowledge live in the repo — read them, don't work from memory
   conventions (§4), and notes per source format (§5). Read §5's matching section in full.
 - `backend/docs/data-model.md` — entities, especially `Session` and `Score`.
 - `backend/tools/results-parsing/` — `common.py` (shared helpers), `contact_sheet.py`
-  (map a scanned book), and one existing parser per source format to start from.
+  (map a scanned book), `ocr_pages.swift` + `ocr_draft.py` (OCR drafts of scanned tables,
+  macOS), and one existing parser per source format to start from.
 
 The user is the authority on gymnastics rules and on what the data should mean. Ask when
 something is ambiguous; never guess a value, a date or a mapping silently.
 
 ## 1. Survey the source
 
-1. Confirm the inputs: the PDF(s) in `backend/data/<year>/<EVENT>/` and the user-written
-   `<EVENT>-EVENT.csv` (Prefix, Title, Level, dates, IOC country code, FIG event number).
+1. Confirm the inputs: the PDF(s) in `backend/data/<year>/<EVENT>/` and `<EVENT>-EVENT.csv`
+   (one row per discipline and age category: Prefix, Slug, Title, Disciplines, Age Category,
+   Level, dates, City, IOC country code, Venue, FIG event number, Apparatus Suppliers).
+   **If the rows for this PDF don't exist, draft them** from the book (title page, schedule,
+   sponsor logos), the FIG event page, the meets tracker (`backend/data/<year>/*-MEETS.csv`)
+   and any sibling rows (another age category of the same meet); follow the existing rows'
+   conventions for Title, Slug and Level. Show the user the drafted rows and ask for any
+   field you couldn't find or had to infer (venue, level) before relying on them.
 2. `pdfinfo`, then `pdftotext -layout` split on form feed. List every physical page's report
    identity and collapse runs; find pages with no text (scanned) and map them with
    `python3 -I backend/tools/results-parsing/contact_sheet.py <pdf> <scratch>.png`.
@@ -49,9 +56,14 @@ tests, docs) only once the user agrees.
   specific to this source in the new file.
 - Scanned pages: render at ~110 dpi, read them, and transcribe into
   `backend/tools/results-parsing/transcriptions/<EVENT>/` (format in an existing README there),
-  copying values exactly as printed. Prefer a text copy of the same results when one exists.
+  copying values exactly as printed. Prefer a text copy of the same results when one exists
+  (sporttech.io results can be exported as CSV; ask the user). For many pages, draft with
+  `ocr_pages.swift` and `ocr_draft.py` in the scratchpad (parsing doc §2.3), then correct
+  every `!` line and check markers against the image; the drafts are not a source until reviewed.
 - Follow the conventions in parsing doc §4 (names, ranks, status, vault, Q markers, judges,
   countries) and the column rules in `import-file-model.md`.
+- Write each prefix's `<PREFIX>-IMPORT.json` with `out.manifest(prefix, event_row)` after its
+  CSVs: it copies the EVENT.csv row and lists every file written for that prefix.
 
 ## 4. Check
 
@@ -75,4 +87,6 @@ parser must exit non-zero on any failure. Then:
 - Update `instructions-results-parsing.md` with what this source taught: extend the matching
   §5 section (or add one for a new format), add any new convention to §4, and keep §6 open
   items current. Update `import-file-model.md` / `data-model.md` if columns or meanings changed.
+- If the meets tracker (`backend/data/<year>/*-MEETS.csv`) lists this meet, set its Status to
+  `Parsed`.
 - Don't commit unless the user asks.

@@ -1,0 +1,41 @@
+{
+    "event" : {
+        "slug" : "2026-pan-american-championships-sr",
+        "title" : "2026 Senior Pan American Championships",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-06-17",
+        "endDate" : "2026-06-21",
+        "city" : "Rio de Janeiro",
+        "country" : "BRA",
+        "figEventNumber" : "18533",
+        "venue" : "Parque Ol\u00edmpico - Arena Carioca 01",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-AA-BB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-AA-FX.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-AA-UB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-AA-VT.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-BB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-FX.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-UB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-VT.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

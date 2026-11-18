@@ -1,0 +1,27 @@
+# p3 Number of Entries by NOC: NOC|men|women (totals 88, 97, 185)
+ARG|6|5
+ARU|0|3
+BAR|0|1
+BOL|3|4
+BRA|6|6
+CAN|6|6
+CAY|2|1
+CHI|6|5
+COL|5|5
+CRC|2|5
+CUB|5|2
+DOM|4|5
+ECU|4|4
+ESA|0|2
+GUA|5|4
+HAI|1|1
+HON|0|1
+JAM|3|3
+MEX|6|6
+PAN|1|4
+PER|5|5
+PUR|6|5
+TTO|3|5
+URU|0|1
+USA|6|6
+VEN|3|2

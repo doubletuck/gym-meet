@@ -258,7 +258,7 @@ publishes no per-part placement.
 | Name | Athlete name as printed. **All-Around summary only** | |
 | NOC Code | Country/federation the row represents | `TeamResult.noc` |
 | `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG | *(not stored — on a team summary, used to work out `Score.countsTowardTeamResult`)* |
-| SJ Penalty | Superior Jury penalty applied to the row as a whole, distinct from an individual routine's `Penalty` | |
+| SJ Penalty | Superior Jury penalty applied to the row as a whole, distinct from an individual routine's `Penalty` — e.g. a team penalty already deducted from the printed `Total` (2026 Senior Pan Americans MAG CUB, `-1.000`). Not stored | |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |
 

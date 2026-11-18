@@ -1,0 +1,55 @@
+# p94 Men's apparatus finals. Superior Jury printed with no function (written Member).
+# Line judges SANCHEZ and ROMAN are printed with FED "WAG" (lent by the women's panel).
+|Member|CABALLERO, Robson|
+FX|AS|MACERONI, Maurício|ARG
+FX|D1|ASHE, Michael|USA
+FX|D2|VELASQUEZ, Juan Carlos|COL
+FX|E1|HONORES, Victor|PER
+FX|E2|TERNICIEN, Luis|CHI
+FX|E3|TORO, Enrique|ECU
+FX|E4|ROMERO, William|CRC
+FX|E5|MARTINEZ, Raul|MEX
+FX|L1|SANCHEZ, Carlos|WAG
+FX|L2|ROMAN, Maria|WAG
+FX|T|RAMOS, Tommy|PUR
+PH|AS|CORBITT, Jonatan|USA
+PH|D1|VELASQUEZ, Juan Carlos|COL
+PH|D2|GIGLIO, Vinicius|BRA
+PH|E1|MARTINEZ, Raul|MEX
+PH|E2|HONORES, Victor|PER
+PH|E3|VALENZUELA, Marco|GUA
+PH|E4|TERNICIEN, Luis|CHI
+PH|E5|ABAD, Juan José|ECU
+SR|AS|CORBITT, Jonatan|USA
+SR|D1|GOULET, James|CAN
+SR|D2|SUCART, José|PUR
+SR|E1|MARTINEZ, Raul|MEX
+SR|E2|TORO, Enrique|ECU
+SR|E3|HONORES, Victor|PER
+SR|E4|VALENZUELA, Marco|GUA
+SR|E5|ROMERO, William|CRC
+VT|AS|LIN WAY, Jim|PER
+VT|D1|ABAD, Juan José|ECU
+VT|D2|ASHE, Michael|USA
+VT|E1|BEJERANU, Nick|CAN
+VT|E2|MOLINARI, Fernando|ARG
+VT|E3|ROMERO, William|CRC
+VT|E4|KISS, Renato|BRA
+VT|E5|MARTINEZ, Raul|MEX
+VT|L|SANCHEZ, Carlos|WAG
+PB|AS|VELASQUEZ, Juan Carlos|COL
+PB|D1|CORBITT, Jonatan|USA
+PB|D2|GIGLIO, Vinicius|BRA
+PB|E1|SUCART, José|PUR
+PB|E2|ABAD, Juan José|ECU
+PB|E3|TERNICIEN, Luis|CHI
+PB|E4|HONORES, Victor|PER
+PB|E5|ROMERO, William|CRC
+HB|AS|CORBITT, Jonatan|USA
+HB|D1|SUCART, José|PUR
+HB|D2|GOULET, James|CAN
+HB|E1|PISOS, Gustavo|ARG
+HB|E2|HONORES, Victor|PER
+HB|E3|VALENZUELA, Ricardo|GUA
+HB|E4|ROMERO, William|CRC
+HB|E5|TORO, Enrique|ECU

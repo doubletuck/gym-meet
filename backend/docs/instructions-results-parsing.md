@@ -54,7 +54,7 @@ gymnastics book from another competition.
 ### 2.3 Scanned pages
 
 A page with no text layer gives `pdftotext` nothing (`pdfimages -list` shows a
-full-page image). No OCR tool is installed; read the pages as images instead:
+full-page image). No OCR package is installed; read the pages as images instead:
 
 - **Map the book** with
   [`contact_sheet.py`](../tools/results-parsing/contact_sheet.py): it stacks
@@ -65,7 +65,23 @@ full-page image). No OCR tool is installed; read the pages as images instead:
   The parser reads those files like any other source.
 - **Look for a text copy** of the same results first (a federation or FIG
   website often has one) and use transcription only for what's missing; where
-  both exist, compare them (§3).
+  both exist, compare them (§3). sporttech.io results can be exported as a CSV
+  of every frame (Senior Pan Americans, §5.5).
+- **A whole book of tables** (Senior Pan Americans, ~150 pages) is too much to
+  read by eye; draft it with OCR (macOS only). Render the pages
+  (`pdftoppm -r 220 -png <pdf> <scratch>/pages/p`), OCR them with
+  [`ocr_pages.swift`](../tools/results-parsing/ocr_pages.swift) (the Vision
+  framework, one word per line with its box), then draft transcriptions with
+  [`ocr_draft.py`](../tools/results-parsing/ocr_draft.py): `layout` rebuilds a
+  page as text for surveying; `table`, `vault-list`, `team` and `entries` draft
+  sporttech.io tables and an organizer entry list, placing words in columns by
+  position and marking every row that doesn't parse or add up with `!`.
+  Correct those against the image (the parsers reject `!` lines), and check
+  markers by eye. OCR drops lone characters (`0`, `—`, a leading `I`/`J`),
+  misreads struck-through numbers and swaps Latin letters for Cyrillic
+  look-alikes in names; arithmetic alone misses a dropped bare `0`, so compare
+  with a text copy when there is one. Other layouts need a new `ocr_draft.py`
+  mode.
 
 ### 2.4 Read the header row first, every time
 
@@ -156,6 +172,10 @@ decisions that come up while parsing.
 - **`PARTICIPANTS` is the master name record.** Surname/Given Name are derived
   there once; results files carry `Bib` + `Name` only, and every results row's
   name is replaced by the participant's full name by bib.
+- **Entry list annotations**: a `(reserve)` suffix on the name is dropped (the
+  reserve stays a participant); an entry struck through on the list is a
+  withdrawal and isn't written (Senior Pan Americans WAG bib 127), though the
+  "Number of Entries" counts still include it.
 - **Truncation happens anywhere a name is long** — narrow vault columns, but
   also normal tables (`BORDELAIS-MAISONNABLE` without his given name, initials
   like `KUBON CV` in all-around tables). Always diff against `PARTICIPANTS`.
@@ -212,6 +232,9 @@ decisions that come up while parsing.
 - **Vault DNF** (vault 1 done, vault 2 not): `Status2=DNS`, blank `Total`.
 - **All-around/team DNF** rows are kept with blank `Rank`/`Total`; a team
   missing a whole apparatus prints a blank column and `DNF` total.
+- **A team penalty** printed beside the apparatus totals (Senior Pan Americans
+  MAG CUB: `-1.000`, team score 190.728 against apparatus totals of 191.728)
+  goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
 - US all-around totals for partial all-arounders are printed and kept.
 
 ### 4.4 Session dates
@@ -258,7 +281,10 @@ decisions that come up while parsing.
 - `Q`, `R1`–`R4`, `NR` as printed (Worlds' AA qualification has four
   reserves).
 - `Qualification Rank` on every `QUAL` row: the double-vault rank for vault,
-  equal to `Rank` elsewhere.
+  equal to `Rank` elsewhere. sporttech.io ranks every vaulter (a single vault
+  counts half) but lists only the two-vault athletes, so its ranks skip the
+  one-vault athletes between them (Senior Pan Americans MAG: 13, then 17);
+  copy them as printed.
 - **Numbered qualifiers** (`Q1`…`Q8`, sporttech.io) are written as `Q`; the
   number is the qualifier's order (it skips athletes left out by the
   two-per-country rule) — check it runs 1…8 in rank order. Those left-out
@@ -270,6 +296,10 @@ decisions that come up while parsing.
 - **Markers not printed on the results table** but named on the final's start
   list (8 finalists + ordered reserves): take them from the start list, record
   it as a source file, and check the Q set equals the final's athletes.
+- **Replacements without reserve markers** (Senior Pan Americans all-around:
+  `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
+  `Qualification`; the parser reports absent qualifiers and their replacements
+  rather than failing.
 
 ### 4.7 Judges
 
@@ -290,7 +320,9 @@ decisions that come up while parsing.
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
 have no NOC (blank). Judges credited to a continental union print it as their
-federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank.
+federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank. Men's
+finals line judges lent by the women's panel print `WAG` as their federation
+(Senior Pan Americans); that is blank too.
 
 ### 4.8 Countries
 
@@ -312,6 +344,7 @@ Map the meet onto `Session`s (`data-model.md` §3) before parsing:
 | Championship | `QUAL`, `TEAM`, `AA`, `EVENT` per apparatus | Worlds, Europeans |
 | Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
 | All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
+| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
 
@@ -534,6 +567,65 @@ counting; a fifth member is entered and listed but competes on nothing.
 - The book's entry-count page is headed "SENIOR" but holds the junior counts
   (46 men, 58 women), which match the entry lists.
 
+### 5.5 Scanned organizer book with sporttech.io results (Senior Pan American Championships)
+
+The same organizer media book as §5.4, for the seniors, but every page except
+the Competition Schedule is a scanned image (the PDF went through a
+compressor). The tables are the same sporttech.io layouts, so §5.4's notes on
+values, markers and the `Pen`/`B` line apply. The parser
+([`parse_2026_pan_american_championships_sr.py`](../tools/results-parsing/parse_2026_pan_american_championships_sr.py))
+reads only the transcriptions
+([`transcriptions/2026-PAN-AMERICAN-CHAMPIONSHIPS-SR/`](../tools/results-parsing/transcriptions/2026-PAN-AMERICAN-CHAMPIONSHIPS-SR/README.md)),
+made with OCR (§2.3) and corrected by eye.
+
+**Text copy.** sporttech.io's CSV export of the competition
+(`18533-sporttech-export.csv`, next to the PDF; downloaded from sporttech.io
+as `CAMPEONATO PANAMERICANO ADULTOS DE GIMNASIA ARTÍSTICA – 2026.csv`) has one row per frame (routine) of every stage. It names no stage:
+rows come stage by stage (the `Group #` starting again at 1) and athlete by
+athlete, and a performance's round comes from the days its frames started
+(`LastStartTime`; a frame that never started is dated `0001-01-01`). `FAILED`
+is DNS; a frame `FINISHED` but never published (MAG bib 344's second vault)
+isn't a result. `NPenalty` is positive, `VaultBonus` sits on the `Vault2`
+frame, and each frame also carries its performance's all-around and team
+totals and ranks (`Rank_G` is filled even for unranked athletes). The parser
+compares every routine, status, rank and total with it, both ways; this caught
+a bare `0` on vault that OCR had dropped and the arithmetic couldn't see.
+
+**Structure.** Qualification decides the team title ("Team Final Ranking" on
+qualification day); the top 24 all-arounders (two per country) go to an
+all-around final, the top eight per apparatus to the finals (§4.9).
+
+| Report | Pages (MAG / WAG) |
+|---|---|
+| Number of Entries by NOC | 3 |
+| Entry list | 8–10 / 111–114 |
+| Judges (qualification, all-around final, finals) | 29, 88, 94 / 127, 172, 178 |
+| All-around (qualification, every routine) | 30–33 / 128–132 |
+| Team competitions – qualification | 35–39 / 134–138 |
+| Per-apparatus qualification, two-vault list | 41–76 / 140–163 |
+| All-around final | 89–90 / 174–175 |
+| Event finals | 95–100 / 179–182 |
+
+**Gotchas**
+
+- The all-around ranking prints `Q` under the rank for its 24 qualifiers and
+  no reserve markers; four MAG and one WAG qualifier didn't compete in the
+  final and were replaced by lower-ranked athletes (§4.6).
+- The two-vault list's ranks skip the one-vault athletes (§4.6).
+- Team members' struck-through scores are the ones not counting; the strike
+  confuses OCR (`9.300` read as `2.300`), which the team cross-check catches.
+- MAG CUB's team score carries a `-1.000` team penalty (§4.3).
+- Bare zeros: MAG bib 309's qualification vault and WAG bib 143's all-around
+  final vault (`INVALID_VAULT`; bib 143 then didn't start bars or beam, `DNF`);
+  MAG bib 301's second vault on the two-vault list.
+- WAG bib 127 is struck through on the entry list (§4.1); WAG bib 153 is
+  entered and on the start lists but has no results at all.
+- Judges: MAG prints `SURNAME, Given` with the Superior Jury unlabelled
+  (`Member`); WAG prints `SURNAME Given` with Spanish functions and seven E
+  judges. Panel icons: MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX. A few names
+  are spelled differently between pages (`CORDEIRO` / `CORDEIRO ANDRADE`,
+  `MENESES` / `MENESSES`); they are copied as printed.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -545,3 +637,6 @@ counting; a fifth member is entered and listed but competes on nothing.
    the newer `Birth Date` column; there is no parser to regenerate them.
 4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
    different contexts; kept separate for now.
+5. **Team penalties aren't stored.** A team summary's `SJ Penalty` (Senior Pan
+   Americans MAG CUB) is written but the importer keeps only the printed
+   `Total`.
