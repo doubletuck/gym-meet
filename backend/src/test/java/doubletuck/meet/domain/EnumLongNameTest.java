@@ -39,4 +39,12 @@ class EnumLongNameTest {
         assertEquals("Invalid Vault", ScoreStatus.INVALID_VAULT.getLongName());
         assertNull(ScoreStatus.find("DNF"));
     }
+
+    @Test
+    void testEntryStatus() {
+        assertEquals(EntryStatus.RESERVE, EntryStatus.find("RESERVE"));
+        assertEquals(EntryStatus.WITHDRAWN, EntryStatus.find("Withdrawn"));
+        assertEquals("Competitor", EntryStatus.COMPETITOR.getLongName());
+        assertNull(EntryStatus.find("SPARE"));
+    }
 }

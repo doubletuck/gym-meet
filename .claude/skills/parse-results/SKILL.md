@@ -57,11 +57,15 @@ tests, docs) only once the user agrees.
 - Scanned pages: render at ~110 dpi, read them, and transcribe into
   `backend/tools/results-parsing/transcriptions/<EVENT>/` (format in an existing README there),
   copying values exactly as printed. Prefer a text copy of the same results when one exists
-  (sporttech.io results can be exported as CSV; ask the user). For many pages, draft with
+  (sporttech.io results can be exported as CSV; ask the user, and compare with
+  `sporttech.py`). For many pages, draft with
   `ocr_pages.swift` and `ocr_draft.py` in the scratchpad (parsing doc §2.3), then correct
   every `!` line and check markers against the image; the drafts are not a source until reviewed.
 - Follow the conventions in parsing doc §4 (names, ranks, status, vault, Q markers, judges,
   countries) and the column rules in `import-file-model.md`.
+- Transcriptions copy the book as printed. Any value written differently (a tie-break, a status
+  or score from a text copy such as a sporttech.io export, a judge's spelling) goes in the event's
+  `<EVENT>-CORRECTIONS.csv`, applied through `common.Corrections`; see `import-file-model.md`.
 - Write each prefix's `<PREFIX>-IMPORT.json` with `out.manifest(prefix, event_row)` after its
   CSVs: it copies the EVENT.csv row and lists every file written for that prefix.
 

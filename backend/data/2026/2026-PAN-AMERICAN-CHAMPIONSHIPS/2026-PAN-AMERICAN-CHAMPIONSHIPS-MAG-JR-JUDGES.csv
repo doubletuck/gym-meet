@@ -20,9 +20,9 @@ Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Nam
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,FX,L1,"LAGOS, Rodrigo",LAGOS,Rodrigo,CHI
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,FX,L2,"ORBEGOZO, Gianmarco",ORBEGOZO,Gianmarco,PER
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,FX,T,"RAMOS, Tommy",RAMOS,Tommy,PUR
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,SR,SV,"VALENZUELA, César",VALENZUELA,César,MEX
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,VT,SV,"LIN WAY, Jim",LIN WAY,Jim,PER
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,SR,D1,"GOULET, James",GOULET,James,CAN
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,SR,SV,"VALENZUELA GOMEZ, Cesar",VALENZUELA GOMEZ,Cesar,MEX
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,VT,SV,"LI LIN WAY, Jim Anthony",LI LIN WAY,Jim Anthony,PER
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,SR,D1,"GOULET JR, James",GOULET JR,James,CAN
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,VT,D1,"ABAD, Juan José",ABAD,Juan José,ECU
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,SR,D2,"SUCART, José",SUCART,José,PUR
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,VT,D2,"ASHE, Michael",ASHE,Michael,USA
@@ -42,7 +42,7 @@ Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Nam
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,PB,D1,"CORBITT, Jonatan",CORBITT,Jonatan,USA
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,HB,D1,"SUCART, José",SUCART,José,PUR
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,PB,D2,"GIGLIO, Vinicius",GIGLIO,Vinicius,BRA
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,HB,D2,"GOULET, James",GOULET,James,CAN
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,HB,D2,"GOULET JR, James",GOULET JR,James,CAN
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,PB,E1,"MOLINARI, Fernando",MOLINARI,Fernando,ARG
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,HB,E1,"CORREDOR, Jaime",CORREDOR,Jaime,COL
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,QUAL,PB,E2,"TORO, Henrique",TORO,Henrique,ECU
@@ -58,7 +58,7 @@ Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Nam
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PH,SV,"CORBITT, Jonatan",CORBITT,Jonatan,USA
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,D1,"JOHNSON, David",JOHNSON,David,USA
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PH,D1,"VELASQUEZ, Juan Carlos",VELASQUEZ,Juan Carlos,COL
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,D2,"VALENZUELA, Cesar",VALENZUELA,Cesar,MEX
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,D2,"VALENZUELA GOMEZ, Cesar",VALENZUELA GOMEZ,Cesar,MEX
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PH,D2,"GIGLIO, Vinicius",GIGLIO,Vinicius,BRA
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,E1,"SUCART, José",SUCART,José,PUR
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PH,E1,"VALENZUELA, Marco",VALENZUELA,Marco,GUA
@@ -72,10 +72,10 @@ Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Nam
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PH,E5,"ANTEQUERA ECHEVERRIA, Walter",ANTEQUERA ECHEVERRIA,Walter,BOL
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,L1,"ABAD, Juan José",ABAD,Juan José,ECU
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,L2,"PEREZ, Angel",PEREZ,Angel,DOM
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,T,"OBERGOZO, Gianmarco",OBERGOZO,Gianmarco,PER
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,SR,SV,"VALENZUELA, César",VALENZUELA,César,MEX
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,VT,SV,"LIN WAY, Jim",LIN WAY,Jim,PER
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,SR,D1,"GOULET, James",GOULET,James,CAN
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,FX,T,"ORBEGOZO, Gianmarco",ORBEGOZO,Gianmarco,PER
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,SR,SV,"VALENZUELA GOMEZ, Cesar",VALENZUELA GOMEZ,Cesar,MEX
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,VT,SV,"LI LIN WAY, Jim Anthony",LI LIN WAY,Jim Anthony,PER
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,SR,D1,"GOULET JR, James",GOULET JR,James,CAN
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,VT,D1,"ABAD, Juan José",ABAD,Juan José,ECU
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,SR,D2,"SUCART, José",SUCART,José,PUR
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,VT,D2,"JOHNSON, David",JOHNSON,David,USA
@@ -95,7 +95,7 @@ Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Nam
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PB,D1,"CORBITT, Jonatan",CORBITT,Jonatan,USA
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,HB,D1,"SUCART, José",SUCART,José,PUR
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PB,D2,"GIGLIO, Vinicius",GIGLIO,Vinicius,BRA
-2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,HB,D2,"GOULET, James",GOULET,James,CAN
+2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,HB,D2,"GOULET JR, James",GOULET JR,James,CAN
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PB,E1,"SUCART, José",SUCART,José,PUR
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,HB,E1,"ROMERO, William",ROMERO,William,CRC
 2026 Junior Pan American Championships,MAG,JR,2026-06-18,EVENT,PB,E2,"PONCE, Renzo",PONCE,Renzo,PER

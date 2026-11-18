@@ -10,6 +10,7 @@ import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.service.SessionService;
 import lombok.Getter;
 
@@ -55,6 +56,7 @@ class ImportContext {
     private final Map<String, Participant> participantsByBib = new HashMap<>();
     private final Map<SessionKey, Session> sessions = new LinkedHashMap<>();
     private final List<Score> scores = new ArrayList<>();
+    private final List<TeamResult> teamResults = new ArrayList<>();
     private final List<AllAroundResult> allAroundResults = new ArrayList<>();
     private final List<ApparatusResult> apparatusResults = new ArrayList<>();
     private final List<PublishedTeamTotal> publishedTeamTotals = new ArrayList<>();

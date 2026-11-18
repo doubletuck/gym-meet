@@ -14,17 +14,18 @@ The book is the same organizer media book as the juniors' (§5.4: sporttech.io r
 every page except the schedule is a scanned image. The pages were read with OCR and checked by eye
 into `transcriptions/2026-PAN-AMERICAN-CHAMPIONSHIPS-SR/` (format in the README there); this parser
 reads those, and compares every routine with sporttech.io's own export of the competition
-(`SPORTTECH`, saved next to the PDF). Qualification decides the team title (no team final); the top
+(`SPORTTECH`, saved next to the PDF). Where the export differs from the book, the export is taken
+and the change logged in the event's CORRECTIONS.csv (applied by `common.Output`). Qualification decides the team title (no team final); the top
 24 all-arounders (two per country) go to an all-around final, and the top eight per apparatus to the
 finals. Neither discipline has a single-vault list: every vaulter's first vault comes from the
 all-around report (no vault rank is published, so `Rank` is blank) and the two-vault list adds the
 second vault and the qualification ranking.
 """
-import csv, os, re, sys, unicodedata
+import os, re, sys, unicodedata
 from decimal import Decimal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import common
+import common, sporttech
 from common import D, split_given_first, split_surname_first
 
 PDF = sys.argv[1]
@@ -32,7 +33,6 @@ OUT = os.path.dirname(os.path.abspath(PDF))
 EVENT_PREFIX = '2026-PAN-AMERICAN-CHAMPIONSHIPS'
 TRANSCRIPTIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'transcriptions', f'{EVENT_PREFIX}-SR')
 EVENTS = common.read_events(OUT, EVENT_PREFIX)
-out = common.Output(OUT)
 checks = common.Checks()
 err = checks.err
 
@@ -42,6 +42,8 @@ EVENT_START = EVENTS[PREFIX['MAG']]['Start Date']
 if any(EVENTS[p]['Title'] != EVENT_NAME or EVENTS[p]['Start Date'] != EVENT_START for p in PREFIX.values()):
     raise SystemExit('MAG and WAG rows in EVENT.csv are expected to share a title and start date')
 AGE = 'SR'
+corrections = common.Corrections(OUT, EVENT_PREFIX, ['MAG-SR', 'WAG-SR'], err)
+out = common.Output(OUT, corrections)
 # All-around report column order, and the SUMMARY column order (import-file-model.md).
 APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
 SUMMARY_APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
@@ -83,13 +85,12 @@ def entry_counts():
 def participants(disc):
     rows, counts = [], {}
     for n, f in read(f'{disc}-ENTRIES.txt'):
-        struck = f[0].startswith('~')      # struck through on the entry list: withdrawn
         noc, legal, name, lic, bib, year = f[0].lstrip('~'), *f[1:]
         counts[noc] = counts.get(noc, 0) + 1
-        if struck:
-            continue
+        # Struck through on the entry list: withdrawn. Their pending licence is left blank.
+        status = 'WITHDRAWN' if f[0].startswith('~') else 'RESERVE' if name.endswith(' (reserve)') else 'COMPETITOR'
         name = name.removesuffix(' (reserve)')
-        if lic.isdigit() == (bib in LICENCES):
+        if status != 'WITHDRAWN' and lic.isdigit() == (bib in LICENCES):
             err(f'participants {disc}: bib {bib} licence {lic!r} vs LICENCES')
         sur, giv = split_given_first(name)
         if not sur or not giv:
@@ -98,10 +99,10 @@ def participants(disc):
         rows.append({'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
                      'Event Start Date': EVENT_START, 'Order': len(rows) + 1, 'NOC Code': noc,
                      'Bib Number': bib, 'FIG License': lic if lic.isdigit() else LICENCES.get(bib, ''), 'Name': name,
-                     'Surname': sur, 'Given Name': giv, 'Birth Year': year, 'Birth Date': ''})
+                     'Surname': sur, 'Given Name': giv, 'Birth Year': year, 'Birth Date': '', 'Entry Status': status})
     if counts != entry_counts()[disc]:
         err(f'participants {disc}: entries by NOC {counts} != "Number of Entries" {entry_counts()[disc]}')
-    out.csv(f'{PREFIX[disc]}-PARTICIPANTS.csv', common.PARTICIPANTS, rows)
+    out.csv(f'{PREFIX[disc]}-PARTICIPANTS.csv', common.PARTICIPANTS + ['Entry Status'], rows)
 
 def check_identity(ctx, bib, name):
     """Results print `SURNAME Given`, sometimes spelled differently from the entry list; every
@@ -128,8 +129,8 @@ def judges(disc):
     for rnd in ('QUAL', 'AA', 'EVENT'):
         n_rnd = len(rows)
         for n, (app, fn, name, fed) in read(f'{disc}-JUDGES-{rnd}.txt'):
-            if disc == 'MAG':   # 'SURNAME, Given'
-                sur, giv = (s.strip() for s in name.split(',', 1))
+            if disc == 'MAG':   # 'SURNAME, Given' (once printed with a full stop for the comma)
+                sur, giv = (s.strip() for s in re.split(r'[,.] ', name, maxsplit=1))
             else:               # 'SURNAME Given'
                 sur, giv = split_surname_first(name)
             if not sur or not giv:
@@ -495,104 +496,11 @@ def final(disc, app, marks):
     out.csv(f'{PREFIX[disc]}-SCORES-EVENT-{app}.csv', common.score_header(vault, False), rows)
 
 # ---------------------------------------------------------------- sporttech.io cross-check
-EXPORT_APP = {'Floor': 'FX', 'Pommel': 'PH', 'Rings': 'SR', 'Vault': 'VT', 'Vault2': 'VT', 'PBars': 'PB',
-              'HBar': 'HB', 'UBars': 'UB', 'Beam': 'BB'}
+EXPORT_TITLE = {'MAG': 'SENIOR - Men', 'WAG': 'SENIOR - Women'}
 ROUND_OF_DATE = {'2026-06-17': 'QUAL', '2026-06-18': 'QUAL', '2026-06-19': 'AA', '2026-06-21': 'EVENT'}
 
-def sporttech_frames(disc):
-    """{(round, bib, apparatus, attempt): frame} from the export. The export names no stage: its rows
-    come stage by stage (the group number starting again at 1), and athlete by athlete. A performance
-    (one athlete's consecutive rows) takes its round from the days its frames started, or, when none
-    started, from its stage's."""
-    title = {'MAG': 'SENIOR - Men', 'WAG': 'SENIOR - Women'}[disc]
-    with open(SPORTTECH, encoding='utf-8-sig') as f:
-        rows = [r for r in csv.DictReader(f) if r['Competition: Title'] == title]
-    perfs, stage, group = [], 0, 0
-    for r in rows:
-        if int(r['Group #']) < group:
-            stage += 1
-        group = int(r['Group #'])
-        key = (stage, r['Group #'], r['Performance #'], r['Athlete: Bib'])
-        if not perfs or perfs[-1][0] != key:
-            perfs.append((key, []))
-        perfs[-1][1].append(r)
-    def rounds(rs):
-        return {ROUND_OF_DATE[r['Frame: LastStartTime_G'][:10]] for r in rs
-                if r['Frame: LastStartTime_G'][:10] in ROUND_OF_DATE}
-    stage_rounds = {}
-    for key, rs in perfs:
-        stage_rounds.setdefault(key[0], set()).update(rounds(rs))
-    frames = {}
-    for key, rs in perfs:
-        rnd = rounds(rs) or stage_rounds[key[0]]
-        if len(rnd) != 1:
-            err(f'sporttech {disc}: bib {key[3]} performance in rounds {rnd}'); continue
-        for r in rs:
-            frames[(next(iter(rnd)), r['Athlete: Bib'], EXPORT_APP[r['Routine type']],
-                    2 if r['Routine type'] == 'Vault2' else 1)] = r
-    return frames
-
-def export_routine(r):
-    """A frame as the CSV columns: (status, D, E, B, Penalty, Total, combined bonus)."""
-    if r['Frame: State'] == 'FAILED':
-        return ('DNS', '', '', '', '', '', '')
-    if r['Frame: State'] != 'PUBLISHED':
-        return None                                    # never started, or scored but never published
-    total = r['Frame: TMarkTTT_G']
-    if D(total) == 0 and D(r['Frame: DMarkT_G']) == 0:
-        return ('ZERO', '', '', '', '', '0', '')
-    sign = lambda v, neg: '' if D(v) == 0 else ('-' if neg else '') + v
-    return ('COMPLETED', r['Frame: DMarkT_G'], r['Frame: EMarkTTT_G'], sign(r['Frame: DBonusT_G'], False),
-            sign(r['Frame: NPenaltyT_G'], True), total, sign(r['Frame: VaultBonusT_G'], False))
-
-def crosscheck_sporttech(disc):
-    """Every routine written must match sporttech.io's export, and every published routine in the export
-    must have been written."""
-    frames = sporttech_frames(disc)
-    seen = set()
-    for name in sorted(os.listdir(OUT)):
-        m = re.fullmatch(rf'{PREFIX[disc]}-SCORES-(QUAL|AA|EVENT)-([A-Z]{{2}})\.csv', name)
-        if not m:
-            continue
-        rnd, app = m.groups()
-        with open(os.path.join(OUT, name), encoding='utf-8') as f:
-            for row in csv.DictReader(f):
-                attempts = ('1', '2') if 'Status1' in row else ('',)
-                for n, suffix in enumerate(attempts, 1):
-                    if not row[f'Status{suffix}']:
-                        continue
-                    key = (rnd, row['Bib'], app, n)
-                    seen.add(key)
-                    status = row[f'Status{suffix}']
-                    mine = ('ZERO' if row[f'Total{suffix}'] == '0' else status if status != 'INVALID_VAULT' else '?',
-                            *(row[f'{c}{suffix}'] for c in ('D', 'E', 'B', 'Penalty', 'Total')),
-                            row.get('Combined Bonus', '') if suffix == '2' else '')
-                    theirs = export_routine(frames[key]) if key in frames else None
-                    if mine != theirs:
-                        err(f'sporttech {disc} {rnd} {app} bib {row["Bib"]} attempt {n}: {mine} != export {theirs}')
-                rank = row.get('Qualification Rank') or row['Rank']
-                if rank and key[:3] + (1,) in frames and frames[key[:3] + (1,)]['Routine Rank'] != rank:
-                    err(f'sporttech {disc} {rnd} {app} bib {row["Bib"]}: rank {rank} != export '
-                        f'{frames[key[:3] + (1,)]["Routine Rank"]}')
-    for key, r in frames.items():
-        if key not in seen and export_routine(r) and export_routine(r)[0] != 'DNS':
-            err(f'sporttech {disc}: {key} published in the export but not written')
-    # All-around and team standings: each frame also carries its performance's totals and ranks.
-    perf = {(rnd, bib): r for (rnd, bib, _, _), r in frames.items()}
-    for rnd, name in (('QUAL', 'QUAL-AA'), ('AA', 'FINAL-AA'), ('QUAL', 'QUAL-TEAM')):
-        with open(os.path.join(OUT, f'{PREFIX[disc]}-SUMMARY-{name}.csv'), encoding='utf-8') as f:
-            for row in csv.DictReader(f):
-                if 'Bib' in row:
-                    r = perf.get((rnd, row['Bib']))
-                    theirs = r and (r['Performance: Rank_G'] if row['Rank'] else '',
-                                    r['Performance: MarkTTT_G'] if row['Total'] else '')
-                else:
-                    r = next((r for (k, b), r in perf.items() if k == rnd and PEOPLE[b]['noc'] == row['NOC Code']
-                              and r['Performance: TeamRank_G'] != '99'), None)
-                    theirs = r and (r['Performance: TeamRank_G'], r['Performance: TeamMarkTTT_G'])
-                if (row['Rank'], row['Total']) != theirs:
-                    err(f'sporttech {disc} SUMMARY-{name} {row.get("Bib") or row["NOC Code"]}: '
-                        f'{(row["Rank"], row["Total"])} != export {theirs}')
+def noc_of(bib):
+    return PEOPLE[bib]['noc'] if bib in PEOPLE else None
 
 # ---------------------------------------------------------------- main
 for disc in ('MAG', 'WAG'):
@@ -606,7 +514,8 @@ for disc in ('MAG', 'WAG'):
         marks = qual_vault(disc, aa) if app == 'VT' else qual_app(disc, app, aa)
         final(disc, app, marks)
     aa_final(disc, athletes)
-    crosscheck_sporttech(disc)
+    sporttech.crosscheck(OUT, PREFIX[disc], SPORTTECH, EXPORT_TITLE[disc], ROUND_OF_DATE, noc_of, err)
     out.manifest(PREFIX[disc], EVENTS[PREFIX[disc]])
 
+corrections.finish()
 checks.finish()

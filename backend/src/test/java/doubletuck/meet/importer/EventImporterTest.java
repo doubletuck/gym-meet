@@ -5,6 +5,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.Discipline;
+import doubletuck.meet.domain.EntryStatus;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.ImportRun;
@@ -39,6 +40,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -399,6 +401,34 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_EntryStatus_ReadWhenPresentElseCompetitor(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        addEntryStatus(dir, "RESERVE");
+
+        eventImporter.importManifest(manifest, false);
+
+        assertEquals(EntryStatus.RESERVE, participant("999").getEntryStatus());
+        assertEquals(EntryStatus.COMPETITOR, participant("401").getEntryStatus());
+    }
+
+    @Test
+    void testImport_EntryStatusColumnAbsent_EveryoneIsACompetitor() {
+        importFixture(WORLDS_WAG);
+
+        assertTrue(participantRepository.findAll().stream()
+                .allMatch(p -> p.getEntryStatus() == EntryStatus.COMPETITOR));
+    }
+
+    @Test
+    void testImport_UnknownEntryStatus_Fails(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        addEntryStatus(dir, "SPARE");
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
+        assertTrue(e.getMessage().contains("unrecognised Entry Status 'SPARE'"), e.getMessage());
+    }
+
+    @Test
     void testImport_ItemizedBonusBecomesBonusDetail() {
         importFixture(US_MAG);
 
@@ -455,11 +485,57 @@ class EventImporterTest {
 
         ImportReport report = eventImporter.importManifest(manifest, false);
 
-        assertEquals(1, report.getWarnings().size());
+        // The changed apparatus total also no longer adds up to the team total
+        assertEquals(2, report.getWarnings().size(), report.getWarnings().toString());
         assertTrue(report.getWarnings().get(0).contains("CHN team: no group of its athletes adds up"),
                 report.getWarnings().get(0));
         assertTrue(report.getWarnings().get(0).contains("BB 43.0"), report.getWarnings().get(0));
+        assertTrue(report.getWarnings().get(1).contains("CHN team total 164.996 differs"), report.getWarnings().get(1));
         assertTrue(score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
+    }
+
+    @Test
+    void testImport_TeamPenalty_StoredAndCountedInTheTotal(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        Path teamSummary = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv");
+        Files.writeString(teamSummary, Files.readString(teamSummary).replace(",,164.996,", ",-1.000,163.996,"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(List.of(), report.getWarnings());
+        TeamResult china = teamResultRepository
+                .findBySessionAndNoc(session(sessionRepository.findAll(), Round.QUAL, null), "CHN").orElseThrow();
+        assertEquals(-1.0, china.getSjPenalty());
+        assertEquals(163.996, china.getTotalScore());
+    }
+
+    @Test
+    void testImport_TeamTotalNotItsApparatusTotalsAndPenalty_Warns(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        Path teamSummary = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv");
+        Files.writeString(teamSummary, Files.readString(teamSummary).replace(",,164.996,", ",,163.996,"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(1, report.getWarnings().size());
+        assertTrue(report.getWarnings().get(0).contains("CHN team total 163.996 differs from its apparatus totals "
+                + "and penalty, 164.996"), report.getWarnings().get(0));
+    }
+
+    @Test
+    void testImport_AllAroundPenalty_CountedInTheTotal(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        Path summary = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv");
+        Files.writeString(summary, Files.readString(summary).replace(",14.033,,55.032", ",14.033,-0.300,54.732"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(List.of(), report.getWarnings());
+        AllAroundResult ke = allAroundResultRepository
+                .findBySession(session(sessionRepository.findAll(), Round.AA, null)).stream()
+                .filter(result -> result.getParticipant().getAthlete().getSurname().equals("Ke"))
+                .findFirst().orElseThrow();
+        assertEquals(-0.3, ke.getSjPenalty());
     }
 
     @Test
@@ -480,6 +556,23 @@ class EventImporterTest {
 
         ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
         assertTrue(e.getMessage().contains("MINI-MAG-SR-SCORES-QUAL-FX.csv line 2: bib 999"), e.getMessage());
+    }
+
+    /** Adds an Entry Status column, blank for every entry, and an entry with the given status and no results. */
+    private static void addEntryStatus(Path dir, String status) throws IOException {
+        Path participants = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv");
+        List<String> lines = Files.readAllLines(participants);
+        List<String> withStatus = new ArrayList<>();
+        withStatus.add(lines.get(0) + ",Entry Status");
+        lines.stream().skip(1).map(line -> line + ",").forEach(withStatus::add);
+        withStatus.add("54th Artistic Gymnastics World Championships,WAG,SR,2026-10-17,999,ALG,999,,"
+                + "SPARE Ana,SPARE,Ana,2008,," + status);
+        Files.write(participants, withStatus);
+    }
+
+    private Participant participant(String bib) {
+        return participantRepository.findAll().stream().filter(p -> bib.equals(p.getBibNumber())).findFirst()
+                .orElseThrow();
     }
 
     private ImportReport importFixture(String manifest) {

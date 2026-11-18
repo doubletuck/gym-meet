@@ -128,6 +128,14 @@ Final round itself — the two `AA`s aren't related beyond sharing a name.)
 | R4 | Fourth Reserve | Fourth reserve (e.g. World Championships All-Around qualification). |
 | NR | NOC Reserve | Had a score to qualify, but removed because of maximum of two per country in a final rule. "NOC Reserve" is FIG's own legend wording. |
 
+#### `EntryStatus`
+
+| Value | Long Name | Description |
+|---|---|---|
+| COMPETITOR | Competitor | Entered to compete. The default. |
+| RESERVE | Reserve | Entered as a reserve (marked on the entry list); competes only if called up. |
+| WITHDRAWN | Withdrawn | Struck through on the entry list. |
+
 #### `Country`
 
 No enumerator or type will be used. Countries are the three-letter **IOC codes** World Gymnastics uses (`GER`, `NED`, `CRO`) — not ISO-3166 (`DEU`, `NLD`, `HRV`) — for both NOCs and an event's host country. At times, there will be FIG neutral athletes who are not associated with a country for the competition; they're published under a placeholder code, which can be four characters (`AIN1`, `AIN2` — Individual Neutral Athletes — at the 2026 Cottbus World Cup; `WG1`, `WG2` — World Gymnastics 1 and 2, each entering its own team — at the 2026 Europeans), so `Participant.noc` and `TeamResult.noc` accept 3–4 characters.
@@ -291,6 +299,7 @@ Unique key: `(name, country_code)`.
 | bibNumber | String | Yes | Competition bib/start number, when assigned. |
 | noc | Country | No | Who this athlete is competing for at this event. Recorded per event rather than on `Athlete`, since an athlete can change federation or compete as a neutral athlete. |
 | clubId | Long, FK → `Club` | Yes | The club the athlete represented at this event. Held per entry rather than on `Athlete`, since an athlete can change clubs between events. Null when the source doesn't publish one — international results identify athletes by country only. |
+| entryStatus | EntryStatus | No | How the entry list shows the athlete: `COMPETITOR` (the default), `RESERVE`, or `WITHDRAWN` (struck through). Reserves and withdrawn athletes usually have no results. An entered competitor can also have none (didn't start at all). |
 
 Unique key: `(event_id, athlete_id)`
 
@@ -450,6 +459,7 @@ flagged here rather than solved.
 | sessionId | Long, FK → `Session` | No | Scoped to a `TEAM` (or, for some formats, `QUAL`) `Session`. |
 | noc | Country | No | Which country/team this result is for. Kept simple since org/roster modeling is out of scope (§1). |
 | totalScore | Double | Yes | The team's official published total. Null if the team withdrew or was disqualified before a total was posted. |
+| sjPenalty | Double | Yes | A penalty on the team as a whole, as printed (negative), already deducted from `totalScore` — e.g. 2026 Senior Pan Americans MAG CUB, `-1.0` (sporttech.io records it against one routine, but it comes off the team total, not the apparatus total). Null when there is none. |
 | rank | Integer | Yes | The team's placement within the `Session`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the team final, when this `TeamResult` is on a `QUAL` `Session`. |
 
@@ -464,6 +474,7 @@ Unique key: `(session_id, noc)`
 | participantId | Long, FK → `Participant` | No | The athlete this result is for. |
 | sessionId | Long, FK → `Session` | No | The round this all-around total applies to — typically a `QUAL` or `AA` `Session`. For a round split into parts, one result per part session plus the combined result on the whole-round session (§3, `Session`). |
 | totalScore | Double | Yes | The athlete's official published all-around total — the sum of their apparatus `Score.routine.score` values for this `Session` (for vault, the first vault only); on a whole-round session, the published combined total across the parts. Null if the athlete didn't complete every apparatus (most formats require completing all apparatus to receive an all-around result at all — US Championships is an exception and prints a partial total, which is stored as published). |
+| sjPenalty | Double | Yes | A penalty on the all-around result as a whole, as printed (negative), already deducted from `totalScore`. Null when there is none (none seen so far). |
 | rank | Integer | Yes | The athlete's all-around placement within the `Session`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the all-around final, when this `AllAroundResult` is on a `QUAL` `Session`. |
 

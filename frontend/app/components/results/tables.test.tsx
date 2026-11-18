@@ -306,6 +306,7 @@ describe("AllAroundTable", () => {
       noc: "USA",
       club: null,
       total,
+      sjPenalty: null,
       qualification: null,
       apparatusScores: { VT },
       parts: [],
@@ -397,12 +398,47 @@ describe("StandingsTable", () => {
 
 describe("TeamTable", () => {
   it("lists apparatus totals under the team for a phone, leaving out blanks", () => {
-    const team: TeamRow = { rank: 1, noc: "JPN", total: 252.0, qualification: null, apparatusTotals: { FX: 42.1 } };
+    const team: TeamRow = {
+      rank: 1,
+      noc: "JPN",
+      total: 252.0,
+      sjPenalty: null,
+      qualification: null,
+      apparatusTotals: { FX: 42.1 },
+    };
     render(<TeamTable rows={[team]} apparatus={["FX", "PH"]} qualification={false} />);
 
     const cell = screen.getByText("Japan").closest("td")!;
     expect(within(cell).getByTitle("Floor Exercise").parentElement).toHaveTextContent("FX 42.100");
     expect(within(cell).queryByTitle("Pommel Horse")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
+  });
+
+  it("shows a penalty column only when a team has a penalty", () => {
+    const team = (noc: string, total: number, sjPenalty: number | null): TeamRow => ({
+      rank: null,
+      noc,
+      total,
+      sjPenalty,
+      qualification: null,
+      apparatusTotals: {},
+    });
+    const { unmount } = render(
+      <TeamTable rows={[team("CAN", 243.026, null)]} apparatus={["FX"]} qualification={false} />,
+    );
+    expect(screen.queryByRole("columnheader", { name: /Pen/ })).not.toBeInTheDocument();
+    unmount();
+
+    render(
+      <TeamTable
+        rows={[team("CAN", 243.026, null), team("CUB", 190.728, -1)]}
+        apparatus={["FX"]}
+        qualification={false}
+      />,
+    );
+    expect(screen.getByRole("columnheader", { name: /Pen/ })).toBeInTheDocument();
+    const cells = screen.getAllByRole("row").map((row) => row.textContent);
+    expect(cells.filter((text) => text?.includes("-1.000"))).toHaveLength(1);
+    expect(cells.find((text) => text?.includes("-1.000"))).toContain("190.728");
   });
 });

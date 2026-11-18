@@ -2,6 +2,8 @@ package doubletuck.meet.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.Index;
@@ -56,4 +58,9 @@ public class Participant extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "club_id", foreignKey = @ForeignKey(name = "fk_participant_club"))
     private Club club;
+
+    @NotNull(message = "Entry status is required")
+    @Column(name = "entry_status_code", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private EntryStatus entryStatus = EntryStatus.COMPETITOR;
 }

@@ -80,6 +80,7 @@ describe("EntryResults", () => {
       event: worlds,
       noc: "KOR",
       club: null,
+      entryStatus: "COMPETITOR",
       sessions: [
         {
           session: session("qualification", "QUAL"),
@@ -117,6 +118,7 @@ describe("EntryResults", () => {
       event: { ...worlds, slug: "2026-us-championships", title: "US Championships" },
       noc: "USA",
       club: "U of Oklahoma",
+      entryStatus: "COMPETITOR",
       sessions: [
         {
           session: { ...session("all-around-final", "AA"), discipline: "MAG" },

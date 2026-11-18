@@ -114,6 +114,7 @@ One athlete's result on one apparatus.
 | noc | String | IOC code |
 | club | String, nullable | As on [ScoreRow](#scorerow-object) |
 | total | Double, nullable | All-around total as published |
+| sjPenalty | Double, nullable | Penalty on the result as a whole (negative), already deducted from `total` |
 | qualification | String, nullable | Qualification to the all-around final, in qualification |
 | apparatusScores | Map | Score on each apparatus in this session, keyed by apparatus code. For a split round's combined session, the sum of the parts' scores, over the parts the athlete competed the apparatus in (one part's score alone when they skipped it in the other): the combined apparatus standings can't stand in, since vault's is the two-vault title, not the all-around's one vault a day |
 | parts | List | For a split round's combined session, the athlete's result in each part they took part in, as `{part, total, apparatusScores}`; otherwise empty |
@@ -125,5 +126,6 @@ One athlete's result on one apparatus.
 | rank | Integer, nullable | Placement as published |
 | noc | String | IOC code |
 | total | Double, nullable | Team total as published |
+| sjPenalty | Double, nullable | Penalty on the team as a whole (negative), already deducted from `total`; the apparatus totals don't include it |
 | qualification | String, nullable | Qualification to the team final, in qualification |
 | apparatusTotals | Map | Sum of the scores counting toward the team on each apparatus, keyed by apparatus code |

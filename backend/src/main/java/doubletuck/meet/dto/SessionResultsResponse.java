@@ -81,6 +81,7 @@ public record SessionResultsResponse(
 
     /**
      * @param club            as on {@link ScoreRow}
+     * @param sjPenalty       a penalty on the result as a whole (negative), already deducted from the total
      * @param apparatusScores each apparatus's score in this session, for those the athlete scored on; for a
      *                        split round's combined session, the sum of the parts' scores, over the parts
      *                        the athlete competed it in
@@ -94,6 +95,7 @@ public record SessionResultsResponse(
             String noc,
             @Nullable String club,
             @Nullable Double total,
+            @Nullable Double sjPenalty,
             @Nullable QualificationResult qualification,
             Map<Apparatus, Double> apparatusScores,
             List<PartResult> parts) {
@@ -102,11 +104,15 @@ public record SessionResultsResponse(
     public record PartResult(int part, @Nullable Double total, Map<Apparatus, Double> apparatusScores) {
     }
 
-    /** @param apparatusTotals the sum of the scores counting toward the team on each apparatus */
+    /**
+     * @param sjPenalty       a penalty on the team as a whole (negative), already deducted from the total
+     * @param apparatusTotals the sum of the scores counting toward the team on each apparatus
+     */
     public record TeamRow(
             @Nullable Integer rank,
             String noc,
             @Nullable Double total,
+            @Nullable Double sjPenalty,
             @Nullable QualificationResult qualification,
             Map<Apparatus, Double> apparatusTotals) {
     }

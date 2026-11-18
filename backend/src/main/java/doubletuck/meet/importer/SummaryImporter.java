@@ -50,9 +50,10 @@ class SummaryImporter {
         result.setSession(session);
         result.setNoc(row.requiredText("NOC Code"));
         result.setTotalScore(row.decimal("Total"));
+        result.setSjPenalty(row.decimal("SJ Penalty"));
         result.setRank(row.integer("Rank"));
         result.setQualificationResult(row.code("Qualification", QualificationResult::find));
-        teamResultRepository.save(result);
+        context.getTeamResults().add(teamResultRepository.save(result));
         context.getReport().count("team results");
 
         // Not stored: kept to work out which scores counted toward the team total
@@ -70,6 +71,7 @@ class SummaryImporter {
         result.setParticipant(context.participant(row));
         result.setSession(session);
         result.setTotalScore(row.decimal("Total"));
+        result.setSjPenalty(row.decimal("SJ Penalty"));
         result.setRank(row.integer("Rank"));
         result.setQualificationResult(row.code("Qualification", QualificationResult::find));
         context.getAllAroundResults().add(allAroundResultRepository.save(result));

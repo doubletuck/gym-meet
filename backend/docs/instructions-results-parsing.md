@@ -154,7 +154,11 @@ A parser that silently drops or misplaces values is worse than one that stops.
    the entry list; results tables truncate long names (§4.2).
 7. **Prove the checks** — plant one wrong digit in a source and one in a
    transcription, and confirm both are caught.
-8. **Summary pages are a cross-check, not a source** — medal lists and
+8. **Corrections are logged** — every value written differently from the
+   book is a row in the event's `CORRECTIONS.csv` (import-file-model.md), and
+   the parser fails on an unlogged difference from a text copy it compares
+   with, or a logged correction that no longer applies.
+9. **Summary pages are a cross-check, not a source** — medal lists and
    standings can disagree with the results tables (Cottbus WAG vault bronze,
    §5.3). When they do, the results table wins; flag it.
 
@@ -172,10 +176,10 @@ decisions that come up while parsing.
 - **`PARTICIPANTS` is the master name record.** Surname/Given Name are derived
   there once; results files carry `Bib` + `Name` only, and every results row's
   name is replaced by the participant's full name by bib.
-- **Entry list annotations**: a `(reserve)` suffix on the name is dropped (the
-  reserve stays a participant); an entry struck through on the list is a
-  withdrawal and isn't written (Senior Pan Americans WAG bib 127), though the
-  "Number of Entries" counts still include it.
+- **Entry list annotations** go in PARTICIPANTS' `Entry Status`: a
+  `(reserve)` suffix on the name is dropped and the entry is `RESERVE`; an
+  entry struck through on the list is `WITHDRAWN` (Senior Pan Americans WAG
+  bib 127; the "Number of Entries" counts include it).
 - **Truncation happens anywhere a name is long** — narrow vault columns, but
   also normal tables (`BORDELAIS-MAISONNABLE` without his given name, initials
   like `KUBON CV` in all-around tables). Always diff against `PARTICIPANTS`.
@@ -204,6 +208,10 @@ decisions that come up while parsing.
 
 - Copy ranks as published, including duplicate ranks for ties and tie-breaks
   that order equal totals — never recompute (tie-break rules change by quad).
+  Where a better source publishes the tie-break the book leaves out
+  (sporttech.io's export ranks equal totals by E score, while the Junior Pan
+  Americans book prints them tied), take that rank and log it as a
+  `TIE_BREAK` correction.
 - Strip tie markers: `1T`, `45=`, `2*` → the number (`common.rank_number`).
 - Leave `Rank` blank where the source publishes none (a DNS row, US Day 2,
   a Team Final with no per-apparatus ranks).
@@ -316,6 +324,15 @@ decisions that come up while parsing.
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
+
+**One spelling per judge.** The same judge is printed differently between
+meets (`GOULET` / `GOULET JR`, `LIN WAY, Jim` / `LI LIN WAY, Jim Anthony`)
+and sometimes within one (`CORDEIRO` / `CORDEIRO ANDRADE`). Write the name as
+World Gymnastics prints it in its own books (Worlds, World Cups), else the
+meet's most common spelling, and log the change as a `JUDGE_NAME`
+correction. Two judges sharing a surname and country are only merged with
+evidence (GUA's VALENZUELA Marco judged at Worlds; VALENZUELA Ricardo is
+someone else).
 
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
@@ -527,7 +544,7 @@ counting; a fifth member is entered and listed but competes on nothing.
 
 | Report | Gives |
 |---|---|
-| Entry List by NOC | full legal name, `Given SURNAME` short form (used as `Name`), FIG licence (`En tramite` = pending; taken from the FIG athlete database where found — `LICENCES` in the parser — else blank), bib, birth year |
+| Entry List by NOC | full legal name, `Given SURNAME` short form (used as `Name`), FIG licence (`En tramite` = pending, written blank; one found since in the FIG athlete database is a `LICENCE` correction), bib, birth year |
 | All-Around (multi-apparatus) | every routine (D, E, Total; Pen and B on the line below, by position), AA total and rank |
 | Team competitions – qualification | team apparatus totals, team score, each member's scores (cross-checked) |
 | All-Around (one apparatus) | that apparatus's qualification table, with `Q1`…`Q8`/`R1`…`R3` |
@@ -556,9 +573,14 @@ counting; a fifth member is entered and listed but competes on nothing.
   PB/HB tables but entered as Marat GONZALEZ, which is the name on his FIG
   licence (66647); the entry list's name is used.
 - The WAG uneven bars qualification table stops at rank 50 (p. 99): RIVEROS
-  (207, rank 51) and VAN DINTER (205, rank 52) are missing. Their ranks and
-  scores come from sporttech.io's live results (`MISSING_ROWS` in the parser)
-  and are checked against the all-around report.
+  (207, rank 51) and VAN DINTER (205, rank 52) are missing. Their routines
+  come from the all-around report, their ranks are `ROW` corrections
+  (`TRUNCATED` in the parser).
+- **Text copy:** sporttech.io's export (`18529-sporttech-export.csv`) is
+  compared with every routine, rank and standing, as for the seniors (§5.5).
+  It matches every score; it breaks the ties the book prints (48 apparatus
+  ranks, 2 all-around ranks, all `TIE_BREAK` corrections) and has MAG bib
+  425's second vault as DNS.
 - The uneven bars final prints no overall `Total` column.
 - Judges: MAG prints `SURNAME, Given` and names its Superior Jury with no
   function; WAG prints `SURNAME Given` with Spanish functions (§4.7) and stray
@@ -585,7 +607,16 @@ rows come stage by stage (the `Group #` starting again at 1) and athlete by
 athlete, and a performance's round comes from the days its frames started
 (`LastStartTime`; a frame that never started is dated `0001-01-01`). `FAILED`
 is DNS; a frame `FINISHED` but never published (MAG bib 344's second vault)
-isn't a result. `NPenalty` is positive, `VaultBonus` sits on the `Vault2`
+isn't a result. The export is trusted over the book for routines, statuses,
+ranks and totals: where they differ, the export's value is written and logged
+in `CORRECTIONS.csv` (MAG bib 312's second vault, `DNS`, which the two-vault
+list leaves out). **Not its Q/R markers**: they contradict who competed in the
+finals (senior MAG vault: 347 marked Q and 367 R1, but 367 vaulted in the final
+and 347 didn't) and put athletes the two-per-country rule excludes on the
+reserve lists, so they look recomputed after the meet; the book's markers
+agree with the finals and are kept. The comparison is
+[`sporttech.py`](../tools/results-parsing/sporttech.py), shared by both Pan
+American parsers. `NPenalty` is positive, `VaultBonus` sits on the `Vault2`
 frame, and each frame also carries its performance's all-around and team
 totals and ranks (`Rank_G` is filled even for unranked athletes). The parser
 compares every routine, status, rank and total with it, both ways; this caught
@@ -637,6 +668,8 @@ all-around final, the top eight per apparatus to the finals (§4.9).
    the newer `Birth Date` column; there is no parser to regenerate them.
 4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
    different contexts; kept separate for now.
-5. **Team penalties aren't stored.** A team summary's `SJ Penalty` (Senior Pan
-   Americans MAG CUB) is written but the importer keeps only the printed
-   `Total`.
+5. **Penalties attributed to an apparatus.** sporttech.io's export records CUB's
+   team penalty against one routine (bib 338's parallel bars) and has fields
+   for per-apparatus team penalties and individual all-around penalties; only
+   the team-level total is modelled (`TeamResult.sjPenalty`). Revisit if a book
+   prints a penalty against a team's apparatus total.

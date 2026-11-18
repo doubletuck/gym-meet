@@ -16,21 +16,31 @@ organizer, and results printed by sporttech.io. Qualification decides the team a
 (below), each checked against its printed title and legend. Neither discipline has a single-vault
 list: every vaulter's first vault comes from the all-around report (no vault rank is published, so
 `Rank` is blank) and the two-vault list adds the second vault and the qualification ranking.
+
+Every routine, rank and standing is compared with sporttech.io's export of the competition
+(`SPORTTECH`); where the book differs (its tied ranks, which the export breaks), the export's value is
+written and logged in the event's CORRECTIONS.csv, applied by `common.Output`.
 """
 import os, re, sys, unicodedata
 from decimal import Decimal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import common
+import common, sporttech
 from common import D, split_given_first, split_surname_first
 
 PDF = sys.argv[1]
 OUT = os.path.dirname(os.path.abspath(PDF))
 PAGES = common.pdf_pages(PDF)
 EVENTS = common.read_events(OUT, '2026-PAN-AMERICAN-CHAMPIONSHIPS')
-out = common.Output(OUT)
 checks = common.Checks()
 err = checks.err
+corrections = common.Corrections(OUT, '2026-PAN-AMERICAN-CHAMPIONSHIPS', ['MAG-JR', 'WAG-JR'], err)
+out = common.Output(OUT, corrections)
+# sporttech.io's CSV export of the competition: every routine written is checked against it, and where
+# it differs from the book, the export's value is written and logged in the event's CORRECTIONS.csv.
+SPORTTECH = os.path.join(OUT, '18529-sporttech-export.csv')
+EXPORT_TITLE = {'MAG': 'JUNIOR - Men', 'WAG': 'JUNIOR - Women'}
+ROUND_OF_DATE = {'2026-06-18': 'QUAL', '2026-06-20': 'EVENT'}
 
 PREFIX = {'MAG': '2026-PAN-AMERICAN-CHAMPIONSHIPS-MAG-JR', 'WAG': '2026-PAN-AMERICAN-CHAMPIONSHIPS-WAG-JR'}
 EVENT_NAME = EVENTS[PREFIX['MAG']]['Title']
@@ -59,15 +69,9 @@ REPORTS = {
             'vault': (93, 95), 'finalists': 111,
             'finals': {'VT': 113, 'UB': 114, 'BB': 115, 'FX': 116}},
 }
-# The book's WAG uneven bars qualification table stops at rank 50 (p. 99). The missing rows are taken from
-# sporttech.io's live results (event e01dc3bc-1526-4122-5db8-334cf7f58dd2, stage 3) and must match the
-# all-around report.
-MISSING_ROWS = {('WAG', 'UB'): {
-    '207': dict(rank='51', kind='routine', D='0.7', E='4.966', Total='5.666'),
-    '205': dict(rank='52', kind='routine', D='1.8', E='2.400', Penalty='-0.5', Total='3.700'),
-}}
-# Licences the entry list prints as "En tramite" (pending), from the FIG athlete database.
-LICENCES = {'416': '62757', '430': '70320'}
+# The book's WAG uneven bars qualification table stops at rank 50 (p. 99). The athletes it leaves out are
+# written from the all-around report with no rank; their ranks are corrections, from sporttech.io.
+TRUNCATED = {('WAG', 'UB'): 50}
 ENTRY_COUNTS = 3                          # "Number of Entries by NOC"
 # Finalists pages: apparatus in the order their blocks appear (left to right, then top to bottom).
 FINALIST_GRID = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
@@ -107,15 +111,16 @@ def participants(disc):
                 err(f'participants {disc}: unparsed {l!r}')
             continue
         legal, name, lic, bib, year = m.groups()
-        if lic.isdigit() == (bib in LICENCES):
-            err(f'participants {disc}: bib {bib} licence {lic!r} vs LICENCES')
+        # A pending licence ("En tramite") is written blank; one found since is a correction
+        if not lic.isdigit() and lic != 'En tramite':
+            err(f'participants {disc}: bib {bib} licence {lic!r}')
         sur, giv = split_given_first(name)
         if not sur or not giv:
             err(f'participants {disc}: name split {name!r} -> {sur!r}/{giv!r}')
         PEOPLE[bib] = dict(name=name, noc=noc, year=year, legal=legal)
         rows.append({'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
                      'Event Start Date': EVENT_START, 'Order': len(rows) + 1, 'NOC Code': noc,
-                     'Bib Number': bib, 'FIG License': lic if lic.isdigit() else LICENCES.get(bib, ''), 'Name': name,
+                     'Bib Number': bib, 'FIG License': lic if lic.isdigit() else '', 'Name': name,
                      'Surname': sur, 'Given Name': giv, 'Birth Year': year, 'Birth Date': ''})
     if len(rows) != entry_counts()[disc]:
         err(f'participants {disc}: {len(rows)} entries, "Number of Entries" says {entry_counts()[disc]}')
@@ -462,13 +467,14 @@ def qual_app(disc, app, aa):
             continue
         rows.append({**meta(disc, 'QUAL', app, b), **routine_cols(g), 'Qualification': qualification(b['mk']),
                      'Qualification Rank': b['rank']})
-    for bib, m in sorted(MISSING_ROWS.get((disc, app), {}).items(), key=lambda x: int(x[1]['rank'])):
-        if bib in {b['bib'] for b in bs}:
-            err(f'{ctx}: bib {bib} is in the table after all')
-        a = aa[bib]
-        same_routine(f'{ctx} bib {bib} (sporttech.io)', m, a['apps'][app])
-        rows.append({**meta(disc, 'QUAL', app, dict(rank=m['rank'], bib=bib, noc=a['NOC'])), **routine_cols(m),
-                     'Qualification': '', 'Qualification Rank': m['rank']})
+    if (disc, app) in TRUNCATED:
+        if max(int(b['rank']) for b in bs if b['rank']) != TRUNCATED[(disc, app)]:
+            err(f'{ctx}: the table no longer stops at rank {TRUNCATED[(disc, app)]}')
+        listed = {b['bib'] for b in bs}
+        for bib, a in aa.items():
+            if a['apps'][app]['kind'] != 'none' and bib not in listed:
+                rows.append({**meta(disc, 'QUAL', app, dict(rank='', bib=bib, noc=a['NOC'])),
+                             **routine_cols(a['apps'][app]), 'Qualification': '', 'Qualification Rank': ''})
     aa_bibs = {bib for bib, a in aa.items() if a['apps'][app]['kind'] != 'none'}
     if {r['Bib'] for r in rows} != aa_bibs:
         err(f'{ctx}: athletes differ from the all-around report: {sorted({r["Bib"] for r in rows} ^ aa_bibs)}')
@@ -596,6 +602,9 @@ for disc in ('MAG', 'WAG'):
         marks = qual_vault(disc, aa) if app == 'VT' else qual_app(disc, app, aa)
         check_qualifiers(disc, app, marks, fin)
         final(disc, app, fin)
+    sporttech.crosscheck(OUT, PREFIX[disc], SPORTTECH, EXPORT_TITLE[disc], ROUND_OF_DATE,
+                         lambda bib: PEOPLE[bib]['noc'] if bib in PEOPLE else None, err)
     out.manifest(PREFIX[disc], EVENTS[PREFIX[disc]])
 
+corrections.finish()
 checks.finish()

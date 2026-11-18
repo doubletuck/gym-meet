@@ -20,6 +20,7 @@ cross-check/reference value, not an oversight in this document.
 | `<PREFIX>-SUMMARY-<ROUND>-{TEAM,AA}.csv` | Top-line team/all-around standings | Discipline + Age Category + Round |
 | `<PREFIX>-SUMMARY-FINAL-<APP>.csv` | Combined standings on one apparatus for a round split into parts (US Championships' two-day apparatus titles) | Discipline + Age Category + Apparatus |
 | `<PREFIX>-IMPORT.json` | Manifest: the event's metadata plus every file above that belongs to this discipline+age | Discipline + Age Category |
+| `<EVENT>-CORRECTIONS.csv` | Log of values written differently from the results book (not imported) | Event folder |
 
 `<PREFIX>` is exactly the `Prefix` column of the event's `EVENT.csv`:
 `<EVENT-SLUG>-<DISCIPLINE>-<AGE-CATEGORY>`, e.g.
@@ -120,6 +121,7 @@ One row per athlete entry.
 | Birth Year | Participant's birth year. Blank where the source prints none (US Championships) | `Athlete.birthYear` |
 | Birth Date | Participant's full birth date (`YYYY-MM-DD`), when the entry list publishes one (FIG World Championships does; European Championships prints only a year). Blank otherwise | `Athlete.birthDate` |
 | Club | **US Championships only.** The athlete's gym/club as printed | `Participant.club` → `Club.name` (the club's country is the participant's NOC) |
+| Entry Status | **Optional.** How the entry list shows the athlete: `COMPETITOR`, `RESERVE` (marked as a reserve) or `WITHDRAWN` (struck through). A missing column or blank cell means `COMPETITOR`. Written where the entry list shows reserves or withdrawals (2026 Senior Pan Americans) | `Participant.entryStatus` |
 
 ## `JUDGES.csv`
 
@@ -258,7 +260,7 @@ publishes no per-part placement.
 | Name | Athlete name as printed. **All-Around summary only** | |
 | NOC Code | Country/federation the row represents | `TeamResult.noc` |
 | `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG | *(not stored — on a team summary, used to work out `Score.countsTowardTeamResult`)* |
-| SJ Penalty | Superior Jury penalty applied to the row as a whole, distinct from an individual routine's `Penalty` — e.g. a team penalty already deducted from the printed `Total` (2026 Senior Pan Americans MAG CUB, `-1.000`). Not stored | |
+| SJ Penalty | Penalty on the row as a whole, distinct from an individual routine's `Penalty`, as printed (negative) and already deducted from `Total` — e.g. a team penalty (2026 Senior Pan Americans MAG CUB, `-1.000`) | `TeamResult.sjPenalty` / `AllAroundResult.sjPenalty` |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |
 
@@ -281,3 +283,27 @@ always blank.
 | NOC Code | | *(not stored)* |
 | Part 1 Total, Part 2 Total | Each part's result as printed in the combined report — for vault, the two-vault result. Cross-check against that part's `SCORES` row `Total` | *(not stored — already `Score.totalScore` on each part)* |
 | Total | Combined total | `ApparatusResult.totalScore` |
+
+## `CORRECTIONS.csv`
+
+`<EVENT>-CORRECTIONS.csv` (the event folder's name, without a discipline or
+age category) logs every value in the files above that differs from what the
+results book prints, and why: a tie-break the book doesn't show, a status or
+score taken from a better source, a misspelled judge. The files hold the
+corrected value; this log keeps the printed one. It is written by hand,
+applied by the parsers as they write each file (`common.Corrections`), and
+not imported. A correction whose `Printed` value isn't the row's, or that
+matches no file written, fails the parser, so the log can't drift from the
+files.
+
+| Column | Description |
+|---|---|
+| File | The corrected file's name without the event prefix and `.csv`, e.g. `MAG-JR-SCORES-QUAL-FX` |
+| Key | The row: its `Bib` (`Bib Number` in `PARTICIPANTS`), a team summary's `NOC Code`, or a judge's `Round Apparatus Function` (`-` for a blank apparatus), e.g. `QUAL FX E1`. In `JUDGES`, the judge's `Name` as printed instead corrects every row with that name. Keys match the rows as printed, before any correction |
+| Field | The corrected column, by its header |
+| Printed | The value as the book prints it (blank when the book prints nothing) |
+| Corrected | The value written |
+| Category | `TIE_BREAK`, `RANK`, `SCORE`, `STATUS`, `NAME`, `JUDGE_NAME`, `LICENCE`, `ROW` (a row the book leaves out) |
+| Source | Where the corrected value comes from: `sporttech export`, `FIG athlete database`, `other panels`, … |
+| Note | Free text |
+

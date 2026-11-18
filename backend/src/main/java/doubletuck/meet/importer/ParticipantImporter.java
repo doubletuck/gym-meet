@@ -1,6 +1,7 @@
 package doubletuck.meet.importer;
 
 import doubletuck.meet.domain.Club;
+import doubletuck.meet.domain.EntryStatus;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.repository.ClubRepository;
 import doubletuck.meet.repository.ParticipantRepository;
@@ -63,6 +64,9 @@ class ParticipantImporter {
         participant.setBibNumber(bib);
         participant.setNoc(noc);
         participant.setClub(club(row, noc));
+        // An optional column; most entry lists show only competitors
+        EntryStatus entryStatus = row.code("Entry Status", EntryStatus::find);
+        participant.setEntryStatus(entryStatus != null ? entryStatus : EntryStatus.COMPETITOR);
         participant = participantRepository.save(participant);
         context.getParticipantsByBib().put(bib, participant);
         context.getReport().count("participants");

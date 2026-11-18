@@ -185,7 +185,8 @@ public class AthleteQueryService {
                 }
             }
             entries.add(new Entry(eventRef, participant.getNoc(),
-                    participant.getClub() == null ? null : participant.getClub().getName(), entrySessions));
+                    participant.getClub() == null ? null : participant.getClub().getName(),
+                    participant.getEntryStatus(), entrySessions));
         }
 
         return new AthleteResponse(athlete.getId(), athlete.getSurname(), athlete.getGivenName(),

@@ -142,11 +142,13 @@ scores and reports any that don't agree as a warning:
   that apparatus gets `countsTowardTeamResult = false`, including the
   individuals'. Groups that differ only by athletes whose scores never counted
   agree on what counted. If no group fits, or groups that fit disagree, every
-  score is left as counting and a warning is reported.
+  score is left as counting and a warning is reported. The team total is then
+  checked against the sum of its published apparatus totals plus any team
+  penalty (`SJ Penalty`).
 - **All-around totals** against the sum of the athlete's scores in that
-  session; for a split round's whole-round session, against the sum of the
-  parts' totals. A published `0.000` for an athlete with no scores that day is
-  not reported.
+  session, plus any penalty on the result (`SJ Penalty`); for a split round's
+  whole-round session, against the sum of the parts' totals. A published
+  `0.000` for an athlete with no scores that day is not reported.
 - **Combined apparatus totals** (split rounds) against the sum of the parts'
   `Score.totalScore`.
 
