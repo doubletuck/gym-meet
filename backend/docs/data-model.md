@@ -385,6 +385,14 @@ attempts:
 | Apparatus (single-vault list) | First vault | The whole field | `rank` |
 | Vault-final qualification (double-vault list) | Combined result | Two-vault entrants only | `qualificationRank`, `qualificationResult` |
 
+`qualificationRank` is stored rather than derived from `totalScore` because
+equal combined results are usually split by tie-break rules the scores don't
+carry, and those rules change with the Code of Points (2026 Worlds WAG: two
+13.816s placed 8th and 9th); not every meet splits them (2026 Cottbus WAG
+leaves two 12.333s joint 17th). Where a source prints only the double-vault
+list, it's the only vault ranking and `rank` is null (2026 Junior Pan American
+Championships).
+
 A single-vault entry and an ordinary beam score look identical in shape:
 
 | apparatus | routine.difficulty | routine.execution | routine.score | secondRoutine | totalScore | rank | qualificationRank |

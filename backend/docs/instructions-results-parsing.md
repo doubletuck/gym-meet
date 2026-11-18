@@ -494,7 +494,7 @@ counting; a fifth member is entered and listed but competes on nothing.
 
 | Report | Gives |
 |---|---|
-| Entry List by NOC | full legal name, `Given SURNAME` short form (used as `Name`), FIG licence (`En tramite` = pending → blank), bib, birth year |
+| Entry List by NOC | full legal name, `Given SURNAME` short form (used as `Name`), FIG licence (`En tramite` = pending; taken from the FIG athlete database where found — `LICENCES` in the parser — else blank), bib, birth year |
 | All-Around (multi-apparatus) | every routine (D, E, Total; Pen and B on the line below, by position), AA total and rank |
 | Team competitions – qualification | team apparatus totals, team score, each member's scores (cross-checked) |
 | All-Around (one apparatus) | that apparatus's qualification table, with `Q1`…`Q8`/`R1`…`R3` |
@@ -519,9 +519,13 @@ counting; a fifth member is entered and listed but competes on nothing.
   (`GARCIA` / `GARCÍA`, `IBANEZ` / `IBAÑEZ SANCHEZ`, `VALENTINA` for the
   athlete entered as Marcela Valentina Nolasco Muñóz); identity is checked as
   every results surname word appearing in the entry's full legal name.
+  Given names can differ too: bib 435 is printed "GONZALEZ Abraham" on the
+  PB/HB tables but entered as Marat GONZALEZ, which is the name on his FIG
+  licence (66647); the entry list's name is used.
 - The WAG uneven bars qualification table stops at rank 50 (p. 99): RIVEROS
-  (207) and VAN DINTER (205) are missing; their routines are taken from the
-  all-around report with no rank (`MISSING_ROWS` in the parser).
+  (207, rank 51) and VAN DINTER (205, rank 52) are missing. Their ranks and
+  scores come from sporttech.io's live results (`MISSING_ROWS` in the parser)
+  and are checked against the all-around report.
 - The uneven bars final prints no overall `Total` column.
 - Judges: MAG prints `SURNAME, Given` and names its Superior Jury with no
   function; WAG prints `SURNAME Given` with Spanish functions (§4.7) and stray
@@ -541,8 +545,3 @@ counting; a fifth member is entered and listed but competes on nothing.
    the newer `Birth Date` column; there is no parser to regenerate them.
 4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
    different contexts; kept separate for now.
-5. **Junior Pan Americans gaps**: the WAG uneven bars ranks of RIVEROS (207)
-   and VAN DINTER (205) are blank until the missing table page (or sporttech.io's
-   live results) is found; MAG bib 435 is entered as Marat GONZALEZ but printed
-   "GONZALEZ Abraham" on the PB/HB tables (no routines, so only `PARTICIPANTS`
-   is affected).

@@ -59,9 +59,15 @@ REPORTS = {
             'vault': (93, 95), 'finalists': 111,
             'finals': {'VT': 113, 'UB': 114, 'BB': 115, 'FX': 116}},
 }
-# The book's WAG uneven bars qualification table stops at rank 50 (p. 99); the athletes below are missing
-# and their routines are taken from the all-around report, with no rank.
-MISSING_ROWS = {('WAG', 'UB'): {'205', '207'}}
+# The book's WAG uneven bars qualification table stops at rank 50 (p. 99). The missing rows are taken from
+# sporttech.io's live results (event e01dc3bc-1526-4122-5db8-334cf7f58dd2, stage 3) and must match the
+# all-around report.
+MISSING_ROWS = {('WAG', 'UB'): {
+    '207': dict(rank='51', kind='routine', D='0.7', E='4.966', Total='5.666'),
+    '205': dict(rank='52', kind='routine', D='1.8', E='2.400', Penalty='-0.5', Total='3.700'),
+}}
+# Licences the entry list prints as "En tramite" (pending), from the FIG athlete database.
+LICENCES = {'416': '62757', '430': '70320'}
 ENTRY_COUNTS = 3                          # "Number of Entries by NOC"
 # Finalists pages: apparatus in the order their blocks appear (left to right, then top to bottom).
 FINALIST_GRID = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
@@ -101,13 +107,15 @@ def participants(disc):
                 err(f'participants {disc}: unparsed {l!r}')
             continue
         legal, name, lic, bib, year = m.groups()
+        if lic.isdigit() == (bib in LICENCES):
+            err(f'participants {disc}: bib {bib} licence {lic!r} vs LICENCES')
         sur, giv = split_given_first(name)
         if not sur or not giv:
             err(f'participants {disc}: name split {name!r} -> {sur!r}/{giv!r}')
         PEOPLE[bib] = dict(name=name, noc=noc, year=year, legal=legal)
         rows.append({'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
                      'Event Start Date': EVENT_START, 'Order': len(rows) + 1, 'NOC Code': noc,
-                     'Bib Number': bib, 'FIG License': lic if lic.isdigit() else '', 'Name': name,
+                     'Bib Number': bib, 'FIG License': lic if lic.isdigit() else LICENCES.get(bib, ''), 'Name': name,
                      'Surname': sur, 'Given Name': giv, 'Birth Year': year, 'Birth Date': ''})
     if len(rows) != entry_counts()[disc]:
         err(f'participants {disc}: {len(rows)} entries, "Number of Entries" says {entry_counts()[disc]}')
@@ -454,12 +462,13 @@ def qual_app(disc, app, aa):
             continue
         rows.append({**meta(disc, 'QUAL', app, b), **routine_cols(g), 'Qualification': qualification(b['mk']),
                      'Qualification Rank': b['rank']})
-    for bib in sorted(MISSING_ROWS.get((disc, app), ())):
+    for bib, m in sorted(MISSING_ROWS.get((disc, app), {}).items(), key=lambda x: int(x[1]['rank'])):
         if bib in {b['bib'] for b in bs}:
             err(f'{ctx}: bib {bib} is in the table after all')
         a = aa[bib]
-        rows.append({**meta(disc, 'QUAL', app, dict(rank='', bib=bib, noc=a['NOC'])), **routine_cols(a['apps'][app]),
-                     'Qualification': '', 'Qualification Rank': ''})
+        same_routine(f'{ctx} bib {bib} (sporttech.io)', m, a['apps'][app])
+        rows.append({**meta(disc, 'QUAL', app, dict(rank=m['rank'], bib=bib, noc=a['NOC'])), **routine_cols(m),
+                     'Qualification': '', 'Qualification Rank': m['rank']})
     aa_bibs = {bib for bib, a in aa.items() if a['apps'][app]['kind'] != 'none'}
     if {r['Bib'] for r in rows} != aa_bibs:
         err(f'{ctx}: athletes differ from the all-around report: {sorted({r["Bib"] for r in rows} ^ aa_bibs)}')
