@@ -245,6 +245,10 @@ decisions that come up while parsing.
   goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
   The Mediterranean Games print it unsigned in the team report's `SJ Pen`
   column (POR WAG: `0.3`); it is written negative (`-0.3`), as deducted.
+- **An SJ penalty on a two-vault result** (Baku WAG vault qualification,
+  MAKOVICKOVA: `0.3` printed unsigned under `SJ Pen.` between vault 1's score
+  and the vault score, which is the average + 0.2 − 0.3; neither vault's own
+  score includes it) goes in `Combined SJ Penalty`, written negative (§6).
 - US all-around totals for partial all-arounders are printed and kept.
 
 ### 4.4 Session dates
@@ -283,8 +287,12 @@ decisions that come up while parsing.
   that vault's score (Cottbus), or as `Bns` (US).
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
-  double-attempt where a vault event is held; a World Cup's vault
-  qualification has every vaulter do two vaults and a single ranking.
+  double-attempt where a vault event is held; at a World Cup every vaulter
+  does two vaults in qualification — Cottbus publishes a single ranking, Baku
+  a vault 1 list and a two-vault list over the same vaulters (§5.7).
+- **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
+  `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
+  score is half of vault 1.
 
 ### 4.6 Qualification markers
 
@@ -331,8 +339,9 @@ decisions that come up while parsing.
 | `DS1` (World Cup panel) | `DS1` — Difficulty Supervisor |
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
+| `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
-| `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games) | `R` / `R1`…, with that panel's apparatus |
+| `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games, Baku) | `R` / `R1`…, with that panel's apparatus |
 
 **One spelling per judge.** The same judge is printed differently between
 meets (`GOULET` / `GOULET JR`, `LIN WAY, Jim` / `LI LIN WAY, Jim Anthony`)
@@ -735,19 +744,81 @@ never compete (in PARTICIPANTS, with no results).
   PB/HB; WAG VT/UB, BB/FX, matching the legend — the time and line judges
   confirm it (MAG floor, WAG beam's two time judges).
 
+### 5.7 Organizer book in FIG layout, Microplus print (Baku Apparatus World Cup)
+
+The same Microplus print as §5.6, every page with text: Competition Schedule
+(`_C08`), entry counts (`_C30`), medallists (`_C93`/`_C95`), and per discipline
+the entries by NOC (`_C32A`), the Entry List By BIB (`MAG_SEN_000269`,
+`WAG_SEN_000233`), qualification start lists (`_C51A`/`_C51B`), Judges
+Assignment (`_C57A`/`_C57B`, finals `_C57G`), Results By Apparatus (`_C73I`,
+vault `_C73J`), Tie Break (`_C77A`/`_C77B`), List Of Qualifiers (`_000291`,
+`_000252`), the finals start list (`_C51G`) and per-final medallists
+(`_C92A`). Parser:
+[`parse_2026_apparatus_world_cup_baku.py`](../tools/results-parsing/parse_2026_apparatus_world_cup_baku.py),
+which shares §5.6's page lookup and table reading.
+
+**Structure.** An apparatus competition (§4.9): qualification on 5–6 March,
+finals on 7–8 March, each apparatus its own session. The schedule splits them
+the same way both weekends: MAG FX/PB/SR and WAG VT/UB first, MAG VT/PH/HB and
+WAG BB/FX second (it also lists a "WAG: PH" rotation, a misprint for MAG). Top
+eight per apparatus to the final, two per country, three reserves; every
+qualifier competed.
+
+| Report | Gives |
+|---|---|
+| Entry List By BIB | bib, NOC, FIG licence, `SURNAME Given`, birth year — the participants |
+| Entries by NOC (per discipline) | the same entries (cross-checked) |
+| Number of Entries by NOC (general) | gymnasts with a routine per country (76 men, 46 women; cross-checked) |
+| Results By Apparatus | every SCORES file |
+| Vault qualification | a vault 1 list (whole field, no `Vault` column) and a two-vault list (`Vault` column, `Vault Score` split over two header lines) over the same vaulters |
+| List Of Qualifiers, finals Start List | Q (numbered 1–8), R1–R3 per apparatus; the finals' starters (cross-checked) |
+| Qualification Start List | the same set of athletes as the results (an athlete appears in more rotations than they have routines, so only the sets compare) |
+| Tie Break | the ranks of tied athletes (cross-checked) |
+
+**Gotchas**
+
+- Column order as §5.6: MAG `D E B` except pommel horse (`E D`, no bonus);
+  WAG `E D`; two-vault lists `Vault E D [B] Pen [SJ Pen.] Total, Vault Score`.
+  Vault tables truncate long names (`TANIGAWA`, `YULO Karl Jahrel`).
+- WAG `*` on a two-vault result: the +0.2 bonus is included. MAKOVICKOVA's
+  `0.3` under `SJ Pen.` is a penalty on the vault score (§4.3).
+- A tie for the last reserve place lists two `R3`s (MAG floor: =11 MONTGOMERY
+  and ISLOMOV) on the table, the List Of Qualifiers and the start list.
+- WAG vault qualification DNF: BUSUTTIL vaulted once (`DNF`, `2 … DNS`); she
+  is ranked 17th on the vault 1 list.
+- Judges: the Superior Jury is one `TD` credited to `FIG` (written blank),
+  printed `Given Surname` in mixed case (`Steve Butcher`, `Lyudmila Li`); the
+  parser takes the last word as the surname, upper-cased. Every panel is `SV`,
+  `D1 D2 E1–E5` plus time and line judges; reserves print in a panel's column.
+  The grid is MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX, proven by the time and
+  line judges (MAG FX `T L1 L2`, VT `L`; WAG VT `L`, UB `T`, BB `T1 T2`, FX
+  `T L1 L2`). The MAG line judge ZELAYA (ARG) also sits on the WAG floor panel.
+- The organizers' medallists and medal standings pages aren't parsed.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
-   and no marker; sporttech.io a bare `0` with no D or E. Watch for a source
-   that marks it differently.
+   and no marker; sporttech.io a bare `0` with no D or E; Baku's Microplus
+   print a D (`0.0`) and `0.000` with E blank. Watch for a source that marks it
+   differently.
 2. **Europeans MAG all-around summaries** (`SUMMARY-QUAL-AA`,
    `SUMMARY-FINAL-AA`) were never built; the reports exist in that PDF.
 3. **Europeans files were built by hand** before the parsers existed and lack
    the newer `Birth Date` column; there is no parser to regenerate them.
 4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
-   different contexts; kept separate for now.
+   different contexts; kept separate for now. Both are World Cups: Cottbus
+   heads each panel with `DS1`, Baku with `SV`.
 5. **Penalties attributed to an apparatus.** sporttech.io's export records CUB's
    team penalty against one routine (bib 338's parallel bars) and has fields
    for per-apparatus team penalties and individual all-around penalties; only
    the team-level total is modelled (`TeamResult.sjPenalty`). Revisit if a book
    prints a penalty against a team's apparatus total.
+6. **SJ penalties on vault.** Baku printed an SJ penalty on a combined
+   two-vault result (§4.3), stored as `Score.combinedSjPenalty` beside the
+   per-attempt `SJ Penalty1`/`SJ Penalty2`. Check the Code of Points: an SJ
+   penalty may always apply to the apparatus score — one value per `Score`,
+   which for vault is the combined result — in which case the per-attempt
+   columns and this one should become a single SJ penalty on the score.
+7. **Judge name variants.** The Baku TD prints as `Steve Butcher`; the Pan
+   American books print `BUTCHER, Steven`. Not merged (judges have no master
+   record); settle on one spelling if judges are ever linked across meets.

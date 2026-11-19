@@ -67,9 +67,13 @@ PARTICIPANTS = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 
 JUDGES = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Apparatus', 'Function', 'Name',
           'Surname', 'Given Name', 'NOC Code']
 
-def score_header(vault, qual):
-    """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns."""
-    return SCORE_META + (VAULT if vault else ROUTINE) + (QUALIFICATION if qual else [])
+def score_header(vault, qual, combined_sj_penalty=False):
+    """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns.
+    The vault shape's optional `Combined SJ Penalty` follows `Combined Bonus`."""
+    cols = VAULT if vault else ROUTINE
+    if vault and combined_sj_penalty:
+        cols = VAULT[:-1] + ['Combined SJ Penalty', 'Total']
+    return SCORE_META + cols + (QUALIFICATION if qual else [])
 
 # ---------------------------------------------------------------- corrections
 CORRECTIONS = ['File', 'Key', 'Field', 'Printed', 'Corrected', 'Category', 'Source', 'Note']

@@ -163,6 +163,7 @@ class ScoreRepositoryTest {
         twoVaults.setSecondRoutine(second);
 
         twoVaults.setCombinedBonus(0.2);
+        twoVaults.setCombinedSjPenalty(-0.3);
         twoVaults.setTotalScore(14.033);
         twoVaults.setRank(14);
         twoVaults.setQualificationRank(3);
@@ -181,6 +182,7 @@ class ScoreRepositoryTest {
         assertEquals(ScoreStatus.COMPLETED, found.getSecondRoutine().getStatus());
         assertEquals("Landing bonus", found.getSecondRoutine().getBonusDetail().get(0).getDescription());
         assertEquals(0.2, found.getCombinedBonus());
+        assertEquals(-0.3, found.getCombinedSjPenalty());
         assertEquals(14, found.getRank());
         assertEquals(3, found.getQualificationRank());
         assertEquals(QualificationResult.Q, found.getQualificationResult());

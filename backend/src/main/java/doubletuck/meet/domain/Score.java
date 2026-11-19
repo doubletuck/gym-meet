@@ -72,6 +72,9 @@ public class Score extends BaseEntity {
     @Column(name = "combined_bonus")
     private Double combinedBonus;
 
+    @Column(name = "combined_sj_penalty")
+    private Double combinedSjPenalty;
+
     @Column(name = "total_score")
     private Double totalScore;
 

@@ -147,6 +147,7 @@ No enumerator or type will be used. Countries are the three-letter **IOC codes**
 | PRESIDENT | President | Superior Jury |
 | VICE_PRESIDENT | Vice President | Superior Jury |
 | MEMBER | Member | Superior Jury |
+| TD | Technical Delegate | Superior Jury: the FIG Technical Delegate, the whole Superior Jury at a World Cup (2026 Baku) |
 | D1 | Difficulty Judge 1 | |
 | D2 | Difficulty Judge 2 | |
 | E1–E7 | Execution Judge 1–7 | One constant per execution judge, `E1` through `E7` |
@@ -319,7 +320,8 @@ the fields directly on `Score` describe the result and its rankings.
 | routine | Routine | No | The routine performed — for vault, the first attempt. Its `score` is what counts toward team and all-around results. Columns: `difficulty`, `difficulty_inquiry`, `execution`, `bonus`, `bonus_detail`, `penalty`, `sj_penalty`, `score`, `status_code`. |
 | secondRoutine | Routine | Yes | Vault's second attempt. Null means no second attempt was expected at all (the athlete only vaulted once); a second attempt that was expected but not performed is a `Routine` with status `DNS`. Same columns as `routine`, prefixed `second_`. |
 | combinedBonus | Double | Yes | A bonus applied to the combined two-vault result rather than to either attempt (e.g. WAG's +0.2). Null otherwise. |
-| totalScore | Double | Yes | The result the apparatus final is decided on. For a two-vault entry, the combined result as published (the attempts' average plus `combinedBonus`); otherwise equal to `routine.score`. Null when there's no valid result (e.g. the first vault or an expected second vault was `DNS`). |
+| combinedSjPenalty | Double | Yes | A Superior Jury penalty on the combined two-vault result rather than on either attempt, as printed (negative), already deducted from `totalScore` — 2026 Baku World Cup WAG qualification, MAKOVICKOVA Patricie: `-0.3`. Null otherwise. Whether this should instead be one SJ penalty per apparatus score is an open question (`instructions-results-parsing.md` §6). |
+| totalScore | Double | Yes | The result the apparatus final is decided on. For a two-vault entry, the combined result as published (the attempts' average plus `combinedBonus` and `combinedSjPenalty`); otherwise equal to `routine.score`. Null when there's no valid result (e.g. the first vault or an expected second vault was `DNS`). |
 | rank | Integer | Yes | Published placement on this apparatus within this `Session`, ranked on `routine.score` — for vault in qualification, the single-vault list ranking the whole field. In an apparatus final, the final's own placement. Where a session's only published vault ranking is a two-vault list (US Championships' Day 1 vault event; World Cup vault qualification, where every vaulter performs two vaults and there is no all-around), it's that ranking, on `totalScore`, and null for single-vault entrants. Null where the source publishes no per-session placement (US Championships Day 2; vault qualification at the 2026 Junior Pan American Championships, which prints no single-vault list). Copied as published, including tie-breaks, never recomputed. |
 | qualificationRank | Integer | Yes | Published placement in the ranking that decides qualification to the apparatus final. Set on every `QUAL` row: for vault it's the double-vault list rank (null for single-vault entrants); for every other apparatus — and for World Cup vault, which has only the two-vault ranking — it equals `rank`. Null outside `QUAL`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the apparatus final, read against `qualificationRank` (not `rank`). The two-per-country rule shows up here as `NR`, never as a changed rank. Only set on `QUAL` `Session`s. |
@@ -411,7 +413,7 @@ A single-vault entry and an ordinary beam score look identical in shape:
 
 A two-vault entry populates both routines. `totalScore` is the combined number
 as published — the average of the two attempts (truncated to three decimals)
-plus any `combinedBonus`. It's stored rather than recomputed because what earns
+plus any `combinedBonus` (and minus any `combinedSjPenalty`). It's stored rather than recomputed because what earns
 a combined bonus, and how the combination works, is set by the Code of Points
 and changes between quads. The published number is authoritative. Taken from
 the 2026 Europeans WAG qualification (KALMYKOVA Anna), where the first vault was

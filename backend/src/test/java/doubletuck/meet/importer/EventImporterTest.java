@@ -59,6 +59,7 @@ class EventImporterTest {
     private static final String WORLDS_WAG = "worlds/2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
     private static final String WORLDS_MAG = "worlds/2026-WORLD-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String COTTBUS_WAG = "cottbus/2026-APPARATUS-WORLD-CUP-COTTBUS-WAG-SR-IMPORT.json";
+    private static final String BAKU_WAG = "baku/2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-IMPORT.json";
     private static final String US_MAG = "us/2026-US-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String EUROPEANS_MAG = "europeans/2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
 
@@ -363,6 +364,26 @@ class EventImporterTest {
         assertTrue(qualifications.stream().allMatch(s -> s.getApparatus() != null));
         assertEquals(LocalDate.of(2026, 2, 19), session(qualifications, Round.QUAL, Apparatus.UB).getDate());
         assertEquals(LocalDate.of(2026, 2, 20), session(qualifications, Round.QUAL, Apparatus.BB).getDate());
+    }
+
+    @Test
+    void testImport_CombinedVaultSjPenaltyAndTechnicalDelegate() {
+        importFixture(BAKU_WAG);
+
+        // (12.100 + 13.066) / 2 + 0.2 - 0.3: the penalty comes off the two-vault result, not either vault
+        Score makovickova = score("Makovickova", "Patricie", Round.QUAL, Apparatus.VT);
+        assertEquals(12.100, makovickova.getRoutine().getScore());
+        assertEquals(13.066, makovickova.getSecondRoutine().getScore());
+        assertEquals(0.2, makovickova.getCombinedBonus());
+        assertEquals(-0.3, makovickova.getCombinedSjPenalty());
+        assertEquals(12.483, makovickova.getTotalScore());
+        assertNull(score("Kalmykova", "Anna", Round.QUAL, Apparatus.VT).getCombinedSjPenalty());
+
+        for (Session session : sessionRepository.findAll()) {
+            assertTrue(judgeRepository.findBySession(session).stream().anyMatch(judge ->
+                    judge.getFunction() == JudgeFunction.TD && judge.getApparatus() == null
+                            && judge.getNocCode() == null), "no Technical Delegate on " + session.getRound());
+        }
     }
 
     @Test
