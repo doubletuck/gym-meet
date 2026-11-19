@@ -208,6 +208,9 @@ decisions that come up while parsing.
 
 - Copy ranks as published, including duplicate ranks for ties and tie-breaks
   that order equal totals — never recompute (tie-break rules change by quad).
+  Elevien's World Cup books break a tie on E, then D (Osijek WAG floor
+  qualification: SHAMAY over ZLOBEC, E 7.500 both); equal on both, the rank
+  is shared.
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -288,7 +291,7 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus, Antalya and Cairo publish a single ranking,
+  does two vaults in qualification — Cottbus, Antalya, Cairo and Osijek publish a single ranking,
   Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
@@ -311,6 +314,9 @@ decisions that come up while parsing.
 - **A marker on an all-around ranking with no all-around final** (Junior Pan
   Americans: `Q` beside the top eight, two per country) isn't recorded — it
   qualifies to nothing in the meet.
+- **A tie among the reserves** shares a number, and the reserves run past three
+  to take in the whole tie: Osijek MAG pommel horse prints R1 and three R2s at
+  =10 (equal E and D), Baku MAG floor two R3s.
 - **Unnumbered reserves** (Cairo: a plain `R` on the two athletes after the eight `Q`)
   are written `R1`, `R2` in rank order; the final's start list numbers them the same way,
   unless a qualifier withdrew before it was printed (§5.9).
@@ -337,6 +343,7 @@ decisions that come up while parsing.
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
 | `AS` / `SA` (Pan American and Cairo WAG panel supervisor) | `SV`, with the panel's apparatus |
+| `S` (Osijek panel supervisor, printed after `E5`) | `SV`, with the panel's apparatus |
 | Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
 | Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
 | `DS1` (World Cup panel) | `DS1` — Difficulty Supervisor |
@@ -370,8 +377,8 @@ finals line judges lent by the women's panel print `WAG` as their federation
   host country — not ISO.
 - Neutral athletes keep the code printed: `AIN1`/`AIN2` (Cottbus, "Individual
   Neutral Athletes"), `WG1`/`WG2` (Europeans, "World Gymnastics 1"/"2"); the
-  same athletes appear as `RUS`/`BLR` at Worlds. Cairo prints a plain `AIN` for
-  both groups, and it is written `AIN` (§6). Judges keep their printed codes too
+  same athletes appear as `RUS`/`BLR` at Worlds. Cairo and Osijek print a plain
+  `AIN` for both groups, and it is written `AIN` (§6). Judges keep their printed codes too
   (`AIN 1` is written `AIN1`), even where one page prints `RUS`/`BLR` and another
   `AIN2`/`AIN1` for the same judge. Each code is its own group,
   entering its own team (Europeans' `WG1` and `WG2` teams), so never merge them.
@@ -921,6 +928,60 @@ printed `R` (§4.6). No `NR` is printed.
   Worlds (`JUDGE_NAME`). The Pan American books print `VELASQUEZ, Juan Carlos` (COL),
   which is `VELASQUEZ ALVARADO Juan Carlos` here; Cairo's spelling is kept.
 
+### 5.10 Organizer media book, Elevien print (Osijek Apparatus World Cup)
+
+The Croatian Federation's media book (`17937-ResultsbookMedia.pdf`), printed whole by Elevien
+(Cairo used it only for its start lists, §5.9): every page has text and no report codes. A
+Competition Schedule (p. 3), entry counts by country (p. 4), medallists and medal standings
+(pp. 5–6), then per discipline, after a cover page `(MAG)` / `(WAG)`: Entry List by NOC, Entry
+List by BIB, qualification start lists per day, Judges Assignment, Qualification Results, List
+of Qualifiers to Finals, Finals Starting Lists, finals judges, Finals Results and Medalists by
+Apparatus. Parser:
+[`parse_2026_apparatus_world_cup_osijek.py`](../tools/results-parsing/parse_2026_apparatus_world_cup_osijek.py),
+which finds each report by its printed title (a page without one continues the report before).
+
+**Structure.** An apparatus competition (§4.9) on the Baku pattern: qualification on 9–10
+April, finals on 11–12 April, MAG FX/PH/SR and WAG VT/UB first, MAG VT/PB/HB and WAG BB/FX
+second (schedule and finals start lists). Top eight per apparatus, two per country (no `NR`
+printed), R1–R3; every qualifier competed.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC | NOC heading, then `Given SURNAME`, bib, FIG licence: the participants. No birth year |
+| Entry List by BIB | bib, name, NOC (cross-checked) |
+| Number of Entries by NOC (p. 4) | men and women per country, `-` for none; one row per neutral group, both `AIN` (cross-checked) |
+| Results tables | every SCORES file; `Q`/`R1`–`R3` beside the total |
+| Tie-break (after some qualification tables and finals) | the tied athletes' rank, total and E (vault: the highest vault) (cross-checked) |
+| List of Qualifiers, Finals Starting Lists | the Q and R markers; each final's eight starters, then its reserves unnumbered, dated (cross-checked) |
+| Qualification start lists | per day, groups with one column per apparatus still rotating (cross-checked as sets) |
+| Medallists (p. 5, each final, Medalists by Apparatus) | a cross-check only |
+
+**Gotchas**
+
+- Columns `D E ND [Bonus] Total` (WAG and pommel horse have no bonus); D prints one decimal,
+  `ND` (neutral deductions) is unsigned and written negative. Non-vault values are placed under
+  their heading by position.
+- **Vault** prints `V1` above the athlete's line and `V2` below, each `D E [ND] [bonus] Score`;
+  the athlete's line holds the vault score (`Average`). MAG's `SB` is inside the attempt's score
+  (`B1`/`B2`); WAG's `VB` (+0.2) sits on vault 2's line outside its score (`Combined Bonus`).
+  The ND and bonus columns drift against their headings by up to three characters, and a
+  continued page prints no heading, so a lone value is placed by its sign: ND is deducted from
+  D + E, SB added, VB in neither. An invalid vault prints `0.0 0.000 0.000` (WAG KUBON,
+  vault 2); a vault DNF prints `DNF` with `V2 … DNS` and no rank; a DNS one line, no attempts.
+  WAG AJALLA's vault 2 has a 2.0 ND.
+- **Tie-break sections** follow day 1's qualification tables and some finals, carrying onto the
+  next page without a heading. WAG uneven bars qualification's prints ranks 12–38 for the
+  table's 17–44 and leaves out two tied pairs; its totals and E scores agree, and the table is
+  taken.
+- **DNS rows for athletes not on that apparatus's start list**: MAG LINDPOINTNER (VT), FEDERICI
+  (PB), THORPE (HB); WAG ANTILA (BB, FX), SOULELE (BB). Written `DNS` as printed.
+- Judges: `Technical Delegate: SURNAME Given (NOC)` above the panels, written `TD` with that NOC
+  (MAG ZUNICH, written `ZUNICH Butch` as at Worlds; WAG ZAYED). Panels two to a row under the
+  apparatus names: `D1 D2 E1–E5 S` then time and line judges, `Given SURNAME NOC`. `S` is the
+  supervisor (`SV`). MAG's `R1`–`R3` under parallel bars are the round's reserves (apparatus
+  blank). The grid is MAG FX/PH, SR/VT, PB/HB and WAG VT/UB, BB/FX, by name. `Tanguy LE ROCH`
+  is written `le ROCH` as at Worlds.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -949,6 +1010,7 @@ printed `R` (§4.6). No `NR` is printed.
    American books print `BUTCHER, Steven`. Cairo prints `VELASQUEZ ALVARADO Juan
    Carlos` for the Pan Americans' `VELASQUEZ, Juan Carlos`. Not merged (judges have
    no master record); settle on one spelling if judges are ever linked across meets.
-8. **Plain `AIN`.** Cairo prints one `AIN` for both neutral groups, kept as printed.
+8. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
+   (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral
    group beside `AIN1`/`AIN2`. Revisit if the site groups results by country.
