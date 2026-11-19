@@ -1,0 +1,10 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+WAG-SR-SCORES-QUAL-VT,152,Rank,,29,ROW,all-around report,"The vault 1 table (pp. 128-129) leaves out KURTULUS Zeynep; her vault (D 3.4, E 8.650, 12.050) and rank are from the all-around and team reports"
+WAG-SR-SCORES-QUAL-VT,109,Rank,29,30,RANK,tie-break report,"Every rank below bib 152 is one short; the vault tie-break (p. 130) and the all-around report have =30"
+WAG-SR-SCORES-QUAL-VT,111,Rank,29,30,RANK,tie-break report,As bib 109
+WAG-SR-SCORES-QUAL-VT,103,Rank,31,32,RANK,all-around report,As bib 109
+WAG-SR-SCORES-QUAL-VT,110,Rank,32,33,RANK,all-around report,As bib 109
+WAG-SR-SCORES-QUAL-VT,108,Rank,33,34,RANK,all-around report,As bib 109
+WAG-SR-SCORES-QUAL-VT,137,Rank,34,35,RANK,all-around report,As bib 109
+WAG-SR-SCORES-QUAL-VT,136,Rank,35,36,RANK,neighbouring ranks,"Not an all-arounder, so no report prints her rank; she sits between bibs 137 (35) and 139 (37)"
+WAG-SR-SCORES-QUAL-VT,139,Rank,36,37,RANK,all-around report,As bib 109

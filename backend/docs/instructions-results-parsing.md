@@ -243,6 +243,8 @@ decisions that come up while parsing.
 - **A team penalty** printed beside the apparatus totals (Senior Pan Americans
   MAG CUB: `-1.000`, team score 190.728 against apparatus totals of 191.728)
   goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
+  The Mediterranean Games print it unsigned in the team report's `SJ Pen`
+  column (POR WAG: `0.3`); it is written negative (`-0.3`), as deducted.
 - US all-around totals for partial all-arounders are printed and kept.
 
 ### 4.4 Session dates
@@ -304,6 +306,12 @@ decisions that come up while parsing.
 - **Markers not printed on the results table** but named on the final's start
   list (8 finalists + ordered reserves): take them from the start list, record
   it as a source file, and check the Q set equals the final's athletes.
+- **A tie at the last qualifying place** puts both athletes through, so the
+  final has nine (Mediterranean Games WAG beam: two at =11, after three `NR`s).
+  The List Of Qualifiers numbers them 11 and 12; the table's tied ranks stand.
+- **Two per country, reopened**: when a qualifier withdraws, a compatriot
+  marked `NR` can take the place ahead of the reserves (Mediterranean Games WAG
+  floor: GAVA for TONELLI, both ITA). Their `Qualification` stays `NR`.
 - **Replacements without reserve markers** (Senior Pan Americans all-around:
   `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
   `Qualification`; the parser reports absent qualifiers and their replacements
@@ -324,6 +332,7 @@ decisions that come up while parsing.
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
+| `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games) | `R` / `R1`…, with that panel's apparatus |
 
 **One spelling per judge.** The same judge is printed differently between
 meets (`GOULET` / `GOULET JR`, `LIN WAY, Jim` / `LI LIN WAY, Jim Anthony`)
@@ -336,7 +345,7 @@ someone else).
 
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
-have no NOC (blank). Judges credited to a continental union print it as their
+have no NOC (blank); a Superior Jury credited to `FIG` is written blank too. Judges credited to a continental union print it as their
 federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank. Men's
 finals line judges lent by the women's panel print `WAG` as their federation
 (Senior Pan Americans); that is blank too.
@@ -361,7 +370,7 @@ Map the meet onto `Session`s (`data-model.md` §3) before parsing:
 | Championship | `QUAL`, `TEAM`, `AA`, `EVENT` per apparatus | Worlds, Europeans |
 | Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
 | All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
-| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans |
+| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
 
@@ -656,6 +665,68 @@ all-around final, the top eight per apparatus to the finals (§4.9).
   judges. Panel icons: MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX. A few names
   are spelled differently between pages (`CORDEIRO` / `CORDEIRO ANDRADE`,
   `MENESES` / `MENESSES`); they are copied as printed.
+
+### 5.6 Organizer book in FIG layout, Microplus print (Mediterranean Games)
+
+The organizers' results book (Taranto 2026, Microplus timing): every report has
+text, a FIG-style footer code (`GARM1APFX-------------QUAL--------_C73I`, the
+schedule `_C08`, entries `_C30`/`_C32A`) or an internal one
+(`MAG_SEN_000271` entry list, `_000273` team composition, `_000293` List Of
+Qualifiers), but the column layouts are its own. The book also holds the
+rhythmic results (pp. 179–224), which are skipped. Parser:
+[`parse_2026_mediterranean_games.py`](../tools/results-parsing/parse_2026_mediterranean_games.py).
+It finds pages by discipline, round line (`Qualification`, `All-Around Final`,
+`Apparatus Final`) and report title, with the apparatus from the footer code —
+codes are reused (the all-around final's per-apparatus pages and judges page
+carry apparatus-final codes).
+
+**Structure.** Qualification decides the team title (the schedule's "Team
+Final" is the qualification block); an all-around final and apparatus finals
+follow (§4.9). Three scores count per team apparatus; some entered team members
+never compete (in PARTICIPANTS, with no results).
+
+| Report | Gives |
+|---|---|
+| Entry List By BIB | bib, NOC, FIG licence, `SURNAME Given`, full birth date — the participants |
+| Number of Entries by NOC (per discipline), Team Composition | the same entries (cross-checked) |
+| Number of Entries by NOC (general, p. 6) | competitors per country — those with a routine (cross-checked) |
+| Results By Apparatus | every SCORES file, including the all-around final's (single vault) |
+| Vault qualification | a vault 1 list for the whole field (`_C73J`, no `Vault` column) and a two-vault list (`_C73J` with `Vault` and `Vault Score` columns) |
+| All-Around Results | the summaries; every routine's D, E, penalty, bonus, score and rank (cross-checked) |
+| Team Results | team apparatus totals and score; each member's D, score and rank (cross-checked) |
+| Tie Break, All-Around Tie Break | the ranks of tied athletes (cross-checked) |
+| List Of Qualifiers | Q (numbered), R1–R3, NR per apparatus (cross-checked) |
+
+**Gotchas**
+
+- Column order differs by table: MAG `D E B` except pommel horse (`E D`, no
+  bonus); WAG `E D` everywhere; two-vault lists `E D [B] Pen Vault Score`.
+  Penalties print with two decimals (`-0.10`), kept as printed.
+- Inquiries: `!5.1` on the apparatus tables, `! 5.1` on the reports.
+- DNS rows print a placeholder `0.000` in the E column; a two-vault DNF prints
+  `DNF` and `2 … DNS` (MAG with a `0.0` bonus). Bare-zero vault: WAG bib 139,
+  `E 0.000 D 0.0 0.000`, ranked — `INVALID_VAULT`.
+- WAG `*` on a two-vault result means the +0.2 bonus is included: `Combined
+  Bonus` `0.2`, `Total` as printed.
+- The all-around and team reports have icon headings; their legend lists the
+  apparatus in reverse. The columns are MAG FX PH SR VT PB HB and WAG VT UB BB
+  FX, proven by matching every value with the apparatus tables. Values sit
+  under each column's `D` heading, a `DNS` under `Total`, and a lone `0.00`
+  (an invalid vault's blank E) under `Total` too; a zero penalty prints `0.00`.
+- The team report's E and penalty lines and member totals print out of line,
+  so only each member's `D Total Rk` line is read.
+- **The WAG vault 1 table (pp. 128–129) leaves out KURTULUS Zeynep (bib 152)**,
+  and every rank below her is one short. Her vault comes from the all-around
+  report (`OMITTED` in the parser); her rank and the shifted ranks are
+  corrections from the all-around report and the vault tie-break (p. 130),
+  and bib 136, who isn't an all-arounder, is placed by her neighbours.
+- MAG all-around qualification marks 18 `Q` and no reserves; three qualifiers
+  (35, 45, 60) didn't compete in the 15-athlete final.
+- Judges: the Superior Jury is a `President` credited to `FIG` (written blank);
+  panels are `D1 D2 E1–E4` plus `T`/`T1 T2`/`L`/`L1 L2`, and reserves print as
+  `RES`/`RES 1–3` inside a panel's column (§4.7). The grid is MAG FX/PH, SR/VT,
+  PB/HB; WAG VT/UB, BB/FX, matching the legend — the time and line judges
+  confirm it (MAG floor, WAG beam's two time judges).
 
 ## 6. Open items
 

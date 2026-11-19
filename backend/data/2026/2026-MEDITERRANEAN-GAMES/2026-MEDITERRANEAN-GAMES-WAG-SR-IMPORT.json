@@ -1,0 +1,40 @@
+{
+    "event" : {
+        "title" : "XX Mediterranean Games",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "CONTINENTAL_GAMES",
+        "startDate" : "2026-08-25",
+        "endDate" : "2026-09-02",
+        "city" : "Taranto",
+        "country" : "ITA",
+        "figEventNumber" : "17711",
+        "venue" : "Grottaglie Sports Hall",
+        "apparatusSuppliers" : "Gymnova, Spieth"
+    },
+    "participants" : [
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-AA-BB.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-AA-FX.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-AA-UB.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-AA-VT.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-EVENT-BB.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-EVENT-FX.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-EVENT-UB.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-EVENT-VT.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-MEDITERRANEAN-GAMES-WAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}
