@@ -720,6 +720,13 @@ never compete (in PARTICIPANTS, with no results).
   report (`OMITTED` in the parser); her rank and the shifted ranks are
   corrections from the all-around report and the vault tie-break (p. 130),
   and bib 136, who isn't an all-arounder, is placed by her neighbours.
+- Entry-list errors, written as World Gymnastics records them and logged as
+  corrections: LECHAUD Luis (MAG bib 47) is printed born 6 Sep 2004, not 9 Jul
+  2004; BUSUTTIL Philippa (WAG bib 140) with licence 81723, not 52109; COSTA
+  Mafalda (141) and PARENTE Mariana (143) born a day early, likely a time-zone
+  conversion. The importer refused each against the athlete Worlds had already
+  created, so check a new book's entries against the existing PARTICIPANTS
+  files before importing.
 - MAG all-around qualification marks 18 `Q` and no reserves; three qualifiers
   (35, 45, 60) didn't compete in the 15-athlete final.
 - Judges: the Superior Jury is a `President` credited to `FIG` (written blank);

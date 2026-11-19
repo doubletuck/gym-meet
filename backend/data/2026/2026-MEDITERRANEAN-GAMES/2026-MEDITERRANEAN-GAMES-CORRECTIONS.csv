@@ -8,3 +8,7 @@ WAG-SR-SCORES-QUAL-VT,108,Rank,33,34,RANK,all-around report,As bib 109
 WAG-SR-SCORES-QUAL-VT,137,Rank,34,35,RANK,all-around report,As bib 109
 WAG-SR-SCORES-QUAL-VT,136,Rank,35,36,RANK,neighbouring ranks,"Not an all-arounder, so no report prints her rank; she sits between bibs 137 (35) and 139 (37)"
 WAG-SR-SCORES-QUAL-VT,139,Rank,36,37,RANK,all-around report,As bib 109
+MAG-SR-PARTICIPANTS,47,Birth Date,2004-09-06,2004-07-09,BIRTH_DATE,World Championships entry list,"The book prints 6 Sep 2004; the 2025 and 2026 World Championships entry lists have 9 Jul 2004 (day and month swapped)"
+WAG-SR-PARTICIPANTS,140,FIG License,81723,52109,LICENCE,FIG athlete database,"Also her licence on the 2026 World and European Championships entry lists"
+WAG-SR-PARTICIPANTS,141,Birth Date,2005-04-26,2005-04-27,BIRTH_DATE,World Championships entry list,"One day early in the book, likely a time-zone conversion in the organizer's system"
+WAG-SR-PARTICIPANTS,143,Birth Date,2006-09-13,2006-09-14,BIRTH_DATE,World Championships entry list,As bib 141
