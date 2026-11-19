@@ -288,7 +288,7 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus and Antalya publish a single ranking,
+  does two vaults in qualification — Cottbus, Antalya and Cairo publish a single ranking,
   Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
@@ -311,6 +311,9 @@ decisions that come up while parsing.
 - **A marker on an all-around ranking with no all-around final** (Junior Pan
   Americans: `Q` beside the top eight, two per country) isn't recorded — it
   qualifies to nothing in the meet.
+- **Unnumbered reserves** (Cairo: a plain `R` on the two athletes after the eight `Q`)
+  are written `R1`, `R2` in rank order; the final's start list numbers them the same way,
+  unless a qualifier withdrew before it was printed (§5.9).
 - **Markers not printed on the results table** but named on the final's start
   list (8 finalists + ordered reserves): take them from the start list, record
   it as a source file, and check the Q set equals the final's athletes.
@@ -333,7 +336,7 @@ decisions that come up while parsing.
 | `Time Judge`, `Time Judge 1`, `Time 1` | `T`, `T1`, `T1` |
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
-| `AS` / `SA` (Pan American panel supervisor) | `SV`, with the panel's apparatus |
+| `AS` / `SA` (Pan American and Cairo WAG panel supervisor) | `SV`, with the panel's apparatus |
 | Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
 | Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
 | `DS1` (World Cup panel) | `DS1` — Difficulty Supervisor |
@@ -367,7 +370,10 @@ finals line judges lent by the women's panel print `WAG` as their federation
   host country — not ISO.
 - Neutral athletes keep the code printed: `AIN1`/`AIN2` (Cottbus, "Individual
   Neutral Athletes"), `WG1`/`WG2` (Europeans, "World Gymnastics 1"/"2"); the
-  same athletes appear as `RUS`/`BLR` at Worlds. Each code is its own group,
+  same athletes appear as `RUS`/`BLR` at Worlds. Cairo prints a plain `AIN` for
+  both groups, and it is written `AIN` (§6). Judges keep their printed codes too
+  (`AIN 1` is written `AIN1`), even where one page prints `RUS`/`BLR` and another
+  `AIN2`/`AIN1` for the same judge. Each code is its own group,
   entering its own team (Europeans' `WG1` and `WG2` teams), so never merge them.
 - Some entry lists print the NOC only on each country's first row.
 - The US Championships prints no NOC; participants are written as `USA`.
@@ -849,6 +855,72 @@ second (General Programme, p. 2). Top eight per apparatus, R1–R3, no `NR` prin
   label is missing (rings E2, between E1 and E3) and one finals surname (vault line judge,
   number 19 = KOGA).
 
+### 5.9 Organizer media book, Elevien start lists (Cairo Apparatus World Cup)
+
+The Egyptian Federation's media book (`17939-ResultsbookMedia.pdf`): every page has text
+except the cover. The reports carry no codes: a Competition Schedule (pp. 2–3), entry
+counts by country (p. 4), medallists (p. 5), then per discipline an entry list, Elevien
+qualification start lists, Judges Assignment, results and tie-break pages, a finals start
+list and the finals judges. Parser:
+[`parse_2026_apparatus_world_cup_cairo.py`](../tools/results-parsing/parse_2026_apparatus_world_cup_cairo.py),
+which names each report's pages and checks them against the printed titles and dates.
+
+**Structure.** An apparatus competition (§4.9) on the Baku pattern: qualification on 3–4
+April, finals on 5–6 April, MAG FX/PH/SR and WAG VT/UB first, MAG VT/PB/HB and WAG BB/FX
+second. The page footers give the same dates. Top eight per apparatus, then two reserves
+printed `R` (§4.6). No `NR` is printed.
+
+| Report | Gives |
+|---|---|
+| Number of Entries by NOC (per discipline) | NOC, `SURNAME Given`, bib, FIG licence, birth year: the participants |
+| Number of Entries by NOC (p. 4) | men and women per country (cross-checked, after the NOC corrections) |
+| Results tables | every SCORES file; results print `Given SURNAME` |
+| Tie Break | every group of equal totals, with the E score (vault: the higher vault) and the D score where E is equal (cross-checked) |
+| Qualification start lists (Elevien) | per day, groups with one column per apparatus still rotating, placed as on the day's first page |
+| Apparatus Finals Start List | per final, eight starters and R1–R2, in blocks under icons (WAG VT UB / BB FX, MAG FX PH SR / VT PB HB) |
+| Medalists By Event (p. 5) | a cross-check only: it dates every final 5 April and prints `Qiyuan QUI` |
+
+**Gotchas**
+
+- **Entry-list NOC errors**: CASTANEDA (WAG 194) is printed `HKG`, CHEN Hoi Yuen Joanne (210)
+  `SLO` and TRTNIK (227) `UKR`. The start lists, the results and p. 4 show CRC, HKG and SLO,
+  so these are `NOC` corrections.
+- **Optional columns**: penalties print unsigned in a `PEN` column (written negative);
+  MAG non-vault tables add `BONUS`, except pommel horse. Both columns are optional, so a
+  non-vault value is placed under its heading by position. Vault prints
+  `D E [PEN] Score [Bonus]` per attempt, with the vault score at the end of vault 1's line.
+  MAG's bonus is inside the attempt's score (`B1`/`B2`). WAG's +0.2 is printed on vault 2's
+  line but isn't included in it (`Combined Bonus`).
+- **A vault row split by a page break**: vault 2 is the first line of the next page, which
+  has no column heading (WAG HAMIDI, MAG RENAUD).
+- **Vault DNS**: an athlete who did neither vault prints `DNS DNS` over `DNS DNF`, or one
+  `DNS DNF` line (WAG ZOIDAKI), with no rank and the bib at the margin. Both attempts are
+  written `DNS`. An invalid vault prints `0.000` for D, E and the score (WAG qualification
+  KOVALOVA, vault 1: `INVALID_VAULT`; her vault score is half of vault 2).
+- The vault tie-break pages print no `Tie Break` heading. E and D print a leading zero
+  (`08.633`).
+- Long names wrap their surname onto the next line (`Ahmet Burak` / `EKICI`). Names
+  sometimes end in a three-letter surname (`Qiyuan QIU CHN`), so the NOC is the code
+  just before the values.
+- **Replacements**: MAG VERA (COL) qualified on floor and high bar but did no vault and
+  missed both finals. The next reserve came in, and the finals start list numbers its
+  reserves after that (floor R1 LETELIER, R2 AZIZOV, who had no marker).
+- **Athletes without a result**: on a qualification start list but with no row: MAG RENAUD
+  (HB); WAG PONIZILOVA (VT, BB, FX), GUEVARA CORNEJO (UB), KINIUK (FX).
+- Judges: the Technical Delegate is one name above the panels (MAG `Andrew TOMBS FIG`, WAG
+  `TD Helena Lario WGYM`), written `TD` with a blank NOC. MAG panels are `SV D1 D2 E1–E5`
+  plus `T L1 L2` (FX) and `L` (VT), with round reserves `R1 R2` below the last panel. These
+  are blank in qualification. The page's text layer also holds stray judge numbers.
+  WAG panels print `AS` (written `SV`), each judge's number and brevet, `T`/`T1 T2`/`L`/
+  `L1 L2`, and a per-panel `Reserve`. BB qualification prints the label on the line below
+  the name. `E4`/`E5` are sometimes printed with a Cyrillic `Е`, and a long surname pushes
+  the given name and NOC onto the next line. The grid is MAG FX/PH, SR/VT, PB/HB and WAG
+  VT/UB, BB/FX, from the icons and the time and line judges. On the finals page, the WAG
+  time judge MOSTAFA Shadi prints WOOLF's brevet (4094 for 5384).
+- Judge spellings: the WAG TD prints `Helena Lario`, written `LARIO Helena Beatriz` as at
+  Worlds (`JUDGE_NAME`). The Pan American books print `VELASQUEZ, Juan Carlos` (COL),
+  which is `VELASQUEZ ALVARADO Juan Carlos` here; Cairo's spelling is kept.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -874,5 +946,9 @@ second (General Programme, p. 2). Top eight per apparatus, R1–R3, no `NR` prin
    which for vault is the combined result — in which case the per-attempt
    columns and this one should become a single SJ penalty on the score.
 7. **Judge name variants.** The Baku TD prints as `Steve Butcher`; the Pan
-   American books print `BUTCHER, Steven`. Not merged (judges have no master
-   record); settle on one spelling if judges are ever linked across meets.
+   American books print `BUTCHER, Steven`. Cairo prints `VELASQUEZ ALVARADO Juan
+   Carlos` for the Pan Americans' `VELASQUEZ, Juan Carlos`. Not merged (judges have
+   no master record); settle on one spelling if judges are ever linked across meets.
+8. **Plain `AIN`.** Cairo prints one `AIN` for both neutral groups, kept as printed.
+   Those athletes link by FIG licence, but their Cairo entries form a third neutral
+   group beside `AIN1`/`AIN2`. Revisit if the site groups results by country.

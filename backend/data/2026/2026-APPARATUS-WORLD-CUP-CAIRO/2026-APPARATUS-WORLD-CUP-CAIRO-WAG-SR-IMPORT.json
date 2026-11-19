@@ -1,0 +1,32 @@
+{
+    "event" : {
+        "title" : "Apparatus World Cup 2026 Cairo",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "WORLD_CUP",
+        "startDate" : "2026-04-03",
+        "endDate" : "2026-04-06",
+        "city" : "Cairo",
+        "country" : "EGY",
+        "figEventNumber" : "17939",
+        "venue" : "Cairo International Stadium",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-EVENT-BB.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-EVENT-FX.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-EVENT-UB.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-EVENT-VT.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-APPARATUS-WORLD-CUP-CAIRO-WAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : []
+}

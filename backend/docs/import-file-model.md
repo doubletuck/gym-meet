@@ -304,7 +304,7 @@ files.
 | Field | The corrected column, by its header |
 | Printed | The value as the book prints it (blank when the book prints nothing) |
 | Corrected | The value written |
-| Category | `TIE_BREAK`, `RANK`, `SCORE`, `STATUS`, `NAME`, `JUDGE_NAME`, `LICENCE`, `BIRTH_DATE`, `ROW` (a row the book leaves out) |
+| Category | `TIE_BREAK`, `RANK`, `SCORE`, `STATUS`, `NAME`, `JUDGE_NAME`, `LICENCE`, `BIRTH_DATE`, `NOC` (an entry printed under the wrong country), `ROW` (a row the book leaves out) |
 | Source | Where the corrected value comes from: `sporttech export`, `FIG athlete database`, `other panels`, … |
 | Note | Free text |
 

@@ -107,7 +107,7 @@ Date,Event,Location,Format,Disciplines,Organizer,Priority,Status,Event Type,,Res
 "Apr 2, 2026",Luxembourg Open,"Luxembourg City, LUX",All Around,"MAG Sr, MAG Jr, WAG Sr, WAG Jr",Luxembourg,,,International Invitational,,
 "Apr 2, 2026",Luxembourg Championships,"Luxembourg City, LUX",All Around,"MAG Sr, MAG Jr, WAG Sr, WAG Jr",Luxembourg,5,,National Championships,,
 "Apr 3, 2026",Big Ten Conference Championships,"Lincoln, NE, USA",Team,MAG Sr,NCAA,,,Club League,,
-"Apr 4, 2026",FIG Cairo Artistic World Cup,"Cairo, EGY","Qualification, Apparatus Finals","MAG Sr, WAG Sr",FIG,2,,FIG World Cup,,
+"Apr 4, 2026",FIG Cairo Artistic World Cup,"Cairo, EGY","Qualification, Apparatus Finals","MAG Sr, WAG Sr",FIG,2,Parsed,FIG World Cup,https://www.gymnastics.sport/site/events/detail.php?id=17939&type=sport#loaded,https://www.gymnastics.sport/asset.php?id=fidb_21982
 "Apr 4, 2026",Top 12 Classification Matches,"[Multiple Locations], FRA",Team,"MAG Sr, MAG Jr, WAG Sr, WAG Jr",France,,,Club League,,
 "Apr 4, 2026",Top 12 Semi-Finals,"[Multiple Locations], FRA",Team,"MAG Sr, MAG Jr, WAG Sr, WAG Jr",France,,,Club League,,
 "Apr 4, 2026",ECAC Conference Championships,"West Point, NY, USA",Team,MAG Sr,NCAA,,,Club League,,
