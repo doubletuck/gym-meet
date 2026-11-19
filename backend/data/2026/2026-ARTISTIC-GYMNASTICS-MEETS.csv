@@ -72,7 +72,7 @@ Date,Event,Location,Format,Disciplines,Organizer,Priority,Status,Event Type,,Res
 "Feb 28, 2026",NCAA Week 8: Nebraska @ Oklahoma,"Norman, OK, USA",Team,MAG Sr,NCAA,,,Club League,,
 "Feb 28, 2026",NCAA Week 8: Mavericks @ Air Force,"Norman, OK, USA",Team,MAG Sr,NCAA,,,Club League,,
 "Mar 1, 2026",NCAA Week 8: Springfield College @ Penn State,"State College, PA, USA",Team,MAG Sr,NCAA,,,Club League,,
-"Mar 5, 2026",FIG Baku World Cup,"Baku, AZE","Qualification, Apparatus Finals","MAG Sr, WAG Sr",FIG,2,Parsed,FIG World Cup,https://www.gymnastics.sport/site/events/detail.php?id=17935&type=sport#loaded,https://www.gymnastics.sport/asset.php?id=fidb_21608
+"Mar 5, 2026",FIG Baku World Cup,"Baku, AZE","Qualification, Apparatus Finals","MAG Sr, WAG Sr",FIG,2,Imported,FIG World Cup,https://www.gymnastics.sport/site/events/detail.php?id=17935&type=sport#loaded,https://www.gymnastics.sport/asset.php?id=fidb_21608
 "Mar 5, 2026",Tiger's Cup,"Riga, LAT",All Around,"MAG Jr, WAG Jr",Latvia,,,International Invitational,,
 "Mar 6, 2026",International Gymnix,"Montreal, Quebec, CAN","Team, All Around, Apparatus Finals","WAG Sr, WAG Jr",Canada,,,International Invitational,,
 "Mar 6, 2026",International Gymnix Challenge,"Montreal, Quebec, CAN","Team, All Around, Apparatus Finals","WAG Sr, WAG Jr",Canada,,,International Club Invitational,,
@@ -85,7 +85,7 @@ Date,Event,Location,Format,Disciplines,Organizer,Priority,Status,Event Type,,Res
 "Mar 7, 2026",NCAA Week 9: Penn State @ Michigan,"Ann Arbor, MI, USA",Team,MAG Sr,NCAA,,,Club League,,
 "Mar 7, 2026","NCAA Week 9: Springfield College, Greenville @ Army","West Point, NY, USA",Team,MAG Sr,NCAA,,,Club League,,
 "Mar 7, 2026",American Cup,"Henderson, NV, USA",Mixed Team,"MAG Sr, WAG Sr",United States,,,International Invitational,,
-"Mar 12, 2026",FIG Antalya Artistic World Cup,"Antalya, TUR","Qualification, Apparatus Finals","MAG Sr, WAG Sr",FIG,2,,FIG World Cup,,
+"Mar 12, 2026",FIG Antalya Artistic World Cup,"Antalya, TUR","Qualification, Apparatus Finals","MAG Sr, WAG Sr",FIG,2,Imported,FIG World Cup,,
 "Mar 13, 2026",Serie A Match 2 [MAG/WAG],"Biella, Piedmont, ITA",Team,"MAG Sr, MAG Jr, WAG Sr, WAG Jr",Italy,,,Club League,,
 "Mar 14, 2026",NCAA Week 10: Navy @ Springfield College,"Springfield, MA, USA",Team,MAG Sr,NCAA,,,Club League,,
 "Mar 14, 2026",NCAA Week 10: Simpson @ William & Mary,"Williamsburg, VA, USA",Team,MAG Sr,NCAA,,,Club League,,

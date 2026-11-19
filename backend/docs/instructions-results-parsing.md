@@ -288,8 +288,8 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus publishes a single ranking, Baku
-  a vault 1 list and a two-vault list over the same vaulters (§5.7).
+  does two vaults in qualification — Cottbus and Antalya publish a single ranking,
+  Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
   score is half of vault 1.
@@ -340,6 +340,8 @@ decisions that come up while parsing.
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
+| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya) | `TD`, apparatus blank |
+| `Supervisor`; `Time`, `Line` printed once or twice on a panel (Antalya WAG) | `SV`; `T`/`L`, or `T1 T2`/`L1 L2` |
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
 | `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games, Baku) | `R` / `R1`…, with that panel's apparatus |
 
@@ -795,12 +797,64 @@ qualifier competed.
   `T L1 L2`). The MAG line judge ZELAYA (ARG) also sits on the WAG floor panel.
 - The organizers' medallists and medal standings pages aren't parsed.
 
+### 5.8 Organizer media book, EVAL scoring print (Antalya Apparatus World Cup)
+
+The Turkish Federation's media book (`17936-ResultsbookMedia.pdf`): its own layouts, no
+report codes, results printed by EVAL scoring with Turkish/English headings (`Soyadı
+Surname`). Every page has text except MAG rings qualification (p. 21, transcribed in
+[`transcriptions/2026-APPARATUS-WORLD-CUP-ANTALYA/`](../tools/results-parsing/transcriptions/2026-APPARATUS-WORLD-CUP-ANTALYA/README.md)).
+Parser:
+[`parse_2026_apparatus_world_cup_antalya.py`](../tools/results-parsing/parse_2026_apparatus_world_cup_antalya.py),
+which names each report's pages and checks them against the printed title.
+
+**Structure.** An apparatus competition (§4.9) on the Baku pattern: qualification on 12–13
+March, finals on 14–15 March, MAG FX/PH/SR and WAG VT/UB first, MAG VT/PB/HB and WAG BB/FX
+second (General Programme, p. 2). Top eight per apparatus, R1–R3, no `NR` printed.
+
+| Report | Gives |
+|---|---|
+| BIB NUMBERS (pp. 5–6) | bib, NOC, `SURNAME`, `Given` in two columns — the participants. No licence or birth year |
+| Results tables | every SCORES file; a TIE BREAK REPORTS page after most repeats the tied rows (cross-checked) |
+| Qualification start lists (pp. 7–14) | per day, groups with one column per apparatus still rotating; an apparatus drops out after its number of groups (p. 3) |
+| Finals start lists (pp. 37–38) | each final's eight starters (cross-checked) |
+| Judges Assignment (pp. 15–16, 39–40) | panels under apparatus icons; judges numbered consistently per discipline |
+
+**Gotchas**
+
+- **Decimal commas**: D, E, bonus and penalty print `5,700`; totals print `13.966` (tie-break
+  pages `13,966`). Written with a point, three decimals as printed. Penalties print
+  unsigned in their own column (`0,300`) and are written negative; `0,000` is blank. MAG
+  prints a `Bonus` column (`0,000` kept); WAG non-vault tables have none.
+- **Garbled names**: some names and headings sit in a font whose text layer is shifted
+  (`ù(1(5` = ŞENER, `%ø1(5` = BİNER, `6R\DGÕ` = Soyadı): ASCII 29 code points low, `ù`/`ø`/`Õ`
+  for Ş/İ/ı. Names come from the entry list anyway; the identity check unscrambles.
+  Results print Turkish letters (`ASİL`, `KILIÇER`) the entry list leaves out.
+- **Neutral athletes** are `AIN2` on the entry list, `AIN` everywhere else; written `AIN2`.
+- **Vault**: every vaulter does two vaults, ranked on the vault score (Cottbus shape, §4.5).
+  Each row prints vault 1 above the name and vault 2 below. MAG's bonus is per vault; WAG's
+  +0.2 is on vault 2's line but excluded from its score (`Combined Bonus`).
+- **Misprints**, logged as corrections: MAG vault final NIN REYES's vault 2 prints E `-1,700`
+  (the deductions; E 8.300); WAG vault qualification PEÑA ABREU's vault score prints 12.533
+  for 12.583. An invalid vault prints `0,000` in every column (`INVALID_VAULT`, D/E `0.000`).
+- **Athletes without a result**: a DNS row is printed only twice (MAG HB HAMADOUCHE, WAG BB
+  DROBNIAK, a name with no values). Others on the qualification start lists have no row at all
+  (MAG TANIDA on FX/PH/SR; five MAG vaulters; …): they get none, and the parser lists them.
+- The page 3 entry counts are "as per nominative registration" (MAG 89 for 80 bibs) and
+  aren't a usable check.
+- Judges: one unlabelled Superior Jury name per discipline (MAG "Competition Jury" `SURNAME
+  Given`, WAG "SUPERIOR JURY" `Given Surname`) is written `TD`. MAG panels `SV D1 D2 E1–E5`
+  plus `T L1 L2` / `L`, with `R1 R2` for the whole round under the last panel; WAG `Supervisor`,
+  `Time`, `Line` (numbered when a panel has two) and a `Reserve` per panel. The grid is MAG
+  FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX (icons, time and line judges). One MAG qualification
+  label is missing (rings E2, between E1 and E3) and one finals surname (vault line judge,
+  number 19 = KOGA).
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
    and no marker; sporttech.io a bare `0` with no D or E; Baku's Microplus
-   print a D (`0.0`) and `0.000` with E blank. Watch for a source that marks it
-   differently.
+   print a D (`0.0`) and `0.000` with E blank; Antalya's EVAL print `0,000` in
+   every column. Watch for a source that marks it differently.
 2. **Europeans MAG all-around summaries** (`SUMMARY-QUAL-AA`,
    `SUMMARY-FINAL-AA`) were never built; the reports exist in that PDF.
 3. **Europeans files were built by hand** before the parsers existed and lack
