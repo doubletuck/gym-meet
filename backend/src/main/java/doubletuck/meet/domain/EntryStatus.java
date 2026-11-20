@@ -8,7 +8,8 @@ public enum EntryStatus {
 
     COMPETITOR("Competitor"),
     RESERVE("Reserve"),
-    WITHDRAWN("Withdrawn");
+    WITHDRAWN("Withdrawn"),
+    HORS_CONCOURS("Hors Concours");
 
     private final String longName;
 

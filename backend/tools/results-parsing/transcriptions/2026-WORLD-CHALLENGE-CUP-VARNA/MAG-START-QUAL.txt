@@ -1,0 +1,138 @@
+# MAG qualification start lists (pp. 11-14, images): apparatus|group|noc|bib|Competitor, as printed.
+# Day 1 part 1: FX (left) and PH (right); part 2: SR. Day 2 part 1: VT (left) and PB (right); part 2: HB.
+# An athlete can be listed in more groups than they have routines, so only the sets are compared.
+FX|1|BUL|111|Dunev Michael (HC)
+FX|1|UKR|154|Dyshuk Ihor
+FX|1|UKR|155|Suprun Bohdan
+FX|1|MGL|146|Erkhembayar Usukhbayar
+FX|1|MGL|145|Damdindorj Enkhtuvshin
+FX|2|HUN|130|Molnar Botond
+FX|2|HUN|131|Zavory Szilard
+FX|2|KAZ|138|Idrissov Nurtan
+FX|2|KAZ|139|Salimov Assan
+FX|2|GBR|122|Lynn Cameron
+FX|3|BUL|114|Trifonov Daniel
+FX|3|BUL|115|Dimitrov Dimitar
+FX|3|UZB|158|Kamiljanov Ravshan
+FX|3|ISR|134|Ortal Ron
+FX|3|ISR|135|Liubimov Ilia
+FX|4|GER|126|Bulka Anton
+FX|4|GER|125|Eder Timo
+FX|4|AUT|106|Miggitsch Martin
+FX|4|AUT|103|Vetter Gino
+FX|4|GUA|128|Bourdet Jaycko
+FX|5|TUR|151|Yilmaz Cagri
+FX|5|TUR|152|Kartin Metehan
+FX|5|BEL|107|Schepers Kyano
+FX|5|BEL|108|Tournicourt Victor
+PH|1|BUL|110|Stanoev Lyubomir (HC)
+PH|1|ISR|136|Hacohen Erez
+PH|1|ISR|135|Liubimov Ilia
+PH|1|UZB|159|Temirkhonov Akhrorkhon
+PH|1|UZB|158|Kamiljanov Ravshan
+PH|2|TUR|151|Yilmaz Cagri
+PH|2|GER|126|Bulka Anton
+PH|2|GER|125|Eder Timo
+PH|2|AUT|105|Lindpointner Vincent
+PH|2|AUT|103|Vetter Gino
+PH|3|CRO|120|Zugec Mateo
+PH|3|CRO|121|Sambolec Marko
+PH|3|BEL|108|Tournicourt Victor
+PH|3|BEL|107|Schepers Kyano
+PH|3|MGL|145|Damdindorj Enkhtuvshin
+PH|4|MAS|143|Ng Chun Chen
+PH|4|MAS|142|Aimy Muhammad Sharul
+PH|4|UKR|156|Melnykov Mykyta
+PH|4|UKR|154|Dyshuk Ihor
+PH|5|GBR|124|Whitlock Max
+PH|5|GBR|123|Ward Reuben
+PH|5|HUN|132|Zambori Zala Samu
+PH|5|HUN|133|Kiss Balazs
+PH|6|KAZ|140|Khegay Roman
+PH|6|KAZ|141|Idrissov Zeinolla
+PH|6|NED|147|De Munck Loran
+PH|6|NED|148|Faverus Elijah
+PH|6|GUA|128|Bourdet Jaycko
+PH|7|BUL|116|Ivanov David
+PH|7|BUL|117|Radkov Rayan
+SR|1|KAZ|138|Idrissov Nurtan
+SR|1|KAZ|140|Khegay Roman
+SR|1|ARM|101|Avetisyan Artur
+SR|1|HUN|133|Kiss Balazs
+SR|1|HUN|131|Zavory Szilard
+SR|2|UZB|159|Temirkhonov Akhrorkhon
+SR|2|TUR|153|Dogan Altan
+SR|2|TUR|151|Yilmaz Cagri
+SR|2|UKR|157|Shved Sviatoslav
+SR|2|UKR|155|Suprun Bohdan
+SR|3|NED|148|Faverus Elijah
+SR|3|NED|149|Hagenaar Jordi
+SR|3|GER|127|Sahakyan Artur
+SR|3|MGL|146|Erkhembayar Usukhbayar
+SR|3|BUL|118|Ivanov Yoan
+SR|4|AUT|105|Lindpointner Vincent
+VT|1|BUL|112|Ivanov Alex (HC)
+VT|1|KAZ|138|Idrissov Nurtan
+VT|1|KAZ|139|Salimov Assan
+VT|1|AUT|105|Lindpointner Vincent
+VT|1|AUT|106|Miggitsch Martin
+VT|2|MAS|143|Ng Chun Chen
+VT|2|MAS|142|Aimy Muhammad Sharul
+VT|2|UKR|155|Suprun Bohdan
+VT|2|BUL|114|Trifonov Daniel
+VT|2|BUL|115|Dimitrov Dimitar
+VT|3|HUN|131|Zavory Szilard
+VT|3|HUN|130|Molnar Botond
+VT|3|MGL|145|Damdindorj Enkhtuvshin
+VT|3|GUA|128|Bourdet Jaycko
+VT|3|TUR|152|Kartin Metehan
+PB|1|UKR|157|Shved Sviatoslav
+PB|1|UKR|156|Melnykov Mykyta
+PB|1|MGL|145|Damdindorj Enkhtuvshin
+PB|1|HUN|132|Zambori Zala Samu
+PB|1|HUN|130|Molnar Botond
+PB|2|GER|126|Bulka Anton
+PB|2|GER|125|Eder Timo
+PB|2|UZB|159|Temirkhonov Akhrorkhon
+PB|2|NED|147|De Munck Loran
+PB|2|NED|149|Hagenaar Jordi
+PB|3|KAZ|140|Khegay Roman
+PB|3|KAZ|138|Idrissov Nurtan
+PB|3|SRB|150|Vefic Petar
+PB|3|BUL|118|Ivanov Yoan
+PB|3|BUL|119|Aleksandrov Yordan
+PB|4|AUT|105|Lindpointner Vincent
+PB|4|AUT|103|Vetter Gino
+PB|4|MAS|143|Ng Chun Chen
+PB|4|ISR|135|Liubimov Ilia
+PB|4|ISR|137|Pyatov Ron
+PB|5|GBR|122|Lynn Cameron
+PB|5|GBR|124|Whitlock Max
+PB|5|TUR|151|Yilmaz Cagri
+PB|5|TUR|153|Dogan Altan
+PB|5|BEL|107|Schepers Kyano
+PB|6|GUA|128|Bourdet Jaycko
+HB|1|BUL|113|Getov Stoyan (HC)
+HB|1|BEL|107|Schepers Kyano
+HB|1|AUT|105|Lindpointner Vincent
+HB|1|AUT|103|Vetter Gino
+HB|1|UZB|158|Kamiljanov Ravshan
+HB|2|GBR|122|Lynn Cameron
+HB|2|GBR|123|Ward Reuben
+HB|2|UKR|156|Melnykov Mykyta
+HB|2|UKR|157|Shved Sviatoslav
+HB|2|MAS|144|Yeoh Wilson Wei Sin
+HB|3|BUL|114|Trifonov Daniel
+HB|3|BUL|119|Aleksandrov Yordan
+HB|3|HUN|133|Kiss Balazs
+HB|3|HUN|131|Zavory Szilard
+HB|3|GER|125|Eder Timo
+HB|4|KAZ|139|Salimov Assan
+HB|4|KAZ|140|Khegay Roman
+HB|4|MGL|146|Erkhembayar Usukhbayar
+HB|4|TUR|151|Yilmaz Cagri
+HB|4|TUR|153|Dogan Altan
+HB|5|ISR|134|Ortal Ron
+HB|5|ISR|135|Liubimov Ilia
+HB|5|NED|149|Hagenaar Jordi
+HB|5|NED|148|Faverus Elijah

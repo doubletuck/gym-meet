@@ -44,8 +44,8 @@ public record AthleteResponse(
 
     /**
      * @param club        the club they entered for, where the entry list names one
-     * @param entryStatus a competitor, a reserve, or withdrawn; reserves and withdrawn athletes usually have
-     *                    no sessions
+     * @param entryStatus a competitor, a reserve, withdrawn, or hors concours; reserves, withdrawn and hors
+     *                    concours athletes usually have no sessions
      * @param sessions    the sessions they have results in, in competition order
      */
     public record Entry(EntryEvent event, String noc, @Nullable String club, EntryStatus entryStatus,

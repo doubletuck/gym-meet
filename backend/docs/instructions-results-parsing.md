@@ -179,7 +179,9 @@ decisions that come up while parsing.
 - **Entry list annotations** go in PARTICIPANTS' `Entry Status`: a
   `(reserve)` suffix on the name is dropped and the entry is `RESERVE`; an
   entry struck through on the list is `WITHDRAWN` (Senior Pan Americans WAG
-  bib 127; the "Number of Entries" counts include it).
+  bib 127; the "Number of Entries" counts include it). An entry marked
+  `(Hors Concours)` is `HORS_CONCOURS` (Varna: five BUL athletes, counted
+  `6 + 4 (HC)` on the entries by NOC page).
 - **Truncation happens anywhere a name is long** — narrow vault columns, but
   also normal tables (`BORDELAIS-MAISONNABLE` without his given name, initials
   like `KUBON CV` in all-around tables). Always diff against `PARTICIPANTS`.
@@ -210,7 +212,8 @@ decisions that come up while parsing.
   that order equal totals — never recompute (tie-break rules change by quad).
   Elevien's World Cup books break a tie on E, then D (Osijek WAG floor
   qualification: SHAMAY over ZLOBEC, E 7.500 both); equal on both, the rank
-  is shared.
+  is shared. Varna's book does the same (MAG floor qualification: BOURDET and
+  ZAVORY share 5th on equal E and D).
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -291,7 +294,7 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus, Antalya, Cairo and Osijek publish a single ranking,
+  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek and Varna publish a single ranking,
   Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
@@ -326,6 +329,10 @@ decisions that come up while parsing.
 - **A tie at the last qualifying place** puts both athletes through, so the
   final has nine (Mediterranean Games WAG beam: two at =11, after three `NR`s).
   The List Of Qualifiers numbers them 11 and 12; the table's tied ranks stand.
+- **A reserve added to a full final** (Varna WAG beam: STOIMENOVA, R1, starts
+  first ahead of the eight qualifiers; nine are ranked): her `Qualification`
+  stays `R1`, and the start list's reserves are the R2 and R3. The book gives
+  no reason.
 - **Two per country, reopened**: when a qualifier withdraws, a compatriot
   marked `NR` can take the place ahead of the reserves (Mediterranean Games WAG
   floor: GAVA for TONELLI, both ITA). Their `Qualification` stays `NR`.
@@ -352,6 +359,7 @@ decisions that come up while parsing.
 | `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
 | A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya) | `TD`, apparatus blank |
 | `Supervisor`; `Time`, `Line` printed once or twice on a panel (Antalya WAG) | `SV`; `T`/`L`, or `T1 T2`/`L1 L2` |
+| `Time Judge` (printed twice on Varna's beam panels), `Line Judge`, `Line Judge 1` | `T` or `T1 T2`, `L`, `L1` |
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
 | `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games, Baku) | `R` / `R1`…, with that panel's apparatus |
 
@@ -982,6 +990,68 @@ printed), R1–R3; every qualifier competed.
   blank). The grid is MAG FX/PH, SR/VT, PB/HB and WAG VT/UB, BB/FX, by name. `Tanguy LE ROCH`
   is written `le ROCH` as at Worlds.
 
+### 5.11 Organizer media book, typed in Word (Varna World Challenge Cup)
+
+The Bulgarian Federation's media book (`18226-ResultsbookMedia.pdf`), typed in Word: a
+Competition Schedule (pp. 2-3), entry counts by NOC (p. 4), medallists and medal standings
+(pp. 5-6), the Entry List by NF (pp. 7-10), then per discipline the qualification start lists,
+judging assignments, one results table per page (`Qualification FX - MAG`), a tie-break page
+after some, the finals start lists and the finals, each followed by a `MEDALISTS` page. The start
+lists and judging assignments are images, transcribed in
+[`transcriptions/2026-WORLD-CHALLENGE-CUP-VARNA/`](../tools/results-parsing/transcriptions/2026-WORLD-CHALLENGE-CUP-VARNA/README.md).
+Parser:
+[`parse_2026_world_challenge_cup_varna.py`](../tools/results-parsing/parse_2026_world_challenge_cup_varna.py),
+which finds each table by its title (`-` or `–`) and takes the page after it as its tie-break page.
+
+**Structure.** An apparatus competition (§4.9) on the Baku pattern: qualification on 7-8 May,
+finals on 9-10 May, MAG FX/PH/SR and WAG VT/UB first, MAG VT/PB/HB and WAG BB/FX second
+(schedule and finals start lists). Top eight per apparatus, two per country (no `NR` printed),
+R1-R3. The WAG beam final has nine (§4.6).
+
+| Report | Gives |
+|---|---|
+| Entry List by NF | bib, NOC, FIG licence, `SURNAME`, `Given`, function (`MAG Gymnast`, `(Hors Concours)`): the participants. No birth year |
+| Number of Entries by NOC (p. 4) | men and women per country, hors concours added (`6 + 4 (HC)`) (cross-checked) |
+| Results tables | every SCORES file; `Given SURNAME`, `Q`/`R1`-`R3` under `Status` |
+| Tie-Break pages | the tied athletes' rank, total, E and, where E is equal, D (cross-checked) |
+| Qualification start lists (images) | per apparatus, groups of `NOC BIB Surname Given`, `(HC)` marked (cross-checked as sets) |
+| Finals start lists (images) | each final's starters and R1-R3 (cross-checked) |
+| Judging assignments (images) | MAG qualification and WAG qualification and finals panels |
+| Medallists (p. 5, each final's page) | a cross-check only |
+
+**Gotchas**
+
+- **Decimal commas** (rings qualification prints points), D and E with three decimals. Columns
+  `D E ND B Final`: ND (neutral deductions) printed unsigned and `0,000` when none, written
+  negative or blank; `B` only for MAG, blank on most rows.
+- **Vault**: MAG qualification prints `D E ND [B] Score Avg Final` on the athlete's line and vault
+  2 below; finals add `Max` (the higher vault) before `Final`. MAG's bonus is in the attempt's
+  score. WAG qualification puts vault 1 on the athlete's line, `Avg Max Final` centred on a line
+  of its own, and vault 2 below with its +0.2 after the score; `Avg` leaves the bonus out and
+  `Final` adds it. WAG finals print as MAG's, the bonus before vault 2's score and inside `Avg.`.
+  The bonus is never in the attempt's score (`Combined Bonus`).
+- **A missing vault**: WAG qualification AKTURK prints vault 1 and a vault score of 10.850, but no
+  vault 2. It came from thegymter.net (D 3.6, E 7.300, ND 0.3: 10.600) and is logged as `ROW`
+  corrections.
+- **Misprinted bibs**: the WAG uneven bars final prints LOBOK as 216 and SULEKIC as 206; the finals
+  start list has 251 and 214. Logged as `BIB` corrections; the parser identifies the row by the
+  corrected bib. Misspelt names (`DYSHYK`, `WESSENHOFFER`, `Dabiz`) are reported and take the
+  entry list's spelling.
+- **Hors concours** athletes are on the qualification start lists (MAG 110-113, one apparatus
+  each; WAG 206 on vault and beam) but the results tables leave them out: no score rows.
+- **Athletes without a result**: on a qualification start list but with no row: MAG YILMAZ (FX),
+  WAG DEMERS (BB). The start lists list some athletes in more groups than they have routines.
+- The tie-break page after the MAG high bar final is titled `PB`. Not every table with equal
+  totals has a tie-break page (MAG pommel horse, WAG beam qualification).
+- p. 4 prints Mongolia as `MNG`; everywhere else it is `MGL`.
+- Judges: one MAG page (qualification; no finals page is printed) and two WAG pages, panels under
+  apparatus icons in the grid MAG FX/PH, SR/VT, PB/HB and WAG VT/UB, BB/FX (time and line judges
+  agree). MAG: `LI Jing` as Technical Delegate (written `TD`, no NOC); panels `D1 D2 E1-E5`, no
+  supervisor, plus `T L1 L2` (FX) and `L` (VT); a few judges sit on four panels. The floor panel
+  truncates `GYULAI Gergely Laszl` (`JUDGE_NAME`). WAG: judge numbers, `Function` labels (`Time
+  Judge`, `Line Judge 1`), reserves `R1`-`R3` below the panels. The WAG pages name no Technical
+  Delegate; the cover's `Ms. Lyudmila LI` is written as `TD`.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1010,7 +1080,10 @@ printed), R1–R3; every qualifier competed.
    American books print `BUTCHER, Steven`. Cairo prints `VELASQUEZ ALVARADO Juan
    Carlos` for the Pan Americans' `VELASQUEZ, Juan Carlos`. Not merged (judges have
    no master record); settle on one spelling if judges are ever linked across meets.
-8. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
+8. **Hors concours results.** Varna's book leaves the hors concours athletes' scores out,
+   so they are entries with no results. Their scores would need another source (the FIG
+   results system) and a way to keep them out of the ranks.
+9. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
    (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral
    group beside `AIN1`/`AIN2`. Revisit if the site groups results by country.

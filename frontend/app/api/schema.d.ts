@@ -439,7 +439,7 @@ export interface components {
       noc: string;
       club: string | null;
       /** @enum {string} */
-      entryStatus: "COMPETITOR" | "RESERVE" | "WITHDRAWN";
+      entryStatus: "COMPETITOR" | "RESERVE" | "WITHDRAWN" | "HORS_CONCOURS";
       sessions: components["schemas"]["EntrySession"][];
     };
     EntryEvent: {

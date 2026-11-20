@@ -121,7 +121,7 @@ One row per athlete entry.
 | Birth Year | Participant's birth year. Blank where the source prints none (US Championships) | `Athlete.birthYear` |
 | Birth Date | Participant's full birth date (`YYYY-MM-DD`), when the entry list publishes one (FIG World Championships does; European Championships prints only a year). Blank otherwise | `Athlete.birthDate` |
 | Club | **US Championships only.** The athlete's gym/club as printed | `Participant.club` → `Club.name` (the club's country is the participant's NOC) |
-| Entry Status | **Optional.** How the entry list shows the athlete: `COMPETITOR`, `RESERVE` (marked as a reserve) or `WITHDRAWN` (struck through). A missing column or blank cell means `COMPETITOR`. Written where the entry list shows reserves or withdrawals (2026 Senior Pan Americans) | `Participant.entryStatus` |
+| Entry Status | **Optional.** How the entry list shows the athlete: `COMPETITOR`, `RESERVE` (marked as a reserve), `WITHDRAWN` (struck through) or `HORS_CONCOURS` (marked `(Hors Concours)`: competes out of competition). A missing column or blank cell means `COMPETITOR`. Written where the entry list shows reserves or withdrawals (2026 Senior Pan Americans) or hors concours entries (2026 Varna World Challenge Cup) | `Participant.entryStatus` |
 
 ## `JUDGES.csv`
 
@@ -300,11 +300,11 @@ files.
 | Column | Description |
 |---|---|
 | File | The corrected file's name without the event prefix and `.csv`, e.g. `MAG-JR-SCORES-QUAL-FX` |
-| Key | The row: its `Bib` (`Bib Number` in `PARTICIPANTS`), a team summary's `NOC Code`, or a judge's `Round Apparatus Function` (`-` for a blank apparatus), e.g. `QUAL FX E1`. In `JUDGES`, the judge's `Name` as printed instead corrects every row with that name. Keys match the rows as printed, before any correction |
+| Key | The row: its `Bib` as printed (`Bib Number` in `PARTICIPANTS`), a team summary's `NOC Code`, or a judge's `Round Apparatus Function` (`-` for a blank apparatus), e.g. `QUAL FX E1`. In `JUDGES`, the judge's `Name` as printed instead corrects every row with that name. Keys match the rows as printed, before any correction |
 | Field | The corrected column, by its header |
 | Printed | The value as the book prints it (blank when the book prints nothing) |
 | Corrected | The value written |
-| Category | `TIE_BREAK`, `RANK`, `SCORE`, `STATUS`, `NAME`, `JUDGE_NAME`, `LICENCE`, `BIRTH_DATE`, `NOC` (an entry printed under the wrong country), `ROW` (a row the book leaves out) |
+| Category | `TIE_BREAK`, `RANK`, `SCORE`, `STATUS`, `NAME`, `JUDGE_NAME`, `LICENCE`, `BIRTH_DATE`, `NOC` (an entry printed under the wrong country), `ROW` (a row or value the book leaves out), `BIB` (a result printed with another athlete's bib) |
 | Source | Where the corrected value comes from: `sporttech export`, `FIG athlete database`, `other panels`, … |
 | Note | Free text |
 

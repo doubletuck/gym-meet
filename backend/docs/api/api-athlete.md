@@ -97,5 +97,5 @@ earlier.
 | event | Object | `{slug, title, startDate, endDate}` |
 | noc | String | The country they competed for (IOC code) |
 | club | String, nullable | The club they entered for, where the entry list names one (national meets) |
-| entryStatus | String | `COMPETITOR`, `RESERVE` or `WITHDRAWN`, as the entry list shows them; a reserve or withdrawn athlete usually has no sessions |
+| entryStatus | String | `COMPETITOR`, `RESERVE`, `WITHDRAWN` or `HORS_CONCOURS`, as the entry list shows them; a reserve, withdrawn or hors concours athlete usually has no sessions |
 | sessions | List | The sessions they have results in, in competition order, each `{session, allAround, scores, apparatusStandings}`: `session` a [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object); `allAround` their `{rank, total, qualification}` in it, nullable; `scores` their scores in Olympic order, each a [ScoreRow](api-session.md#scorerow-object) without `bib`, `athlete`, `noc`, `club` and `countsTowardTeam` but with `apparatus`; `apparatusStandings` for a split round's combined session, their `{apparatus, rank, total}` on each apparatus |

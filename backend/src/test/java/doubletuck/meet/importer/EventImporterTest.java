@@ -433,6 +433,16 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_EntryStatus_HorsConcours(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        addEntryStatus(dir, "HORS_CONCOURS");
+
+        eventImporter.importManifest(manifest, false);
+
+        assertEquals(EntryStatus.HORS_CONCOURS, participant("999").getEntryStatus());
+    }
+
+    @Test
     void testImport_EntryStatusColumnAbsent_EveryoneIsACompetitor() {
         importFixture(WORLDS_WAG);
 

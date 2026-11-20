@@ -135,6 +135,7 @@ Final round itself — the two `AA`s aren't related beyond sharing a name.)
 | COMPETITOR | Competitor | Entered to compete. The default. |
 | RESERVE | Reserve | Entered as a reserve (marked on the entry list); competes only if called up. |
 | WITHDRAWN | Withdrawn | Struck through on the entry list. |
+| HORS_CONCOURS | Hors Concours | Competes out of competition (marked `(Hors Concours)` / `(HC)` on the entry list): not ranked, and results books may leave their scores out (2026 Varna World Challenge Cup). |
 
 #### `Country`
 
@@ -300,7 +301,7 @@ Unique key: `(name, country_code)`.
 | bibNumber | String | Yes | Competition bib/start number, when assigned. |
 | noc | Country | No | Who this athlete is competing for at this event. Recorded per event rather than on `Athlete`, since an athlete can change federation or compete as a neutral athlete. |
 | clubId | Long, FK → `Club` | Yes | The club the athlete represented at this event. Held per entry rather than on `Athlete`, since an athlete can change clubs between events. Null when the source doesn't publish one — international results identify athletes by country only. |
-| entryStatus | EntryStatus | No | How the entry list shows the athlete: `COMPETITOR` (the default), `RESERVE`, or `WITHDRAWN` (struck through). Reserves and withdrawn athletes usually have no results. An entered competitor can also have none (didn't start at all). |
+| entryStatus | EntryStatus | No | How the entry list shows the athlete: `COMPETITOR` (the default), `RESERVE`, `WITHDRAWN` (struck through) or `HORS_CONCOURS` (out of competition). Reserves, withdrawn and hors concours athletes usually have no results. An entered competitor can also have none (didn't start at all). |
 
 Unique key: `(event_id, athlete_id)`
 
