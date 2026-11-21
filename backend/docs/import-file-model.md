@@ -161,7 +161,7 @@ round(s) a column actually appears in.
 | D | ✓ | ✓ | ✓ | ✓ | Difficulty score. A leading `!` marks it under inquiry | `Score.routine.difficulty`, `Score.routine.difficultyInquiry` |
 | E | ✓ | ✓ | ✓ | ✓ | Execution score. Some sources print `E` before `D` (MAG PH and every WAG apparatus at the 2026 Europeans); the CSV always writes to these fixed column names regardless of source order | `Score.routine.execution` |
 | B | ✓ | ✓ | ✓ | ✓ | Bonus. Populated for MAG (blank on every MAG PH row specifically — PH has no bonus). Present but always blank for WAG — kept for column alignment between disciplines rather than omitted | `Score.routine.bonus` |
-| Penalty | ✓ | ✓ | ✓ | ✓ | Blank when no penalty applied — never `0` | `Score.routine.penalty` |
+| Penalty | ✓ | ✓ | ✓ | ✓ | Blank when no penalty applied — never `0`. Where a source splits penalties into several columns (2026 Szombathely World Challenge Cup: time, line, other), their sum | `Score.routine.penalty` |
 | SJ Penalty | ✓ | ✓ | ✓ | ✓ | Superior Jury Penalty, distinct from `Penalty`. Not observed with a non-blank value on any non-vault apparatus so far | `Score.routine.sjPenalty` |
 | Total | ✓ | ✓ | ✓ | ✓ | Blank when `Status` is `DNS` | `Score.routine.score` (and `Score.totalScore`, which equals it for a single routine) |
 | Qualification | ✓ | | | | `Q`/`R1`–`R4`/`NR`/blank, matching `QualificationResult` exactly. Only meaningful where there's a further round to qualify into. Sources that number the qualifiers (`Q1`…`Q8`, sporttech.io) are written as `Q`. Where the qualification table prints no markers but the final's start list names the finalists and ordered reserves (2026 Cottbus World Cup), they're taken from the start list | `Score.qualificationResult` |
