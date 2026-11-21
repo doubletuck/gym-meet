@@ -215,7 +215,8 @@ decisions that come up while parsing.
   is shared. Varna's book does the same (MAG floor qualification: BOURDET and
   ZAVORY share 5th on equal E and D), and so does Koper's, which prints no
   shared rank at all. Szombathely's too (WAG beam qualification: MAYER and
-  ANDRADE share 1st on equal E and D; vault on the higher vault).
+  ANDRADE share 1st on equal E and D; vault on the higher vault). Paris breaks every tie, vault
+  on the higher vault, then the higher E of either vault, then D.
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -296,7 +297,7 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper and Szombathely publish a single ranking,
+  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper, Szombathely and Paris publish a single ranking,
   Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
@@ -364,6 +365,7 @@ decisions that come up while parsing.
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
 | A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG), or `SJ: <name> FIG` (Szombathely) | `TD`, apparatus blank |
+| `Technical Delegate`, `Technical Delegate Assistant` (Paris Superior Jury) | `TD`, `TDA`, apparatus blank |
 | `Supervisor`; `Time`, `Line` printed once or twice on a panel (Antalya WAG) | `SV`; `T`/`L`, or `T1 T2`/`L1 L2` |
 | `Time Judge` (printed twice on Varna's beam panels), `Line Judge`, `Line Judge 1` | `T` or `T1 T2`, `L`, `L1` |
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
@@ -1181,6 +1183,61 @@ schedule, whose dates the tables' date lines repeat. Top eight per apparatus, tw
   same time print the same judges. A long name pushes its NOC onto the next line, or joins it with
   one space; `LEEWORTHY Robin` prints `GBR` twice.
 
+### 5.14 Media book in the FIG layout, Swiss Timing print (Paris World Challenge Cup)
+
+The media book (`18305-ResultsbookMedia.pdf`), printed by Swiss Timing in the layout of the FIG
+books (§5.1): every page has text and a `GAR…` footer code; page 1 is a cover image. A Competition
+Schedule (p. 2), entries by NOC (p. 3), medallists (pp. 4-5), then per discipline the Entry List by
+NOC (`_32A`) and by bib (`_32D`, full date of birth), the qualification judges (`_57A` MAG, `_57B`
+WAG), per apparatus a start list (`_51I`), the results (`_73I`; vault `_73J`) and a Tie Break Report
+(`_77A`; vault `_77B`), the List of Qualifiers (`_53B` MAG, `_53C` WAG), the finals start lists, the
+finals judges, and per final a Medallists page (`_92A`), the results and any tie-break report.
+Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/parse_2026_world_challenge_cup_paris.py).
+
+**Structure.** An apparatus competition (§4.9): every qualification on 26 September, every final on
+27 September (schedule; each report's date line agrees). Top eight per apparatus, two per country
+(no `NR` printed), then `R1`-`R3`.
+
+| Report | Gives |
+|---|---|
+| Entry List by Bib Number (`_32D`) | bib, FIG licence, `SURNAME Given`, NOC, date of birth: the participants |
+| Entry List by NOC (`_32A`), Number of Entries by NOC (p. 3) | the same entries; counts per country, a blank for none, placed by column edge (cross-checked) |
+| Results (`_73I`, vault `_73J`) | every SCORES file; finals add Qualification Rank and Start Order (cross-checked, not written) |
+| Tie Break Report (`_77A`, vault `_77B`) | the tied athletes' rank, total and E (vault: the higher vault and which, `12.900 (VT1)`) (cross-checked) |
+| List of Qualifiers | per apparatus `order bib Name NOC score`, 1-8 then R1-R3 (cross-checked) |
+| Finals Start List Part 1 / Part 2 (`GARG1AP…FNL-PART<n>_51G`) | each final's starters and reserves (cross-checked) |
+| Qualification start lists (`_51I`) | per apparatus, `Bib Name NOC`, `*` on every vaulter (cross-checked as sets) |
+| Medallists (p. 4, `_92A`) | a cross-check only |
+
+**Gotchas**
+
+- **Six late French entries without results.** Bibs 77-80 (MAG BELLIL, BURBAIL, MANSARD,
+  TRAORE-MALATRE) and 259-260 (WAG CHARPY, LETRANGE) come after the rest of the entry list and
+  are counted in the entries by NOC. Each is first on the start list of one or two apparatus, and
+  their results rows print bib, name and NOC only: no rank, no score, no `DNS` (real non-starters
+  print `DNS` on the same pages). The book gives no reason. They are written as entries with no
+  SCORES rows (`NO_RESULT` in the parser), confirmed with the user. See §6 item 8.
+- **Bibs of one to three digits** (MAG 1-80), printed one space after the rank (`1 34`). The
+  WAG List of Qualifiers prints the order and the bib run together (`1255` is order 1, bib 255).
+- **Vault** prints `1` and vault 1 on the athlete's line, `2` and vault 2 on the next line, each
+  `D E [Pen.] [Bonus] score`. The two-vault result follows vault 1's score, with WAG's `Vault Bonus`
+  (+0.2, `Combined Bonus`) in between; MAG's bonus is inside the attempt (`0.1 14.666`). `DNS DNS`
+  is no vault at all (both statuses `DNS`); `DNF` is vault 1 done and vault 2 `DNS` (MAG
+  BRANDENBURGER).
+- **Pen. and Bonus** share the space between E and the score; the sign tells them apart (§2.5).
+  WAG beam qualification SUAREZ Alessia: D 1.1, E 7.700, `-6.0`, 2.800.
+- **The finals start lists are printed twice**, the same pages in each discipline's section
+  (pp. 29-32 and 69-72); the first copy is read, and the two are checked to be identical. Men are
+  on the left and women on the right, in blocks headed `Start Time: hh:mm`; the apparatus is the
+  schedule's for that discipline and time. Reserves print `R1`-`R3` with no bib.
+- **Icons instead of apparatus names** on the judges pages and the List of Qualifiers (§2.7). The
+  grid is MAG FX/PH, SR/VT, PB/HB and WAG VT/UB, BB/FX, confirmed from rendered pages.
+- Judges: the Superior Jury is `Name  Technical Delegate` and `Name  Technical Delegate
+  Assistant`, written `TD` and `TDA` with apparatus and NOC blank. Panels are `D1 D2 E1-E5` (WAG
+  qualification `E1-E4`) plus `Time Judge`, `Time Judge 1`/`2`, `Line Judge`, `Line Judge 1`/`2`;
+  MAG lists round reserves `R1`… below the panels (apparatus blank). Judge names are kept as
+  printed, as a World Gymnastics book: `EECKHOUTTE Sebastien` (the Europeans' `Sébastien`).
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1211,8 +1268,9 @@ schedule, whose dates the tables' date lines repeat. Top eight per apparatus, tw
    no master record); settle on one spelling if judges are ever linked across meets.
 8. **Hors concours results.** Varna's and Koper's books leave the hors concours athletes' scores out,
    so they are entries with no results. Szombathely's leaves its one (WAG KOVACS Regina, bib 224,
-   on the beam start list only) off the entry list too, so she isn't written at all. Their scores would need another source (the FIG
-   results system) and a way to keep them out of the ranks.
+   on the beam start list only) off the entry list too, so she isn't written at all. Paris's six
+   late French entries (§5.14) aren't marked hors concours, but their rows print no result either.
+   Their scores would need another source (the FIG results system) and a way to keep them out of the ranks.
 9. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
    (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral

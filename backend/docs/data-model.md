@@ -149,6 +149,7 @@ No enumerator or type will be used. Countries are the three-letter **IOC codes**
 | VICE_PRESIDENT | Vice President | Superior Jury |
 | MEMBER | Member | Superior Jury |
 | TD | Technical Delegate | Superior Jury: the FIG Technical Delegate, the whole Superior Jury at a World Cup (2026 Baku) |
+| TDA | Technical Delegate Assistant | Superior Jury: the Technical Delegate's assistant (2026 Paris World Challenge Cup) |
 | D1 | Difficulty Judge 1 | |
 | D2 | Difficulty Judge 2 | |
 | E1–E7 | Execution Judge 1–7 | One constant per execution judge, `E1` through `E7` |

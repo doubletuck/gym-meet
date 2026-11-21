@@ -1,0 +1,32 @@
+{
+    "event" : {
+        "title" : "World Challenge Cup 2026 Paris",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "WORLD_CHALLENGE_CUP",
+        "startDate" : "2026-09-26",
+        "endDate" : "2026-09-27",
+        "city" : "Paris",
+        "country" : "FRA",
+        "figEventNumber" : "18305",
+        "venue" : "Accor Arena",
+        "apparatusSuppliers" : "Gymnova"
+    },
+    "participants" : [
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-EVENT-BB.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-EVENT-FX.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-EVENT-UB.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-EVENT-VT.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-WORLD-CHALLENGE-CUP-PARIS-WAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : []
+}

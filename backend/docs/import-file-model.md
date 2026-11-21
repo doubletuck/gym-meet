@@ -132,7 +132,7 @@ one file per discipline+age.
 |---|---|---|
 | Round | The round of competition the judge is evaluating: [Round](../src/main/java/doubletuck/meet/domain/Round.java) | `Judge.session` (with `Apparatus`, identifies the session) |
 | Apparatus | The apparatus the judge is evaluating: [Apparatus](../src/main/java/doubletuck/meet/domain/Apparatus.java) | `Judge.apparatus` |
-| Function | The function the judge is in when evaluating: [JudgeFunction](../src/main/java/doubletuck/meet/domain/JudgeFunction.java). Superior Jury roles are written as printed (`President`, `Vice-President`, `Member`, `TD` — the Technical Delegate at a World Cup) and resolve through `JudgeFunction.find`; reserve judges are `R` (single, unnumbered) or `R1`…`R6` (printed `RES`/`RES 1`… at the Mediterranean Games); World Cup panels print `DS1` (Difficulty Supervisor) and, on beam, `pen5` — written as `T2` (mapping table: `instructions-results-parsing.md` §4.7) | `Judge.function` |
+| Function | The function the judge is in when evaluating: [JudgeFunction](../src/main/java/doubletuck/meet/domain/JudgeFunction.java). Superior Jury roles are written as printed (`President`, `Vice-President`, `Member`, `TD` — the Technical Delegate at a World Cup, `TDA` — the Technical Delegate Assistant) and resolve through `JudgeFunction.find`; reserve judges are `R` (single, unnumbered) or `R1`…`R6` (printed `RES`/`RES 1`… at the Mediterranean Games); World Cup panels print `DS1` (Difficulty Supervisor) and, on beam, `pen5` — written as `T2` (mapping table: `instructions-results-parsing.md` §4.7) | `Judge.function` |
 | Name | Combined name of judge as printed | |
 | Surname | Judge's surname | `Judge.surname` |
 | Given Name | Judge's given name | `Judge.givenName` |
