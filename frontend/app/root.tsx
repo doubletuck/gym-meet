@@ -3,6 +3,8 @@ import { isRouteErrorResponse, Link, Links, Meta, NavLink, Outlet, Scripts, Scro
 
 import type { Route } from "./+types/root";
 import { queryClient } from "./api/client";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { themeScript } from "./lib/theme";
 import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -11,6 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <Meta />
         <Links />
       </head>
@@ -42,24 +45,27 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <header className="border-b border-gray-200 dark:border-gray-800">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
           <Link to="/" className="text-lg font-semibold tracking-tight">
             Gym Meet
           </Link>
-          <nav aria-label="Main">
-            <ul className="flex gap-4 text-sm">
-              <li>
-                <NavLink to="/" end className={navLinkClass}>
-                  Competitions
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/athletes" className={navLinkClass}>
-                  Athletes
-                </NavLink>
-              </li>
-            </ul>
-          </nav>
+          <div className="flex items-center gap-4">
+            <nav aria-label="Main">
+              <ul className="flex gap-4 text-sm">
+                <li>
+                  <NavLink to="/" end className={navLinkClass}>
+                    Competitions
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink to="/athletes" className={navLinkClass}>
+                    Athletes
+                  </NavLink>
+                </li>
+              </ul>
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
