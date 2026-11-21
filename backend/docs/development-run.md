@@ -95,8 +95,8 @@ The API is described in [docs/api](api). The front end that reads it is in `fron
 To stop the server, issue a Control-C command in the shell where the service is running.
 
 ## Importing results
-Competition results are loaded from the files under `data/` by running the app with the `import` profile:
+Competition results are loaded from the files under `data/` (at the repository root) by running the app with the `import` profile:
 ```shell
-mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=data/2026/2026-WORLD-CHAMPIONSHIPS"
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=../data/2026/2026-WORLD-CHAMPIONSHIPS"
 ```
 See [import-process.md](import-process.md) for the arguments and what an import does. Add `--import.status` to check which manifests are imported and up to date, without importing.

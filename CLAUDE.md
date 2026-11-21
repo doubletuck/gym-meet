@@ -29,7 +29,7 @@ Tests sit beside the code they test (`*.test.ts(x)` under `frontend/app/`). Run 
 
 ## Competition results data
 
-Results PDFs are parsed into import CSVs under `backend/data/<year>/<event>/`, which the importer (`doubletuck.meet.importer`, see `backend/docs/import-process.md`) loads into the database. Use the `parse-results` skill (`.claude/skills/parse-results/`) for any new results document. Parsers live in `backend/tools/results-parsing/` (one per meet, sharing `common.py`).
+Results PDFs are parsed into import CSVs under `data/<year>/<event>/`, which the importer (`doubletuck.meet.importer`, see `backend/docs/import-process.md`) loads into the database. Use the `parse-results` skill (`.claude/skills/parse-results/`) for any new results document. Parsers live in `backend/tools/results-parsing/` (one per meet, sharing `common.py`).
 
 ## Documentation
 

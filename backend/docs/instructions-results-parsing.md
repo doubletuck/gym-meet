@@ -1,7 +1,7 @@
 # Parsing Results PDFs into CSV
 
 How to turn an official results PDF into the import files under
-`data/<year>/<event>/`. This is the *how*: tools, techniques, checks, and what
+`data/<year>/<event>/` (at the repository root). This is the *how*: tools, techniques, checks, and what
 each kind of source document does. The *what* — every file, column and its
 database mapping — is [`import-file-model.md`](import-file-model.md); the
 entities are in [`data-model.md`](data-model.md).

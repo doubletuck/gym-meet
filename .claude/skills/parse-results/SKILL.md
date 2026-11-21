@@ -1,6 +1,6 @@
 ---
 name: parse-results
-description: Parse an artistic gymnastics competition results PDF (FIG results book, national championship printout, World Cup book, scanned or text) into the gym-meet import CSVs and IMPORT.json under backend/data/<year>/<event>/. Use when the user adds a new results PDF, asks to parse/convert/import meet results, or asks to re-check existing parsed results.
+description: Parse an artistic gymnastics competition results PDF (FIG results book, national championship printout, World Cup book, scanned or text) into the gym-meet import CSVs and IMPORT.json under data/<year>/<event>/. Use when the user adds a new results PDF, asks to parse/convert/import meet results, or asks to re-check existing parsed results.
 ---
 
 # Parse competition results
@@ -21,11 +21,11 @@ something is ambiguous; never guess a value, a date or a mapping silently.
 
 ## 1. Survey the source
 
-1. Confirm the inputs: the PDF(s) in `backend/data/<year>/<EVENT>/` and `<EVENT>-EVENT.csv`
+1. Confirm the inputs: the PDF(s) in `data/<year>/<EVENT>/` and `<EVENT>-EVENT.csv`
    (one row per discipline and age category: Prefix, Slug, Title, Disciplines, Age Category,
    Level, dates, City, IOC country code, Venue, FIG event number, Apparatus Suppliers).
    **If the rows for this PDF don't exist, draft them** from the book (title page, schedule,
-   sponsor logos), the FIG event page, the meets tracker (`backend/data/<year>/*-MEETS.csv`)
+   sponsor logos), the FIG event page, the meets tracker (`data/<year>/*-MEETS.csv`)
    and any sibling rows (another age category of the same meet); follow the existing rows'
    conventions for Title, Slug and Level. Show the user the drafted rows and ask for any
    field you couldn't find or had to infer (venue, level) before relying on them.
@@ -91,6 +91,6 @@ parser must exit non-zero on any failure. Then:
 - Update `instructions-results-parsing.md` with what this source taught: extend the matching
   §5 section (or add one for a new format), add any new convention to §4, and keep §6 open
   items current. Update `import-file-model.md` / `data-model.md` if columns or meanings changed.
-- If the meets tracker (`backend/data/<year>/*-MEETS.csv`) lists this meet, set its Status to
+- If the meets tracker (`data/<year>/*-MEETS.csv`) lists this meet, set its Status to
   `Parsed`.
 - Don't commit unless the user asks.

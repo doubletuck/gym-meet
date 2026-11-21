@@ -1,6 +1,6 @@
 # Importing Results
 
-How the parsed results files under `backend/data/` get into the database. The
+How the parsed results files under `data/` (at the repository root) get into the database. The
 files themselves are described in [import-file-model.md](import-file-model.md);
 how they are produced from results PDFs is in
 [instructions-results-parsing.md](instructions-results-parsing.md).
@@ -12,7 +12,7 @@ the profile that supplies the database (`local` for a workstation):
 
 ```shell
 mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
-  -Dspring-boot.run.arguments="--import.path=data/2026/2026-WORLD-CHAMPIONSHIPS"
+  -Dspring-boot.run.arguments="--import.path=../data/2026/2026-WORLD-CHAMPIONSHIPS"
 ```
 
 | Argument | Description |
@@ -38,7 +38,7 @@ it lists. A failed import leaves no record, as it leaves no results.
 
 ```shell
 mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
-  -Dspring-boot.run.arguments="--import.path=data/2026 --import.status"
+  -Dspring-boot.run.arguments="--import.path=../data/2026 --import.status"
 ```
 
 ```text
