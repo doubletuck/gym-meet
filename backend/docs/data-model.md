@@ -128,6 +128,15 @@ Final round itself — the two `AA`s aren't related beyond sharing a name.)
 | R4 | Fourth Reserve | Fourth reserve (e.g. World Championships All-Around qualification). |
 | NR | NOC Reserve | Had a score to qualify, but removed because of maximum of two per country in a final rule. "NOC Reserve" is FIG's own legend wording. |
 
+#### `EntryStatus`
+
+| Value | Long Name | Description |
+|---|---|---|
+| COMPETITOR | Competitor | Entered to compete. The default. |
+| RESERVE | Reserve | Entered as a reserve (marked on the entry list); competes only if called up. |
+| WITHDRAWN | Withdrawn | Struck through on the entry list. |
+| HORS_CONCOURS | Hors Concours | Competes out of competition (marked `(Hors Concours)` / `(HC)` on the entry list): not ranked, and results books may leave their scores out (2026 Varna World Challenge Cup). |
+
 #### `Country`
 
 No enumerator or type will be used. Countries are the three-letter **IOC codes** World Gymnastics uses (`GER`, `NED`, `CRO`) — not ISO-3166 (`DEU`, `NLD`, `HRV`) — for both NOCs and an event's host country. At times, there will be FIG neutral athletes who are not associated with a country for the competition; they're published under a placeholder code, which can be four characters (`AIN1`, `AIN2` — Individual Neutral Athletes — at the 2026 Cottbus World Cup; `WG1`, `WG2` — World Gymnastics 1 and 2, each entering its own team — at the 2026 Europeans), so `Participant.noc` and `TeamResult.noc` accept 3–4 characters.
@@ -139,6 +148,8 @@ No enumerator or type will be used. Countries are the three-letter **IOC codes**
 | PRESIDENT | President | Superior Jury |
 | VICE_PRESIDENT | Vice President | Superior Jury |
 | MEMBER | Member | Superior Jury |
+| TD | Technical Delegate | Superior Jury: the FIG Technical Delegate, the whole Superior Jury at a World Cup (2026 Baku) |
+| TDA | Technical Delegate Assistant | Superior Jury: the Technical Delegate's assistant (2026 Paris World Challenge Cup) |
 | D1 | Difficulty Judge 1 | |
 | D2 | Difficulty Judge 2 | |
 | E1–E7 | Execution Judge 1–7 | One constant per execution judge, `E1` through `E7` |
@@ -291,6 +302,7 @@ Unique key: `(name, country_code)`.
 | bibNumber | String | Yes | Competition bib/start number, when assigned. |
 | noc | Country | No | Who this athlete is competing for at this event. Recorded per event rather than on `Athlete`, since an athlete can change federation or compete as a neutral athlete. |
 | clubId | Long, FK → `Club` | Yes | The club the athlete represented at this event. Held per entry rather than on `Athlete`, since an athlete can change clubs between events. Null when the source doesn't publish one — international results identify athletes by country only. |
+| entryStatus | EntryStatus | No | How the entry list shows the athlete: `COMPETITOR` (the default), `RESERVE`, `WITHDRAWN` (struck through) or `HORS_CONCOURS` (out of competition). Reserves, withdrawn and hors concours athletes usually have no results. An entered competitor can also have none (didn't start at all). |
 
 Unique key: `(event_id, athlete_id)`
 
@@ -310,8 +322,9 @@ the fields directly on `Score` describe the result and its rankings.
 | routine | Routine | No | The routine performed — for vault, the first attempt. Its `score` is what counts toward team and all-around results. Columns: `difficulty`, `difficulty_inquiry`, `execution`, `bonus`, `bonus_detail`, `penalty`, `sj_penalty`, `score`, `status_code`. |
 | secondRoutine | Routine | Yes | Vault's second attempt. Null means no second attempt was expected at all (the athlete only vaulted once); a second attempt that was expected but not performed is a `Routine` with status `DNS`. Same columns as `routine`, prefixed `second_`. |
 | combinedBonus | Double | Yes | A bonus applied to the combined two-vault result rather than to either attempt (e.g. WAG's +0.2). Null otherwise. |
-| totalScore | Double | Yes | The result the apparatus final is decided on. For a two-vault entry, the combined result as published (the attempts' average plus `combinedBonus`); otherwise equal to `routine.score`. Null when there's no valid result (e.g. the first vault or an expected second vault was `DNS`). |
-| rank | Integer | Yes | Published placement on this apparatus within this `Session`, ranked on `routine.score` — for vault in qualification, the single-vault list ranking the whole field. In an apparatus final, the final's own placement. Where a session's only published vault ranking is a two-vault list (US Championships' Day 1 vault event; World Cup vault qualification, where every vaulter performs two vaults and there is no all-around), it's that ranking, on `totalScore`, and null for single-vault entrants. Null where the source publishes no per-session placement (US Championships Day 2). Copied as published, including tie-breaks, never recomputed. |
+| combinedSjPenalty | Double | Yes | A Superior Jury penalty on the combined two-vault result rather than on either attempt, as printed (negative), already deducted from `totalScore` — 2026 Baku World Cup WAG qualification, MAKOVICKOVA Patricie: `-0.3`. Null otherwise. Whether this should instead be one SJ penalty per apparatus score is an open question (`instructions-results-parsing.md` §6). |
+| totalScore | Double | Yes | The result the apparatus final is decided on. For a two-vault entry, the combined result as published (the attempts' average plus `combinedBonus` and `combinedSjPenalty`); otherwise equal to `routine.score`. Null when there's no valid result (e.g. the first vault or an expected second vault was `DNS`). |
+| rank | Integer | Yes | Published placement on this apparatus within this `Session`, ranked on `routine.score` — for vault in qualification, the single-vault list ranking the whole field. In an apparatus final, the final's own placement. Where a session's only published vault ranking is a two-vault list (US Championships' Day 1 vault event; World Cup vault qualification, where every vaulter performs two vaults and there is no all-around), it's that ranking, on `totalScore`, and null for single-vault entrants. Null where the source publishes no per-session placement (US Championships Day 2; vault qualification at the 2026 Junior Pan American Championships, which prints no single-vault list). Copied as published, including tie-breaks, never recomputed. |
 | qualificationRank | Integer | Yes | Published placement in the ranking that decides qualification to the apparatus final. Set on every `QUAL` row: for vault it's the double-vault list rank (null for single-vault entrants); for every other apparatus — and for World Cup vault, which has only the two-vault ranking — it equals `rank`. Null outside `QUAL`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the apparatus final, read against `qualificationRank` (not `rank`). The two-per-country rule shows up here as `NR`, never as a changed rank. Only set on `QUAL` `Session`s. |
 | countsTowardTeamResult | Boolean | No | Whether this score counts toward its team's `TeamResult` total (§5.1). Only meaningful for a score earned in a `TEAM` (or team-qualification) `Session` — has no bearing on `AllAroundResult` (§5.2), which always uses every one of a participant's apparatus scores regardless of this flag. Defaults to `true`; set to `false` for the score(s) a drop-lowest rule excludes. The results files don't mark those, so the importer works them out from the published team apparatus totals ([import-process.md](import-process.md#checks)). |
@@ -385,6 +398,14 @@ attempts:
 | Apparatus (single-vault list) | First vault | The whole field | `rank` |
 | Vault-final qualification (double-vault list) | Combined result | Two-vault entrants only | `qualificationRank`, `qualificationResult` |
 
+`qualificationRank` is stored rather than derived from `totalScore` because
+equal combined results are usually split by tie-break rules the scores don't
+carry, and those rules change with the Code of Points (2026 Worlds WAG: two
+13.816s placed 8th and 9th); not every meet splits them (2026 Cottbus WAG
+leaves two 12.333s joint 17th). Where a source prints only the double-vault
+list, it's the only vault ranking and `rank` is null (2026 Junior Pan American
+Championships).
+
 A single-vault entry and an ordinary beam score look identical in shape:
 
 | apparatus | routine.difficulty | routine.execution | routine.score | secondRoutine | totalScore | rank | qualificationRank |
@@ -394,7 +415,7 @@ A single-vault entry and an ordinary beam score look identical in shape:
 
 A two-vault entry populates both routines. `totalScore` is the combined number
 as published — the average of the two attempts (truncated to three decimals)
-plus any `combinedBonus`. It's stored rather than recomputed because what earns
+plus any `combinedBonus` (and minus any `combinedSjPenalty`). It's stored rather than recomputed because what earns
 a combined bonus, and how the combination works, is set by the Code of Points
 and changes between quads. The published number is authoritative. Taken from
 the 2026 Europeans WAG qualification (KALMYKOVA Anna), where the first vault was
@@ -442,6 +463,7 @@ flagged here rather than solved.
 | sessionId | Long, FK → `Session` | No | Scoped to a `TEAM` (or, for some formats, `QUAL`) `Session`. |
 | noc | Country | No | Which country/team this result is for. Kept simple since org/roster modeling is out of scope (§1). |
 | totalScore | Double | Yes | The team's official published total. Null if the team withdrew or was disqualified before a total was posted. |
+| sjPenalty | Double | Yes | A penalty on the team as a whole, as printed (negative), already deducted from `totalScore` — e.g. 2026 Senior Pan Americans MAG CUB, `-1.0` (sporttech.io records it against one routine, but it comes off the team total, not the apparatus total). Null when there is none. |
 | rank | Integer | Yes | The team's placement within the `Session`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the team final, when this `TeamResult` is on a `QUAL` `Session`. |
 
@@ -456,6 +478,7 @@ Unique key: `(session_id, noc)`
 | participantId | Long, FK → `Participant` | No | The athlete this result is for. |
 | sessionId | Long, FK → `Session` | No | The round this all-around total applies to — typically a `QUAL` or `AA` `Session`. For a round split into parts, one result per part session plus the combined result on the whole-round session (§3, `Session`). |
 | totalScore | Double | Yes | The athlete's official published all-around total — the sum of their apparatus `Score.routine.score` values for this `Session` (for vault, the first vault only); on a whole-round session, the published combined total across the parts. Null if the athlete didn't complete every apparatus (most formats require completing all apparatus to receive an all-around result at all — US Championships is an exception and prints a partial total, which is stored as published). |
+| sjPenalty | Double | Yes | A penalty on the all-around result as a whole, as printed (negative), already deducted from `totalScore`. Null when there is none (none seen so far). |
 | rank | Integer | Yes | The athlete's all-around placement within the `Session`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the all-around final, when this `AllAroundResult` is on a `QUAL` `Session`. |
 

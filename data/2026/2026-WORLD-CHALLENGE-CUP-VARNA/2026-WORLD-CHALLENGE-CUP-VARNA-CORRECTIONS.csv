@@ -1,0 +1,10 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+WAG-SR-SCORES-QUAL-VT,248,Status2,,COMPLETED,ROW,thegymter.net,"The book prints only vault 1 (11.100) but a vault score of 10.850, the average with this vault; https://thegymter.net/2026/05/10/2026-varna-challenge-cup-results/"
+WAG-SR-SCORES-QUAL-VT,248,D2,,3.600,ROW,thegymter.net,As above
+WAG-SR-SCORES-QUAL-VT,248,E2,,7.300,ROW,thegymter.net,As above
+WAG-SR-SCORES-QUAL-VT,248,Penalty2,,-0.300,ROW,thegymter.net,As above
+WAG-SR-SCORES-QUAL-VT,248,Total2,,10.600,ROW,thegymter.net,As above
+WAG-SR-SCORES-EVENT-UB,216,Bib,216,251,BIB,finals start list,"Printed beside Diana LOBOK (UKR), whose bib is 251; 216 is SIKIC KAUCIC (CRO)"
+WAG-SR-SCORES-EVENT-UB,206,Bib,206,214,BIB,finals start list,"Printed beside Sara SULEKIC (CRO), whose bib is 214; 206 is NACHEVA (BUL, hors concours)"
+MAG-SR-JUDGES,GYULAI Gergely Laszl,Name,GYULAI Gergely Laszl,GYULAI Gergely Laszlo,JUDGE_NAME,other panels,Truncated on the floor panel; the vault panel prints Laszlo
+MAG-SR-JUDGES,GYULAI Gergely Laszl,Given Name,Gergely Laszl,Gergely Laszlo,JUDGE_NAME,other panels,As above

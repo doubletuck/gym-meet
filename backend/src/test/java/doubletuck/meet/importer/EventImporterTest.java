@@ -5,6 +5,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.Discipline;
+import doubletuck.meet.domain.EntryStatus;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.ImportRun;
@@ -39,6 +40,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -57,6 +59,7 @@ class EventImporterTest {
     private static final String WORLDS_WAG = "worlds/2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
     private static final String WORLDS_MAG = "worlds/2026-WORLD-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String COTTBUS_WAG = "cottbus/2026-APPARATUS-WORLD-CUP-COTTBUS-WAG-SR-IMPORT.json";
+    private static final String BAKU_WAG = "baku/2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-IMPORT.json";
     private static final String US_MAG = "us/2026-US-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String EUROPEANS_MAG = "europeans/2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
 
@@ -364,6 +367,26 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_CombinedVaultSjPenaltyAndTechnicalDelegate() {
+        importFixture(BAKU_WAG);
+
+        // (12.100 + 13.066) / 2 + 0.2 - 0.3: the penalty comes off the two-vault result, not either vault
+        Score makovickova = score("Makovickova", "Patricie", Round.QUAL, Apparatus.VT);
+        assertEquals(12.100, makovickova.getRoutine().getScore());
+        assertEquals(13.066, makovickova.getSecondRoutine().getScore());
+        assertEquals(0.2, makovickova.getCombinedBonus());
+        assertEquals(-0.3, makovickova.getCombinedSjPenalty());
+        assertEquals(12.483, makovickova.getTotalScore());
+        assertNull(score("Kalmykova", "Anna", Round.QUAL, Apparatus.VT).getCombinedSjPenalty());
+
+        for (Session session : sessionRepository.findAll()) {
+            assertTrue(judgeRepository.findBySession(session).stream().anyMatch(judge ->
+                    judge.getFunction() == JudgeFunction.TD && judge.getApparatus() == null
+                            && judge.getNocCode() == null), "no Technical Delegate on " + session.getRound());
+        }
+    }
+
+    @Test
     void testImport_SplitRoundHasPartSessionsAndWholeRoundSession() {
         ImportReport report = importFixture(US_MAG);
         List<Session> sessions = sessionRepository.findAll();
@@ -396,6 +419,44 @@ class EventImporterTest {
         assertEquals("USA", hoopes.getClub().getCountry());
         assertNull(hoopes.getAthlete().getBirthYear());
         assertNull(hoopes.getAthlete().getLicenseNumber());
+    }
+
+    @Test
+    void testImport_EntryStatus_ReadWhenPresentElseCompetitor(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        addEntryStatus(dir, "RESERVE");
+
+        eventImporter.importManifest(manifest, false);
+
+        assertEquals(EntryStatus.RESERVE, participant("999").getEntryStatus());
+        assertEquals(EntryStatus.COMPETITOR, participant("401").getEntryStatus());
+    }
+
+    @Test
+    void testImport_EntryStatus_HorsConcours(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        addEntryStatus(dir, "HORS_CONCOURS");
+
+        eventImporter.importManifest(manifest, false);
+
+        assertEquals(EntryStatus.HORS_CONCOURS, participant("999").getEntryStatus());
+    }
+
+    @Test
+    void testImport_EntryStatusColumnAbsent_EveryoneIsACompetitor() {
+        importFixture(WORLDS_WAG);
+
+        assertTrue(participantRepository.findAll().stream()
+                .allMatch(p -> p.getEntryStatus() == EntryStatus.COMPETITOR));
+    }
+
+    @Test
+    void testImport_UnknownEntryStatus_Fails(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        addEntryStatus(dir, "SPARE");
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
+        assertTrue(e.getMessage().contains("unrecognised Entry Status 'SPARE'"), e.getMessage());
     }
 
     @Test
@@ -455,11 +516,57 @@ class EventImporterTest {
 
         ImportReport report = eventImporter.importManifest(manifest, false);
 
-        assertEquals(1, report.getWarnings().size());
+        // The changed apparatus total also no longer adds up to the team total
+        assertEquals(2, report.getWarnings().size(), report.getWarnings().toString());
         assertTrue(report.getWarnings().get(0).contains("CHN team: no group of its athletes adds up"),
                 report.getWarnings().get(0));
         assertTrue(report.getWarnings().get(0).contains("BB 43.0"), report.getWarnings().get(0));
+        assertTrue(report.getWarnings().get(1).contains("CHN team total 164.996 differs"), report.getWarnings().get(1));
         assertTrue(score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
+    }
+
+    @Test
+    void testImport_TeamPenalty_StoredAndCountedInTheTotal(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        Path teamSummary = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv");
+        Files.writeString(teamSummary, Files.readString(teamSummary).replace(",,164.996,", ",-1.000,163.996,"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(List.of(), report.getWarnings());
+        TeamResult china = teamResultRepository
+                .findBySessionAndNoc(session(sessionRepository.findAll(), Round.QUAL, null), "CHN").orElseThrow();
+        assertEquals(-1.0, china.getSjPenalty());
+        assertEquals(163.996, china.getTotalScore());
+    }
+
+    @Test
+    void testImport_TeamTotalNotItsApparatusTotalsAndPenalty_Warns(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        Path teamSummary = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv");
+        Files.writeString(teamSummary, Files.readString(teamSummary).replace(",,164.996,", ",,163.996,"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(1, report.getWarnings().size());
+        assertTrue(report.getWarnings().get(0).contains("CHN team total 163.996 differs from its apparatus totals "
+                + "and penalty, 164.996"), report.getWarnings().get(0));
+    }
+
+    @Test
+    void testImport_AllAroundPenalty_CountedInTheTotal(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(WORLDS_WAG, dir);
+        Path summary = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv");
+        Files.writeString(summary, Files.readString(summary).replace(",14.033,,55.032", ",14.033,-0.300,54.732"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(List.of(), report.getWarnings());
+        AllAroundResult ke = allAroundResultRepository
+                .findBySession(session(sessionRepository.findAll(), Round.AA, null)).stream()
+                .filter(result -> result.getParticipant().getAthlete().getSurname().equals("Ke"))
+                .findFirst().orElseThrow();
+        assertEquals(-0.3, ke.getSjPenalty());
     }
 
     @Test
@@ -480,6 +587,23 @@ class EventImporterTest {
 
         ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
         assertTrue(e.getMessage().contains("MINI-MAG-SR-SCORES-QUAL-FX.csv line 2: bib 999"), e.getMessage());
+    }
+
+    /** Adds an Entry Status column, blank for every entry, and an entry with the given status and no results. */
+    private static void addEntryStatus(Path dir, String status) throws IOException {
+        Path participants = dir.resolve("2026-WORLD-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv");
+        List<String> lines = Files.readAllLines(participants);
+        List<String> withStatus = new ArrayList<>();
+        withStatus.add(lines.get(0) + ",Entry Status");
+        lines.stream().skip(1).map(line -> line + ",").forEach(withStatus::add);
+        withStatus.add("54th Artistic Gymnastics World Championships,WAG,SR,2026-10-17,999,ALG,999,,"
+                + "SPARE Ana,SPARE,Ana,2008,," + status);
+        Files.write(participants, withStatus);
+    }
+
+    private Participant participant(String bib) {
+        return participantRepository.findAll().stream().filter(p -> bib.equals(p.getBibNumber())).findFirst()
+                .orElseThrow();
     }
 
     private ImportReport importFixture(String manifest) {

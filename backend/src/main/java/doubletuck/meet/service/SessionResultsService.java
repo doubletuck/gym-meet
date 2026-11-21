@@ -159,8 +159,8 @@ public class SessionResultsService {
             }
         }
         return new AllAroundRow(result.getRank(), participant.getBibNumber(), athlete(participant),
-                participant.getNoc(), club(participant), result.getTotalScore(), result.getQualificationResult(),
-                apparatusScores, partResults);
+                participant.getNoc(), club(participant), result.getTotalScore(), result.getSjPenalty(),
+                result.getQualificationResult(), apparatusScores, partResults);
     }
 
     private static Map<Apparatus, Double> apparatusScores(Participant participant, List<Score> scores,
@@ -206,7 +206,7 @@ public class SessionResultsService {
                 apparatusTotals.put(app, sum(counted));
             }
         }
-        return new TeamRow(result.getRank(), result.getNoc(), result.getTotalScore(),
+        return new TeamRow(result.getRank(), result.getNoc(), result.getTotalScore(), result.getSjPenalty(),
                 result.getQualificationResult(), apparatusTotals);
     }
 

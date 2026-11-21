@@ -8,6 +8,8 @@ public enum JudgeFunction {
     PRESIDENT("President"),
     VICE_PRESIDENT("Vice President"),
     MEMBER("Member"),
+    TD("Technical Delegate"),
+    TDA("Technical Delegate Assistant"),
     D1("Difficulty Judge 1"),
     D2("Difficulty Judge 2"),
     E1("Execution Judge 1"),

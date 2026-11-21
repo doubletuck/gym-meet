@@ -44,6 +44,10 @@ public class TeamResult extends BaseEntity {
     @Column(name = "total_score")
     private Double totalScore;
 
+    // A penalty on the result as a whole, as printed (negative); already deducted from totalScore
+    @Column(name = "sj_penalty")
+    private Double sjPenalty;
+
     @Column(name = "rank")
     private Integer rank;
 

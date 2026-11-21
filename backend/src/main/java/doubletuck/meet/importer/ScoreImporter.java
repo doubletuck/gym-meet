@@ -54,6 +54,7 @@ class ScoreImporter {
                     score.setSecondRoutine(routine(row, "2"));
                 }
                 score.setCombinedBonus(row.decimal("Combined Bonus"));
+                score.setCombinedSjPenalty(row.decimal("Combined SJ Penalty"));
                 score.setTotalScore(row.decimal("Total"));
             } else {
                 score.setRoutine(routine(row, ""));

@@ -1,0 +1,101 @@
+# p111
+ARG|Emilia Acosta|Emilia ACOSTA|58212|101|2009
+ARG|Isabella Ayelen Ajalla|Isabella AJALLA|52640|102|2008
+ARG|Julieta Lucas|Julieta LUCAS|62888|103|2010
+ARG|Maria Delfina Estoco|Maria ESTOCO|63775|104|2008
+ARG|Meline Mesropian|Meline MESROPIAN|46147|105|2005
+ARU|Amika Chaeli Every|Amika EVERY|44738|106|2005
+ARU|Casey Paulina Provence|Casey PROVENCE|64156|107|2010
+ARU|Deanah Jacqueline Beke|Deanah BEKE|64155|108|2010
+BAR|Erin Gianna Pinder|Erin PINDER|55725|109|2004
+BOL|Salme Stephanie Ortiz Zabala|Salme ORTIZ|58823|110|2007
+BOL|Sara Alejandra Castellon Delgadillo|Sara CASTELLON|62970|111|2010
+BOL|Sofia Denisse Soliz Malpartida|Sofia SOLIZ|70112|112|2009
+BOL|Zafira Milenka Montalvan Muñoz|Zafira MONTALVAN|57059|113|2007
+BRA|Gabriela Bouças|Gabriela BOUÇAS|56683|114|2009
+BRA|Gabriela Rodrigues Barbosa|Gabriela BARBOSA (reserve)|52905|115|2007
+BRA|Julia Das Neves Botega Soares|Julia SOARES|44805|116|2005
+BRA|Rebeca Rodrigues de Andrade|Rebeca ANDRADE|21693|117|1999
+BRA|Thais Fidelis Dos Santos|Thais FIDELIS|31566|118|2001
+BRA|Sophia Weisberg|Sophia WEISBERG|62315|119|2009
+CAN|Alyssa Guerrier Calixte|Alyssa GUERRIER-CALIXTE|60231|120|2009
+CAN|Gabrielle Annissia Black|Gabrielle BLACK|58346|121|2008
+CAN|Lia Monica Fontaine|Lia Monica FONTAINE|57907|122|2009
+CAN|Lia Grace Redick|Lia Grace REDICK|61916|123|2009
+CAN|Aurelie Tran|Aurelie TRAN|53543|124|2006
+CAN|Victoriane Charron|Victoriane CHARRON (reserve)|55029|125|2008
+CAY|Sienna Madison Santiago|Sienna SANTIAGO|69283|126|2010
+~CHI|Constanza Gallardo Cifuentes|Constanza GALLARDO|En tramite|127|2009
+CHI|Maria Catalina Pinto Bustos|Maria PINTO|53946|128|2001
+CHI|Martina Flores Lagos|Martina FLORES|53743|129|2006
+CHI|Paula Carvajal Bruna|Paula CARVAJAL|21997|130|1997
+CHI|Sofia Catalina Casella Carcamo|Sofia CASELLA|44235|131|2004
+# p112
+COL|Angueline Estrella Miranda Palmera|Angueline MIRANDA|55478|132|2008
+COL|Dayana Sofia Benitez Benitez|Dayana BENITEZ|62090|133|2010
+COL|Ginna Escobar Betancur|Ginna ESCOBAR|15511|134|1997
+COL|Juanita Macana Rico|Juanita MACANA|67820|135|2009
+COL|Luisana Valentina Padilla Sanchez|Luisana PADILLA|62093|136|2010
+CRC|Franciny Morales Barquero|Franciny MORALES|34934|137|2001
+CRC|Mariana Andrade Gomez|Mariana ANDRADE|29866|138|2001
+CRC|Marina Guevara Cornejo|Marina GUEVARA|52164|139|2007
+CRC|Rachel Rodriguez Miranda|Rachel RODRIGUEZ|51727|140|2007
+CRC|Samantha Marin Lopez|Samantha MARIN|52418|141|2008
+CUB|Geidis Elena Reginfo Stivens|Geidis REGINFO|66045|142|2008
+CUB|Keyla Leyva Gamboa|Keyla LEYVA|66044|143|2008
+DOM|Analis Anyara Perez De Leon|Analis PEREZ|61833|144|2010
+DOM|Demi Ryan Dash Espinosa|Demi DASH|68291|145|2010
+DOM|Melissa Del Carmen Fernandez Rodriguez|Melissa FERNANDEZ|61900|146|2009
+DOM|Sophia Hansel Diaz Hansel|Sophia DIAZ|67563|147|2006
+DOM|Yamilet Peña Abreu|Yamilet PEÑA ABREU|16889|148|1992
+ECU|Alais Natasha Perea Ponce|Alais PEREA|46554|149|2004
+ECU|Ashley Nayerly Bohorquez Romero|Ashley BOHORQUEZ|52512|150|2006
+ECU|Melina Ariana Tripul Moyon|Melina TRIPUL|58053|151|2009
+ECU|Nicole Isabel Llugcha Napa|Nicole LLUGCHA|52527|152|2006
+ESA|Kenny Grace Salomon Kalil|Kenny SALOMON|34218|153|2001
+ESA|María Pilar Mancia Polanco|María MANCIA|53812|154|2008
+GUA|Brithany Nicole Herrera Polanco|Brithany HERRERA|55573|155|2008
+GUA|Krystal Daniela Cancax Saquec|Krystal CANCAX|55574|156|2008
+GUA|Mersi Oneyda Xep Max|Mersi XEP MAX|62249|157|2010
+GUA|Mishell Alejandra Echeverría López|Mishell ECHEVERRÍA|55728|158|2009
+HAI|Promise Nicole Jean Marie|Promise JEAN MARIE|70281|159|2005
+HON|Lily Daniela Guevara Lanza|Lily GUEVARA|57686|160|2008
+# p113
+JAM|Alana Walker|Alana WALKER|52955|161|2006
+JAM|Jahzara Ranger|Jahzara RANGER|69977|162|2006
+JAM|Kiara Richmon|Kiara RICHMON|45656|163|2002
+MEX|Dominica Escartin Sánchez|Dominica ESCARTIN|62721|164|2010
+MEX|Michelle Janeth Pineda|Michelle PINEDA|62544|165|2007
+MEX|Paulina Campos Martínez|Paulina CAMPOS|24964|166|2000
+MEX|Paulina Guerra Valdez|Paulina GUERRA|34957|167|2001
+MEX|Victoria Fernanda Mata Montemayor|Victoria MATA|32915|168|2000
+MEX|Mariangela Flores Valdez|Mariangela FLORES (reserve)|49305|169|2006
+PAN|Alyiah Lide De Leon|Alyiah LIDE|58109|170|2009
+PAN|Ana Gabriela Gutierrez Jones|Ana Gabriela GUTIERREZ|58110|171|2009
+PAN|Ana Lucía Beitía|Ana Lucía BEITÍA|62266|172|2010
+PAN|Hillary Alexandra Heron Soto|Hillary HERON|41764|173|2004
+PER|Ana Karina Mendez Reyes|Ana Karina MENDEZ|24622|174|1999
+PER|Cristina Beatriz Candiotti Novoa|Cristina CANDIOTTI|53924|175|2008
+PER|Fabiola Itzy Diaz Mendoza|Fabiola DIAZ|37175|176|2003
+PER|Luana Roda Teran|Luana RODA|53923|177|2008
+PER|Yannick Worring La Torre|Yannick WORRING|70094|178|2008
+PUR|Darielis Isel Aviles|Darielis Isel AVILES|55017|179|2008
+PUR|Karelyn Del Mar Vega Lopez|Karelyn VEGA|62534|180|2009
+PUR|Karelys Diaz Davila|Karelys DIAZ|21034|181|1999
+PUR|Katyna Kamilla Alicea Cardona|Katyna ALICEA|52175|182|2007
+PUR|Stella Loren Diaz Muniz|Stella DIAZ MUNIZ|35731|183|2002
+TTO|Dailia Jessica Nesha Burke|Dailia BURKE|66268|184|2009
+TTO|Kathryn Alexander|Kathryn ALEXANDER|69984|185|2010
+TTO|Michaela Daniela Francis|Michaela FRANCIS|66267|186|2009
+TTO|Sidney Talia Charles|Sidney CHARLES|69826|187|2006
+TTO|Zara Marie Cordelia Glen|Zara Marie GLEN|66269|188|2008
+URU|Guillermina Farias Riera|Guillermina FARIAS|67921|189|2010
+# p114
+USA|Charleigh Bullock|Charleigh BULLOCK|65169|190|2010
+USA|Claire Pease|Claire PEASE|55309|191|2009
+USA|Hezly Rivera|Hezly RIVERA|55026|192|2008
+USA|Lila Richardson|Lila RICHARDSON (reserve)|65399|193|2010
+USA|Simone Rose|Simone ROSE|55314|194|2008
+USA|Alessia Rosa|Alessia ROSA|66239|195|2009
+VEN|Oriana Sofia Fernández Valles|Oriana FERNÁNDEZ|62001|196|2010
+VEN|Valeria Andreina Villamizar Gonzalez|Valeria VILLAMIZAR|62003|197|2010

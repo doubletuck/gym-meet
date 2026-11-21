@@ -67,18 +67,86 @@ PARTICIPANTS = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 
 JUDGES = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Apparatus', 'Function', 'Name',
           'Surname', 'Given Name', 'NOC Code']
 
-def score_header(vault, qual):
-    """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns."""
-    return SCORE_META + (VAULT if vault else ROUTINE) + (QUALIFICATION if qual else [])
+def score_header(vault, qual, combined_sj_penalty=False):
+    """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns.
+    The vault shape's optional `Combined SJ Penalty` follows `Combined Bonus`."""
+    cols = VAULT if vault else ROUTINE
+    if vault and combined_sj_penalty:
+        cols = VAULT[:-1] + ['Combined SJ Penalty', 'Total']
+    return SCORE_META + cols + (QUALIFICATION if qual else [])
+
+# ---------------------------------------------------------------- corrections
+CORRECTIONS = ['File', 'Key', 'Field', 'Printed', 'Corrected', 'Category', 'Source', 'Note']
+
+def row_key(name, row):
+    """How a CORRECTIONS row names the row it corrects: the bib, a team summary's NOC, or a judge's
+    `Round Apparatus Function` (apparatus `-` when blank). A judge correction can instead name the
+    judge as printed, for every row with that name."""
+    if 'JUDGES' in name:
+        return f'{row["Round"]} {row["Apparatus"] or "-"} {row["Function"]}'
+    return row.get('Bib') or row.get('Bib Number') or row['NOC Code']
+
+class Corrections:
+    """`<event>-CORRECTIONS.csv`: the values written differently from the results book, and why
+    (docs/import-file-model.md). Applied as each file is written; a correction whose printed value
+    isn't the row's, or that never applies, is an error, so the log can't drift from the files.
+    A folder's parsers share the file; each takes the rows for the prefixes it writes (`MAG-SR`, …)."""
+
+    def __init__(self, out_dir, event_prefix, scopes, err):
+        self.prefix, self.err = event_prefix, err
+        path = os.path.join(out_dir, f'{event_prefix}-CORRECTIONS.csv')
+        self.rows = []
+        if os.path.exists(path):
+            with open(path, encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                if reader.fieldnames != CORRECTIONS:
+                    raise SystemExit(f'{path}: header {reader.fieldnames} != {CORRECTIONS}')
+                self.rows = [dict(r, used=False) for r in reader
+                             if any(r['File'].startswith(s + '-') for s in scopes)]
+
+    def apply(self, name, header, rows):
+        label = name.removeprefix(self.prefix + '-').removesuffix('.csv')
+        # Rows are found by their printed key and name, whatever corrections apply first
+        keys = [(row_key(name, r), r.get('Name')) for r in rows]
+        for c in self.rows:
+            if c['File'] != label:
+                continue
+            c['used'] = True
+            if c['Field'] not in header:
+                self.err(f'correction {label} {c["Key"]}: no column {c["Field"]!r}'); continue
+            hits = [r for r, (key, _) in zip(rows, keys) if key == c['Key']]
+            if not hits and 'JUDGES' in name:
+                # A judge's printed name corrects every panel they sat on
+                hits = [r for r, (_, printed) in zip(rows, keys) if printed == c['Key']]
+            elif len(hits) > 1:
+                hits = []
+            if not hits:
+                self.err(f'correction {label} {c["Key"]}: no single row matches'); continue
+            for hit in hits:
+                if str(hit[c['Field']]) != c['Printed']:
+                    self.err(f'correction {label} {c["Key"]} {c["Field"]}: printed {c["Printed"]!r}, '
+                             f'the row has {hit[c["Field"]]!r}')
+                else:
+                    hit[c['Field']] = c['Corrected']
+
+    def finish(self):
+        for c in self.rows:
+            if not c['used']:
+                self.err(f'correction {c["File"]} {c["Key"]} {c["Field"]}: no such file written')
+        if self.rows:
+            print(f'{len(self.rows)} corrections applied')
 
 # ---------------------------------------------------------------- output
 class Output:
-    """Writes CSVs and the IMPORT.json manifest into one event folder."""
+    """Writes CSVs and the IMPORT.json manifest into one event folder, applying any corrections."""
 
-    def __init__(self, out_dir):
+    def __init__(self, out_dir, corrections=None):
         self.dir = out_dir
+        self.corrections = corrections
 
     def csv(self, name, header, rows):
+        if self.corrections:
+            self.corrections.apply(name, header, rows)
         with open(os.path.join(self.dir, name), 'w', newline='', encoding='utf-8') as f:
             w = csv.writer(f, lineterminator='\n')
             w.writerow(header)

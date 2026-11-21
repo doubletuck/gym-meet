@@ -40,7 +40,10 @@ class ResultReconciler {
         Map<Team, List<ImportContext.PublishedTeamTotal>> teams = context.getPublishedTeamTotals().stream()
                 .collect(Collectors.groupingBy(total -> new Team(total.session(), total.noc()), LinkedHashMap::new,
                         Collectors.toList()));
-        teams.forEach((team, totals) -> resolveTeamCount(context, team, totals));
+        teams.forEach((team, totals) -> {
+            resolveTeamCount(context, team, totals);
+            checkTeamTotal(context, team, totals);
+        });
         context.getAllAroundResults().forEach(result -> checkAllAround(context, result));
         context.getApparatusResults().forEach(result -> checkApparatus(context, result));
     }
@@ -149,6 +152,26 @@ class ResultReconciler {
         return values;
     }
 
+    /** A team's total is its apparatus totals plus any penalty on the team as a whole. */
+    private void checkTeamTotal(ImportContext context, Team team, List<ImportContext.PublishedTeamTotal> totals) {
+        context.getTeamResults().stream()
+                .filter(result -> result.getSession().equals(team.session()) && result.getNoc().equals(team.noc())
+                        && result.getTotalScore() != null)
+                .forEach(result -> {
+                    double expected = totals.stream().mapToDouble(ImportContext.PublishedTeamTotal::total).sum()
+                            + penalty(result.getSjPenalty());
+                    if (Math.abs(result.getTotalScore() - expected) >= TOLERANCE) {
+                        context.getReport().warn(totals.get(0).location() + ": " + team.noc() + " team total "
+                                + result.getTotalScore() + " differs from its apparatus totals and penalty, "
+                                + String.format("%.3f", expected));
+                    }
+                });
+    }
+
+    private static double penalty(Double penalty) {
+        return penalty == null ? 0 : penalty;
+    }
+
     private void checkAllAround(ImportContext context, AllAroundResult result) {
         if (result.getTotalScore() == null) {
             return;
@@ -174,7 +197,7 @@ class ResultReconciler {
                     .mapToDouble(Double::doubleValue).sum();
         }
         warnIfDifferent(context, "all-around total", result.getParticipant(), session, result.getTotalScore(),
-                expected);
+                expected + penalty(result.getSjPenalty()));
     }
 
     private void checkApparatus(ImportContext context, ApparatusResult result) {

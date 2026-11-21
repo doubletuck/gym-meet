@@ -171,6 +171,8 @@ export interface components {
       club: string | null;
       /** Format: double */
       total: number | null;
+      /** Format: double */
+      sjPenalty: number | null;
       /** @enum {string|null} */
       qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
       apparatusScores: {
@@ -299,6 +301,8 @@ export interface components {
       noc: string;
       /** Format: double */
       total: number | null;
+      /** Format: double */
+      sjPenalty: number | null;
       /** @enum {string|null} */
       qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
       apparatusTotals: {
@@ -434,6 +438,8 @@ export interface components {
       event: components["schemas"]["EntryEvent"];
       noc: string;
       club: string | null;
+      /** @enum {string} */
+      entryStatus: "COMPETITOR" | "RESERVE" | "WITHDRAWN" | "HORS_CONCOURS";
       sessions: components["schemas"]["EntrySession"][];
     };
     EntryEvent: {

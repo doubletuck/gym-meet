@@ -1,0 +1,113 @@
+# WAG qualification start lists (pp. 42-44, images): apparatus|group|noc|bib|Competitor, as printed.
+# Day 1: VT (left) and UB (right); day 2: BB (left) and FX (right).
+VT|1|BUL|206|Nacheva Tsvetomira (HC)
+VT|1|UKR|251|Lobok Diana
+VT|1|UKR|252|Lev Anastasiia
+VT|1|TUR|248|Akturk Naz
+VT|1|TUR|249|Sahin Ilayda
+VT|2|NED|230|Slippens Mara
+VT|2|NOR|233|Dalene Amalie
+VT|2|SRB|240|Sabic Nina
+VT|2|CRO|213|Korent Tijana
+VT|2|AZE|203|Aliyeva Daniz
+VT|3|ROU|237|Ionescu Adelina
+VT|3|ROU|238|Visovan Bianca
+VT|3|GBR|219|Davies Grace
+VT|3|SVK|243|Keresztesova Miriam
+VT|3|BUL|207|Ventsislavova Viktoria
+VT|4|LIE|226|Weissenhofer Julia
+UB|1|LIE|226|Weissenhofer Julia
+UB|1|NED|231|Slooff Floor
+UB|1|NED|232|Meuleman Casey-Jane
+UB|1|ROU|238|Visovan Bianca
+UB|1|ROU|237|Ionescu Adelina
+UB|2|POL|235|Pihan-Kulesza Marta
+UB|2|POL|236|Drobniak Maria
+UB|2|CAN|211|Jorgensen Amy
+UB|2|CAN|212|Demers Coralie
+UB|2|GBR|220|Amankwaah Shantae-Eve Asiedua
+UB|3|UKR|252|Lev Anastasiia
+UB|3|UKR|251|Lobok Diana
+UB|3|TUR|249|Sahin Ilayda
+UB|3|TUR|250|Biner Ceren
+UB|3|SRB|241|Jacoby Natalia
+UB|4|MAS|227|Yeoh Li Wen
+UB|4|MAS|228|Teh Cadence Zi Qi
+UB|4|CRO|214|Sulekic Sara
+UB|4|ISR|224|Shamay Roni
+UB|4|ISR|225|Shoshani Yali
+UB|5|AZE|203|Aliyeva Daniz
+UB|5|AZE|204|Teymurova Nazanin
+UB|5|NOR|233|Dalene Amalie
+UB|5|HUN|223|Szilagyi Nikolett
+UB|5|BUL|208|Stoimenova Nikol
+UB|6|AUT|202|Palicka Katrin
+UB|6|SWE|245|Westlund Nathalie
+BB|1|BUL|206|Nacheva Tsvetomira (HC)
+BB|1|POL|235|Pihan-Kulesza Marta
+BB|1|POL|236|Drobniak Maria
+BB|1|MAS|228|Teh Cadence Zi Qi
+BB|1|MAS|229|Yeap Kang Xian
+BB|2|BUL|208|Stoimenova Nikol
+BB|2|BUL|209|Sokolova Nikol
+BB|2|SWE|246|Gravin Elina
+BB|2|SWE|247|Williams Jennifer
+BB|2|NOR|234|Kvaestad Serina
+BB|3|ISR|224|Shamay Roni
+BB|3|ISR|225|Shoshani Yali
+BB|3|NED|231|Slooff Floor
+BB|3|NED|232|Meuleman Casey-Jane
+BB|3|CRO|215|Zelcic Tina
+BB|4|AZE|205|Abbaszada Khadija
+BB|4|AZE|204|Teymurova Nazanin
+BB|4|CAN|212|Demers Coralie
+BB|4|CAN|211|Jorgensen Amy
+BB|4|LIE|226|Weissenhofer Julia
+BB|5|AUT|201|Wutschka Aurea
+BB|5|AUT|202|Palicka Katrin
+BB|5|SRB|240|Sabic Nina
+BB|5|SRB|241|Jacoby Natalia
+BB|6|TUR|249|Sahin Ilayda
+BB|6|TUR|250|Biner Ceren
+BB|6|SVK|244|Belicova Laura
+BB|6|SVK|243|Keresztesova Miriam
+BB|7|UKR|253|Kiniuk Marianna
+BB|7|UKR|251|Lobok Diana
+BB|7|ROU|239|Botez Miruna
+BB|7|ROU|237|Ionescu Adelina
+BB|8|HUN|222|Peter Sara
+BB|8|HUN|223|Szilagyi Nikolett
+BB|8|CZE|217|Merinska Beata
+BB|8|CZE|218|Pangracova Eva
+BB|9|GBR|220|Amankwaah Shantae-Eve Asiedua
+BB|9|GBR|219|Davies Grace
+FX|1|NED|231|Slooff Floor
+FX|1|NED|230|Slippens Mara
+FX|1|ISR|224|Shamay Roni
+FX|1|ISR|225|Shoshani Yali
+FX|1|CRO|216|Sikic Kaucic Antea
+FX|2|SRB|241|Jacoby Natalia
+FX|2|SRB|242|Drakulic Tara
+FX|2|AUT|201|Wutschka Aurea
+FX|2|AUT|202|Palicka Katrin
+FX|2|AZE|205|Abbaszada Khadija
+FX|3|TUR|248|Akturk Naz
+FX|3|TUR|249|Sahin Ilayda
+FX|3|SVK|243|Keresztesova Miriam
+FX|3|SVK|244|Belicova Laura
+FX|4|ROU|237|Ionescu Adelina
+FX|4|ROU|239|Botez Miruna
+FX|4|POL|235|Pihan-Kulesza Marta
+FX|4|POL|236|Drobniak Maria
+FX|4|NOR|234|Kvaestad Serina
+FX|5|CZE|217|Merinska Beata
+FX|5|CZE|218|Pangracova Eva
+FX|5|UKR|251|Lobok Diana
+FX|5|UKR|253|Kiniuk Marianna
+FX|6|BUL|210|Arabadzhieva Mishel
+FX|6|BUL|207|Ventsislavova Viktoria
+FX|6|HUN|223|Szilagyi Nikolett
+FX|6|HUN|222|Peter Sara
+FX|6|CAN|212|Demers Coralie
+FX|7|GBR|219|Davies Grace
+FX|7|GBR|220|Amankwaah Shantae-Eve Asiedua

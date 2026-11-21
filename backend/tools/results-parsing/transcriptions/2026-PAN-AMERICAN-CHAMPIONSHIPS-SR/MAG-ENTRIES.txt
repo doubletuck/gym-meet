@@ -1,0 +1,91 @@
+# p8
+ARG|Daniel Villafañe|Daniel VILLAFAÑE|9035|301|1993
+ARG|Ivo Chiapponi|Ivo CHIAPPONI|33522|302|2000
+ARG|Luca Alfieri|Luca ALFIERI|45457|303|2002
+ARG|Nahuel Nicolas Pardo|Nahuel PARDO|52534|304|2005
+ARG|Santiago Mayol|Santiago MAYOL|23384|305|1999
+ARG|Julian Inguanti|Julian INGUANTI (reserve)|33133|306|1999
+BOL|Jose Mateo Garvizu Coca|Mateo GARVIZU|66689|307|2007
+BOL|Leonardo Mamani Betancourt|Leonardo MAMANI|55999|308|1998
+BOL|Luis Fernando Arancibia Moscoso|Fernando ARANCIBIA|59918|309|2007
+BRA|Arthur Nory Oyakawa Mariano|Arthur NORY MARIANO|12026|310|1993
+BRA|Caio Campos Souza|Caio SOUZA|12029|311|1993
+BRA|Diogo Brajao Soares|Diogo SOARES|36651|312|2002
+BRA|Leonardo Matheus Santos De Souza|Leonardo SOUZA (reserve)|25261|313|1995
+BRA|Vitaliy Kondratov Guimaraes|Vitaliy GUIMARAES|34855|314|2000
+BRA|Rogerio Pereira Borges|Rogerio BORGES|49461|315|2002
+CAN|Addyson Palm Cheladyn|Addyson CHELADYN (reserve)|54518|316|2000
+CAN|Felix Dolci|Felix DOLCI|37080|317|2002
+CAN|Jordan Anthony Carroll|Jordan CARROLL|62749|318|2006
+CAN|Rene Cournoyer|Rene COURNOYER|23755|319|1997
+CAN|William Emard|William EMARD|34623|320|2000
+CAN|Xavier Jason Olasz|Xavier OLASZ|56138|321|2005
+CAY|Justin Daniel Spencer|Justin SPENCER|67591|322|2008
+CAY|Karthik Sabastian Adapa|Karthik ADAPA|49071|323|2004
+CHI|Diego Ignacio Espejo Varos|Diego ESPEJO|55396|324|2006
+CHI|Joaquin Ignacio Alvarez Campos|Joaquin ALVAREZ|52911|325|2003
+CHI|Joel Gonzalo Alvarez Vergara|Joel ALVAREZ|12524|326|1995
+CHI|Josue Leonardo Armijo Subaique|Josue ARMIJO|44241|327|2002
+CHI|Luciano Mauricio Letelier Zuñiga|Luciano LETELIER|46058|328|2004
+CHI|Ignacio Javier Varas Echeverrria|Ignacio VARAS (reserve)|31494|329|1999
+COL|Angel Gabriel Barajas Vivas|Angel BARAJAS|52786|330|2006
+COL|Jorman Andres Alvarez Delgado|Jorman ALVAREZ|62060|331|2007
+COL|Keynher Camilo Vera Carrascal|Camilo VERA|56105|332|2007
+COL|Thomas Eden Mejia Cartagena|Thomas MEJIA|62061|333|2008
+COL|Yan Dairon Zabala Arevalo|Yan ZABALA|55480|334|2006
+# p9
+CRC|Alejandro Mora Barrantes|Alejandro MORA|53224|335|2005
+CRC|Luis Alejandro Zamora Solano|Luis ZAMORA|44960|336|2003
+CUB|Alain Daniel Torriente Reyna|Alain Daniel TORRIENTE REYNA|69723|337|2007
+CUB|Alek Rodríguez Román|Alek RODRÍGUEZ|69580|338|2007
+CUB|Argenis Rafael Castañeda|Argenis CASTAÑEDA|66156|339|2006
+CUB|Darian Ray Rodriguez|Darian Ray RODRIGUEZ|66154|340|2004
+CUB|Diorges Adriano Escobar Olmo|Diorges ESCOBAR|56010|341|2002
+DOM|Audrys Nin Reyes|Audrys NIN REYES|16893|342|1995
+DOM|Darling Dios Jorge|Darling DIOS|69505|343|2006
+DOM|Jeordy Ramirez Castro|Jeordy RAMIREZ|44285|344|2001
+DOM|Wilfry Manuel Contreras|Wilfry CONTRERAS|40686|345|2000
+ECU|Cesar Armando Lopez Chavez|Cesar LOPEZ|44649|346|2003
+ECU|Daniel Alejandro Chica Leon|Daniel CHICA|53823|347|2006
+ECU|Johnny Adrian Valencia Zambrano|Johnny VALENCIA|48271|348|2002
+ECU|Stefano Alessandro Romero Bravo|Stefano ROMERO|52511|349|2007
+GUA|Gabriel Estuardo Paniagua Muñoz|Gabriel PANIAGUA|49622|350|2005
+GUA|Jaycko Sebastian Bourdet Aguilar|Jaycko BOURDET|52402|351|2006
+GUA|Jefferson Rahi Garcia Rodriguez|Jefferson Rahi GARCIA|61165|352|2008
+GUA|Jorge Alfredo Vega Lopez|Jorge VEGA|8876|353|1995
+GUA|Mario Roberto Javier Taperio Jayes|Mario TAPERIO|52403|354|2006
+HAI|Yvenel Agustin Stephan|Yvenel STEPHAN|58708|355|2000
+JAM|Clayton Bell|Clayton BELL|65545|356|2003
+JAM|Elel Wahrmann Baker|Elel WAHRMANN BAKER|58520|357|2000
+JAM|Matthew Mcclymont|Matthew MCCLYMONT|55632|358|2001
+MEX|Cristian Ramirez Rojas|Cristian RAMIREZ|52149|359|2004
+MEX|Isaac Nuñez Farfan|Isaac NUÑEZ|32919|360|1999
+MEX|Juan David Hernández Andrade|Juan HERNÁNDEZ|50761|361|2006
+MEX|Mario Alberto Rojas Quintero|Mario ROJAS|50762|362|2004
+MEX|Rodrigo Gómez Grosso|Rodrigo GÓMEZ|40835|363|1998
+MEX|Emilio Canavati Vilaboa|Emilio CANAVATI (reserve)|52231|364|2004
+PAN|Richard Ameth Atencio Higinio|Richard ATENCIO|46508|365|2004
+# p10
+PER|Arian Leon Prado Muñoz|Arian LEON PRADO|19751|366|1996
+PER|Daniel Alejandro Agüero Barrera|Daniel AGÜERO|22028|367|1997
+PER|Eduardo Jael Manrique Palacios|Eduardo MANRIQUE|57712|368|2007
+PER|Edward Andre Gonzales Rivas|Edward GONZALES|42424|369|2003
+PER|Edward Daniel Alarcon Luque|Edward Daniel ALARCON|42426|370|2003
+PUR|Francisco Ismael Velez Belendez|Francisco VELEZ|52355|371|2005
+PUR|Jensuel Josue Soto Rodriguez|Jensuel SOTO|57979|372|2007
+PUR|Jose Antonio Lopez Martinez|Jose LOPEZ|30748|373|1997
+PUR|Nelson Alberto Guilbe Morales|Nelson GUILBE|55778|374|2002
+PUR|Pablo Jose Perez Martinez|Pablo PEREZ|52354|375|2003
+PUR|Divier Ramos Delgado|Divier RAMOS (reserve)|63620|376|2007
+TTO|Anthony Christian Michael De Gannes|Anthony DE GANNES|66595|377|2007
+TTO|Chane Cumbermack|Chane CUMBERMACK|69724|378|2008
+TTO|Jameel Ali|Jameel ALI|56111|379|2000
+USA|Kameron Nelson|Kameron NELSON|58510|380|2001
+USA|Patrick Hoopes|Patrick HOOPES|61923|381|2002
+USA|Riley Loos|Riley LOOS|43298|382|2000
+USA|Taylor Burkhart|Taylor BURKHART|43314|383|2002
+USA|Yul Moldauer|Yul MOLDAUER|17961|384|1996
+USA|Brandon Dang|Brandon DANG (reserve)|65129|385|2005
+VEN|Adickxon Gabriel Trejo Basalo|Adickxon TREJO|8015|386|1989
+VEN|Sebastián David Torres Pérez|Sebastián TORRES|62005|387|2008
+VEN|Yefferson Gregorio Anton Yeguez|Yefferson ANTON|56024|388|1998

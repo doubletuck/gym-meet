@@ -495,6 +495,7 @@ export function AllAroundTable({
         />
       ),
     })),
+    ...penaltyColumn(rows),
     {
       header: "Total",
       align: "right",
@@ -524,6 +525,26 @@ export function AllAroundTable({
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
     />
   );
+}
+
+/**
+ * A penalty on a result as a whole (a team penalty), already taken off the
+ * total; the column is only shown when some row has one.
+ */
+function penaltyColumn<T extends { sjPenalty: number | null }>(rows: T[]): Column<T>[] {
+  if (!rows.some((row) => row.sjPenalty != null)) {
+    return [];
+  }
+  return [
+    {
+      header: "Pen.",
+      label: "Penalty",
+      align: "right",
+      wide: true,
+      sortValue: (row) => row.sjPenalty,
+      cell: (row) => formatScore(row.sjPenalty),
+    },
+  ];
 }
 
 /** Team results; on a phone, each team's apparatus totals are on a line under its name. */
@@ -563,6 +584,7 @@ export function TeamTable({
       sortValue: (row) => row.apparatusTotals[app],
       cell: (row) => formatScore(row.apparatusTotals[app]),
     })),
+    ...penaltyColumn(rows),
     {
       header: "Total",
       align: "right",

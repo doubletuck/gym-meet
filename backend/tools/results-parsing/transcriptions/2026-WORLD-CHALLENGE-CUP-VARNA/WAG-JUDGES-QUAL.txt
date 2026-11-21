@@ -1,0 +1,41 @@
+# WAG Judging Assignments Qualifications (p. 45, image). The judge numbers (#) are left out.
+# apparatus|function|SURNAME Given|noc, function as printed; reserves have apparatus `-`.
+# The page names no Technical Delegate; the cover (p. 1) prints "FIG WAG Technical Delegate - Ms. Lyudmila LI".
+-|TD|Lyudmila LI|
+VT|D1|BENNETT Gordon Michael|CAN
+VT|D2|TANKOUCHEVA Neli Nikolova|BUL
+VT|E1|STUPPACHER Nina|AUT
+VT|E2|RATYNSKA-BURY Maria Anna|POL
+VT|E3|RAJCIC Aleksandra|SRB
+VT|E4|TOSOVIC Zrinka|CRO
+VT|E5|AGOP Vasilica Florentina|ROU
+VT|Line Judge|MUALEM BAR-NER Efrat|ISR
+UB|D1|ABDULLAYEVA Anzhella|AZE
+UB|D2|AUSMA Anneke|NED
+UB|E1|BILL Michaela|LIE
+UB|E2|RUMBUTIS Sara|SWE
+UB|E3|POSPISILOVA Eliska|CZE
+UB|E4|TAN Ing Yueh|MAS
+UB|E5|STEBUNOVA Daryna|UKR
+UB|Time Judge|KESKIN Enfal|TUR
+BB|D1|RATYNSKA-BURY Maria Anna|POL
+BB|D2|BILL Michaela|LIE
+BB|E1|ABDULLAYEVA Anzhella|AZE
+BB|E2|TANKOUCHEVA Neli Nikolova|BUL
+BB|E3|HAYES Josephine|GBR
+BB|E4|MATHEIKA Zsofia|HUN
+BB|E5|KESKIN Enfal|TUR
+BB|Time Judge|STRMENSKA Dagmara|SVK
+BB|Time Judge|POSPISILOVA Eliska|CZE
+FX|D1|STUPPACHER Nina|AUT
+FX|D2|RUMBUTIS Sara|SWE
+FX|E1|AUSMA Anneke|NED
+FX|E2|BENNETT Gordon Michael|CAN
+FX|E3|OSKARSDOTTIR Dora Sif|NOR
+FX|E4|AGOP Vasilica Florentina|ROU
+FX|E5|MUALEM BAR-NER Efrat|ISR
+FX|Time Judge|MAVRODIEVA Milena|BUL
+FX|Line Judge 1|RAJCIC Aleksandra|SRB
+FX|Line Judge 2|TAN Ing Yueh|MAS
+-|R1|KESKIN Enfal|TUR
+-|R2|STEBUNOVA Daryna|UKR

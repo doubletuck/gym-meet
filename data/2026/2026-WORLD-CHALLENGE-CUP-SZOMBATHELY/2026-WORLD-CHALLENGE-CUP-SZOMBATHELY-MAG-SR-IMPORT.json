@@ -1,0 +1,36 @@
+{
+    "event" : {
+        "title" : "World Challenge Cup 2026 Szombathely",
+        "disciplines" : "MAG",
+        "ageCategory" : "SR",
+        "level" : "WORLD_CHALLENGE_CUP",
+        "startDate" : "2026-09-18",
+        "endDate" : "2026-09-20",
+        "city" : "Szombathely",
+        "country" : "HUN",
+        "figEventNumber" : "18241",
+        "venue" : "Arena Savaria",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-EVENT-FX.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-EVENT-HB.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-EVENT-PB.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-EVENT-PH.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-EVENT-SR.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-EVENT-VT.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-QUAL-FX.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-QUAL-HB.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-QUAL-PB.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-QUAL-PH.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-QUAL-SR.csv",
+        "2026-WORLD-CHALLENGE-CUP-SZOMBATHELY-MAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : []
+}
