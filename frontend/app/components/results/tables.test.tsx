@@ -323,7 +323,7 @@ describe("AllAroundTable", () => {
     render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
 
     const cell = screen.getByText("A First").closest("td")!;
-    expect(within(cell).getByTitle("Vault").parentElement).toHaveTextContent("VT 13.500");
+    expect(within(cell).getByTitle("Vault").parentElement).toHaveTextContent(/ 13\.500$/);
     expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
   });
 
@@ -336,11 +336,11 @@ describe("AllAroundTable", () => {
 
   it("sorts an apparatus highest first, then lowest first", async () => {
     render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
-    const vault = screen.getByRole("button", { name: "VT" });
+    const vault = screen.getByRole("button", { name: "Vault" });
 
     await userEvent.click(vault);
     expect(order()).toEqual(["A Second", "A First", "A Unranked"]);
-    expect(screen.getByRole("columnheader", { name: "VT" })).toHaveAttribute("aria-sort", "descending");
+    expect(screen.getByRole("columnheader", { name: "Vault" })).toHaveAttribute("aria-sort", "descending");
 
     await userEvent.click(vault);
     expect(order()).toEqual(["A Unranked", "A First", "A Second"]);
@@ -409,7 +409,7 @@ describe("TeamTable", () => {
     render(<TeamTable rows={[team]} apparatus={["FX", "PH"]} qualification={false} />);
 
     const cell = screen.getByText("Japan").closest("td")!;
-    expect(within(cell).getByTitle("Floor Exercise").parentElement).toHaveTextContent("FX 42.100");
+    expect(within(cell).getByTitle("Floor Exercise").parentElement).toHaveTextContent(/ 42\.100$/);
     expect(within(cell).queryByTitle("Pommel Horse")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
   });

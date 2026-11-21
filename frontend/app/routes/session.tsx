@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { data, Link, useSearchParams } from "react-router";
 
 import type { Route } from "./+types/session";
@@ -14,7 +15,8 @@ import {
   vaultFinalQualifying,
 } from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
-import { APPARATUS_SHORT_LABELS, divisionLabel, sessionLabel } from "~/lib/labels";
+import { divisionLabel, sessionLabel } from "~/lib/labels";
+import { ApparatusCode } from "~/components/Abbreviation";
 
 /** Finds the session the address names, then loads its results. */
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -37,7 +39,7 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
   return [{ title: `${loaderData.title}, ${loaderData.eventTitle}: Gym Meet` }];
 }
 
-type View = { key: string; label: string };
+type View = { key: string; label: ReactNode };
 
 const VAULT_FINAL_QUALIFYING = "VT-final";
 
@@ -52,14 +54,23 @@ function viewsOf(results: SessionResults, rankedOnFirstVault: boolean): View[] {
     ...(results.teams.length ? [{ key: "teams", label: "Teams" }] : []),
     ...(results.allAround.length ? [{ key: "all-around", label: "All-around" }] : []),
     ...results.apparatus.flatMap(({ apparatus, scores }) => [
-      { key: apparatus, label: APPARATUS_SHORT_LABELS[apparatus] },
+      { key: apparatus, label: <ApparatusCode apparatus={apparatus} /> },
       ...(apparatus === "VT" && rankedOnFirstVault && scores.some((row) => row.secondRoutine)
-        ? [{ key: VAULT_FINAL_QUALIFYING, label: "Vault Final Qual" }]
+        ? [
+            {
+              key: VAULT_FINAL_QUALIFYING,
+              label: (
+                <>
+                  <ApparatusCode apparatus="VT" /> Final Qual
+                </>
+              ),
+            },
+          ]
         : []),
     ]),
     ...results.apparatusStandings.map(({ apparatus }) => ({
       key: `combined-${apparatus}`,
-      label: APPARATUS_SHORT_LABELS[apparatus],
+      label: <ApparatusCode apparatus={apparatus} />,
     })),
   ];
 }

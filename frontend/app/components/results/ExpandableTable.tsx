@@ -1,11 +1,15 @@
 import { Fragment, useState, type ReactNode } from "react";
 
+import { Abbreviation } from "../Abbreviation";
+
 type SortDirection = "ascending" | "descending";
 
 export type Column<T> = {
   header: string;
   /** Screen-reader name when the header is abbreviated, e.g. "Difficulty" for "D". */
   label?: string;
+  /** Reads the label out in place of the header, for codes like "PH" a screen reader would spell out. */
+  spoken?: boolean;
   cell: (row: T) => ReactNode;
   align?: "left" | "right";
   /** Shown only from the small breakpoint up; on a phone it's in the expanded row. */
@@ -90,9 +94,7 @@ export function ExpandableTable<T>({
         <tr className="border-b border-gray-300 text-xs text-gray-500 dark:border-gray-700">
           {columns.map((column) => {
             const name = column.label ? (
-              <abbr title={column.label} className="no-underline">
-                {column.header}
-              </abbr>
+              <Abbreviation short={column.header} label={column.label} spoken={column.spoken} />
             ) : (
               column.header
             );

@@ -2,7 +2,8 @@ import { Link } from "react-router";
 
 import type { ApparatusScore, AthleteDetail, AthleteEntry, EntrySession, Routine } from "~/api/types";
 import { formatDateRange, formatScore, formatValue } from "~/lib/format";
-import { APPARATUS_LABELS, sessionLabel, sessionPath } from "~/lib/labels";
+import { sessionLabel, sessionPath } from "~/lib/labels";
+import { ApparatusCode } from "../Abbreviation";
 import { Country, QualificationBadge, RoutineScore } from "../results/parts";
 
 const cell = "px-2 py-2 align-top";
@@ -43,7 +44,7 @@ export function PersonalBests({ athlete }: { athlete: AthleteDetail }) {
         {personalBests.map((best) => (
           <tr key={best.apparatus} className="border-b border-gray-200 dark:border-gray-800">
             <th scope="row" className={`${cell} text-left font-normal`}>
-              {APPARATUS_LABELS[best.apparatus]}
+              <ApparatusCode apparatus={best.apparatus} />
               <Where event={best.event} session={best.session} className="sm:hidden" />
             </th>
             <td className={`${cell} text-right`}>{formatValue(best.difficulty)}</td>
@@ -137,7 +138,7 @@ function SessionResult({ eventSlug, entrySession }: { eventSlug: string; entrySe
             {apparatusStandings.map((standing) => (
               <tr key={standing.apparatus} className="border-b border-gray-100 dark:border-gray-900">
                 <th scope="row" className="py-1.5 pr-2 text-left font-normal">
-                  {APPARATUS_LABELS[standing.apparatus]}
+                  <ApparatusCode apparatus={standing.apparatus} />
                 </th>
                 <td className="px-2 py-1.5 text-right font-semibold">{formatScore(standing.total)}</td>
                 <td className="w-12 py-1.5 pl-2 text-right text-gray-500">
@@ -184,16 +185,16 @@ function ScoresTable({ session, scores }: { session: string; scores: ApparatusSc
       </thead>
       <tbody>
         {scores.flatMap((score) => {
-          const routines: [string, Routine][] = score.secondRoutine
+          const routines: [number | undefined, Routine][] = score.secondRoutine
             ? [
-                [`${APPARATUS_LABELS[score.apparatus]} 1`, score.routine],
-                [`${APPARATUS_LABELS[score.apparatus]} 2`, score.secondRoutine],
+                [1, score.routine],
+                [2, score.secondRoutine],
               ]
-            : [[APPARATUS_LABELS[score.apparatus], score.routine]];
-          const rows = routines.map(([label, routine], index) => (
-            <tr key={label} className="border-t border-gray-100 dark:border-gray-900">
+            : [[undefined, score.routine]];
+          const rows = routines.map(([number, routine], index) => (
+            <tr key={`${score.apparatus}${number ?? ""}`} className="border-t border-gray-100 dark:border-gray-900">
               <th scope="row" className="py-1.5 pr-2 text-left font-normal">
-                {label}
+                <ApparatusCode apparatus={score.apparatus} routine={number} />
               </th>
               <td className="px-2 py-1.5 text-right">{formatValue(routine.difficulty)}</td>
               <td className="px-2 py-1.5 text-right">{formatScore(routine.execution)}</td>

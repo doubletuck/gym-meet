@@ -23,18 +23,6 @@ export const APPARATUS_LABELS: Record<Apparatus, string> = {
   HB: "Horizontal Bar",
 };
 
-/** For tabs and narrow column headings. */
-export const APPARATUS_SHORT_LABELS: Record<Apparatus, string> = {
-  VT: "Vault",
-  UB: "Bars",
-  BB: "Beam",
-  FX: "Floor",
-  PH: "Pommel",
-  SR: "Rings",
-  PB: "P-Bars",
-  HB: "High Bar",
-};
-
 export const LEVEL_LABELS: Record<EventLevel, string> = {
   OLYMPIC_GAMES: "Olympic Games",
   WORLD_CHAMPIONSHIPS: "World Championships",

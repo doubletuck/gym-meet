@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
 import { formatScore, formatValue } from "~/lib/format";
 import { APPARATUS_LABELS } from "~/lib/labels";
+import { Abbreviation } from "../Abbreviation";
 import { ExpandableTable, type Column } from "./ExpandableTable";
 import { Country, DetailList, Gymnast, QualificationBadge, Rank, RoutineScore, statusLabel } from "./parts";
 
@@ -33,10 +34,13 @@ function routineDetails(routine: Routine): [string, string][] {
  */
 function PhoneLine({
   items,
+  spoken = false,
   lead,
   children,
 }: {
   items: (readonly [short: string, label: string, value: string])[];
+  /** Reads the labels out in full, for codes like "PH" a screen reader would spell out. */
+  spoken?: boolean;
   /** Leads the line in bold, e.g. the vault number. */
   lead?: ReactNode;
   /** Follows the values, e.g. "Did not start". */
@@ -51,10 +55,7 @@ function PhoneLine({
       {lead != null && <span className="font-semibold">{lead}</span>}
       {shown.map(([short, label, value]) => (
         <span key={short} className="whitespace-nowrap">
-          <abbr title={label} className="no-underline">
-            {short}
-          </abbr>{" "}
-          {value}
+          <Abbreviation short={short} label={label} spoken={spoken} /> {value}
         </span>
       ))}
       {children}
@@ -478,13 +479,14 @@ export function AllAroundTable({
       header: "Gymnast",
       cell: (row) => (
         <Gymnast athlete={row.athlete} noc={row.noc} club={row.club}>
-          <PhoneLine items={apparatusItems(apparatus, row.apparatusScores)} />
+          <PhoneLine spoken items={apparatusItems(apparatus, row.apparatusScores)} />
         </Gymnast>
       ),
     },
     ...apparatus.map((app): Column<AllAroundRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
+      spoken: true,
       align: "right",
       wide: true,
       sortValue: (row) => row.apparatusScores[app],
@@ -572,13 +574,14 @@ export function TeamTable({
           <span className="font-medium">
             <Country noc={row.noc} />
           </span>
-          <PhoneLine items={apparatusItems(apparatus, row.apparatusTotals)} />
+          <PhoneLine spoken items={apparatusItems(apparatus, row.apparatusTotals)} />
         </>
       ),
     },
     ...apparatus.map((app): Column<TeamRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
+      spoken: true,
       align: "right",
       wide: true,
       sortValue: (row) => row.apparatusTotals[app],
