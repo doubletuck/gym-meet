@@ -23,6 +23,12 @@ export const APPARATUS_LABELS: Record<Apparatus, string> = {
   HB: "Horizontal Bar",
 };
 
+/** Each discipline's apparatus in Olympic order, the order results are printed in. */
+export const APPARATUS_ORDER: Record<Discipline, Apparatus[]> = {
+  MAG: ["FX", "PH", "SR", "VT", "PB", "HB"],
+  WAG: ["VT", "UB", "BB", "FX"],
+};
+
 export const LEVEL_LABELS: Record<EventLevel, string> = {
   OLYMPIC_GAMES: "Olympic Games",
   WORLD_CHAMPIONSHIPS: "World Championships",

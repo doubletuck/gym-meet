@@ -3,7 +3,7 @@ import { data } from "react-router";
 
 import type { Route } from "./+types/athlete";
 import { athleteQuery, queryClient } from "~/api/client";
-import { EntryResults, PersonalBests } from "~/components/athletes/career";
+import { CareerResults, PersonalBests } from "~/components/athletes/career";
 import { Country } from "~/components/results/parts";
 import { athleteName } from "~/lib/format";
 import { DISCIPLINE_LABELS } from "~/lib/labels";
@@ -56,10 +56,8 @@ export default function Athlete({ loaderData }: Route.ComponentProps) {
 
       <section className="mt-6">
         <h2 className="font-semibold">Results</h2>
-        <div className="mt-2 space-y-4">
-          {athlete.entries.map((entry) => (
-            <EntryResults key={entry.event.slug} entry={entry} />
-          ))}
+        <div className="mt-2">
+          <CareerResults athlete={athlete} />
         </div>
       </section>
     </>

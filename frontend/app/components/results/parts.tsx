@@ -122,6 +122,35 @@ export function Rank({ rank }: { rank: number | null }) {
   return <span className="text-gray-500">{rank ?? "–"}</span>;
 }
 
+const MEDALS: Record<number, [name: string, colors: string]> = {
+  1: ["Gold", "border-gold-ring bg-gold-fill text-gold-text"],
+  2: ["Silver", "border-silver-ring bg-silver-fill text-silver-text"],
+  3: ["Bronze", "border-bronze-ring bg-bronze-fill text-bronze-text"],
+};
+
+/** A placing, as a medal-coloured disc for a final's top three. */
+export function Placing({ rank, final }: { rank: number | null | undefined; final: boolean }) {
+  if (rank == null) {
+    return null;
+  }
+  const medal = final ? MEDALS[rank] : undefined;
+  if (!medal) {
+    return <>{rank}</>;
+  }
+  const [name, colors] = medal;
+  return (
+    <span
+      title={`${name} medal`}
+      className={`inline-grid size-5 place-items-center rounded-full border-[1.5px] text-[11px] font-bold ${colors}`}
+    >
+      <span aria-hidden="true">{rank}</span>
+      <span className="sr-only">
+        {rank}, {name.toLowerCase()}
+      </span>
+    </span>
+  );
+}
+
 /** A label-value list for an expanded row. */
 export function DetailList({ items }: { items: [string, string][] }) {
   const shown = items.filter(([, value]) => value !== "");
