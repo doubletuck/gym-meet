@@ -465,7 +465,7 @@ function apparatusItems(apparatus: Apparatus[], scores: Partial<Record<string, n
 }
 
 /**
- * All-around results; on a phone, each gymnast's apparatus scores are on a line
+ * All-Around results; on a phone, each gymnast's apparatus scores are on a line
  * under their name. A round held in parts lists each part's scores under the
  * combined ones.
  */
@@ -534,7 +534,7 @@ export function AllAroundTable({
 
   return (
     <ExpandableTable
-      caption="All-around results"
+      caption="All-Around results"
       columns={columns}
       defaultSort="#"
       rows={rows}

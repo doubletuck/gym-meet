@@ -176,7 +176,7 @@ describe("EntryResults", () => {
       "href",
       "/events/2026-world-championships/wag/sr/qualification",
     );
-    expect(screen.getByText(/All-around/)).toHaveTextContent("All-around 55.100 · #3");
+    expect(screen.getByText(/All-Around/)).toHaveTextContent("All-Around 55.100 · #3");
     expect(screen.getByRole("row", { name: /Vault 1/ })).toHaveTextContent("5.49.16614.566#1");
     expect(screen.getByRole("row", { name: /Vault 2/ })).toHaveTextContent("5.09.00014.000");
     expect(screen.getByRole("row", { name: /Vault result/ })).toHaveTextContent("14.483");

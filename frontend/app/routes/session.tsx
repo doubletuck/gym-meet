@@ -16,7 +16,7 @@ import {
 } from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
 import { divisionLabel, sessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
-import { ApparatusCode } from "~/components/Abbreviation";
+import { Abbreviation, ApparatusCode } from "~/components/Abbreviation";
 
 /** Finds the session the address names, then loads its results. */
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -49,8 +49,10 @@ type View = { key: string; label: ReactNode };
  */
 function viewsOf(results: SessionResults, rankedOnFirstVault: boolean): View[] {
   return [
-    ...(results.teams.length ? [{ key: "teams", label: "Teams" }] : []),
-    ...(results.allAround.length ? [{ key: "all-around", label: "All-around" }] : []),
+    ...(results.teams.length ? [{ key: "teams", label: "Team" }] : []),
+    ...(results.allAround.length
+      ? [{ key: "all-around", label: <Abbreviation short="AA" label="All-Around" spoken /> }]
+      : []),
     ...results.apparatus.flatMap(({ apparatus, scores }) => [
       { key: apparatus, label: <ApparatusCode apparatus={apparatus} /> },
       ...(apparatus === "VT" && rankedOnFirstVault && scores.some((row) => row.secondRoutine)

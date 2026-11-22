@@ -39,7 +39,7 @@ export function PersonalBests({ athlete }: { athlete: AthleteDetail }) {
   if (allAroundBest) {
     bests.push({
       key: "AA",
-      code: <Abbreviation short="AA" label="All-around" spoken />,
+      code: <Abbreviation short="AA" label="All-Around" spoken />,
       score: allAroundBest.total,
       event: allAroundBest.event,
       session: allAroundBest.session,
@@ -158,7 +158,7 @@ function SessionResult({ eventSlug, entrySession }: { eventSlug: string; entrySe
         </Link>
         {allAround && (
           <span className="text-gray-600 tabular-nums dark:text-gray-400">
-            All-around <span className="font-semibold text-inherit">{formatScore(allAround.total)}</span>
+            All-Around <span className="font-semibold text-inherit">{formatScore(allAround.total)}</span>
             {allAround.rank != null && <> · #{allAround.rank}</>}{" "}
             <QualificationBadge result={allAround.qualification} />
           </span>

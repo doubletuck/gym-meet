@@ -43,7 +43,7 @@ Which parts are filled depends on the round:
 |---|:-:|:-:|:-:|:-:|
 | Championship qualification | every apparatus | ✓ | ✓ | |
 | Team final | every apparatus | | ✓ | |
-| All-around final | every apparatus | ✓ | | |
+| All-Around final | every apparatus | ✓ | | |
 | Apparatus final, or apparatus-format qualification (World Cup) | one apparatus | | | |
 | A split round's part (US Championships' Day 1, Day 2) | every apparatus | ✓ | | |
 | A split round's combined session | | ✓ | | ✓ |
