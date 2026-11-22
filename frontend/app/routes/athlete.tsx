@@ -47,7 +47,7 @@ export default function Athlete({ loaderData }: Route.ComponentProps) {
 
       {(athlete.personalBests.length > 0 || athlete.allAroundBest) && (
         <section className="mt-6">
-          <h2 className="font-semibold">Personal bests</h2>
+          <h2 className="font-semibold">Personal Bests</h2>
           <div className="mt-2">
             <PersonalBests athlete={athlete} />
           </div>
