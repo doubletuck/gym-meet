@@ -84,6 +84,7 @@ public class EventService {
         event.setFigEventNumber(request.figEventNumber());
         event.setSlug(request.slug());
         event.setTitle(request.title());
+        event.setShortName(request.shortName());
         event.setStartDate(request.startDate());
         event.setEndDate(request.endDate());
         event.setCity(request.city());

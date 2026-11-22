@@ -1,95 +1,129 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-import type { ApparatusScore, AthleteDetail, AthleteEntry, EntrySession, Routine } from "~/api/types";
+import type { Apparatus, ApparatusScore, AthleteDetail, AthleteEntry, EntrySession, Routine } from "~/api/types";
 import { formatDateRange, formatScore, formatValue } from "~/lib/format";
-import { sessionLabel, sessionPath } from "~/lib/labels";
-import { ApparatusCode } from "../Abbreviation";
-import { Country, QualificationBadge, RoutineScore } from "../results/parts";
+import { resultsPath, sessionLabel, sessionPath, shortSessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
+import { Abbreviation, ApparatusCode } from "../Abbreviation";
+import { ApparatusIcon } from "../ApparatusIcon";
+import { Country, difficultyText, QualificationBadge, RoutineScore } from "../results/parts";
 
-const cell = "px-2 py-2 align-top";
+type Best = {
+  key: string;
+  code: ReactNode;
+  icon?: Apparatus;
+  score: number;
+  breakdown?: Routine;
+  event: AthleteEntry["event"];
+  session: EntrySession["session"];
+  view: string;
+};
 
-/** The athlete's best routine on each apparatus and best all-around, each linking to where it was scored. */
+/**
+ * The athlete's best routine on each apparatus and best all-around, a tile
+ * each. A tile links to the results it was scored in, opened at that
+ * apparatus with the athlete's row highlighted.
+ */
 export function PersonalBests({ athlete }: { athlete: AthleteDetail }) {
   const { personalBests, allAroundBest } = athlete;
-  if (personalBests.length === 0 && !allAroundBest) {
+  const bests: Best[] = personalBests.map((best) => ({
+    key: best.apparatus,
+    code: <ApparatusCode apparatus={best.apparatus} routine={best.vault ?? undefined} />,
+    icon: best.apparatus,
+    score: best.score,
+    breakdown: best.routine,
+    event: best.event,
+    session: best.session,
+    view: bestView(best),
+  }));
+  if (allAroundBest) {
+    bests.push({
+      key: "AA",
+      code: <Abbreviation short="AA" label="All-around" spoken />,
+      score: allAroundBest.total,
+      event: allAroundBest.event,
+      session: allAroundBest.session,
+      view: "all-around",
+    });
+  }
+  if (bests.length === 0) {
     return null;
   }
   return (
-    <table className="w-full border-collapse text-sm tabular-nums">
-      <caption className="sr-only">Personal bests</caption>
-      <thead>
-        <tr className="border-b border-gray-300 text-left text-xs text-gray-500 dark:border-gray-700">
-          <th scope="col" className="px-2 py-2 font-medium">
-            Apparatus
-          </th>
-          <th scope="col" className="px-2 py-2 text-right font-medium">
-            <abbr title="Difficulty" className="no-underline">
-              D
-            </abbr>
-          </th>
-          <th scope="col" className="px-2 py-2 text-right font-medium">
-            <abbr title="Execution" className="no-underline">
-              E
-            </abbr>
-          </th>
-          <th scope="col" className="px-2 py-2 text-right font-medium">
-            Score
-          </th>
-          <th scope="col" className="hidden px-2 py-2 font-medium sm:table-cell">
-            Where
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {personalBests.map((best) => (
-          <tr key={best.apparatus} className="border-b border-gray-200 dark:border-gray-800">
-            <th scope="row" className={`${cell} text-left font-normal`}>
-              <ApparatusCode apparatus={best.apparatus} />
-              <Where event={best.event} session={best.session} className="sm:hidden" />
-            </th>
-            <td className={`${cell} text-right`}>{formatValue(best.difficulty)}</td>
-            <td className={`${cell} text-right`}>{formatScore(best.execution)}</td>
-            <td className={`${cell} text-right font-semibold`}>{formatScore(best.score)}</td>
-            <td className={`${cell} hidden sm:table-cell`}>
-              <Where event={best.event} session={best.session} />
-            </td>
-          </tr>
-        ))}
-        {allAroundBest && (
-          <tr className="border-b border-gray-200 dark:border-gray-800">
-            <th scope="row" className={`${cell} text-left font-normal`}>
-              All-around
-              <Where event={allAroundBest.event} session={allAroundBest.session} className="sm:hidden" />
-            </th>
-            <td className={cell} />
-            <td className={cell} />
-            <td className={`${cell} text-right font-semibold`}>{formatScore(allAroundBest.total)}</td>
-            <td className={`${cell} hidden sm:table-cell`}>
-              <Where event={allAroundBest.event} session={allAroundBest.session} />
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+    <ul className={`grid grid-cols-2 gap-2 ${COLUMNS[bests.length] ?? "sm:grid-cols-4"}`}>
+      {bests.map((best, index) => (
+        <li
+          key={best.key}
+          // An odd tile out on a phone takes the whole row rather than leave a gap
+          className={index === bests.length - 1 && bests.length % 2 === 1 ? "col-span-2 sm:col-span-1" : ""}
+        >
+          <BestTile best={best} athleteId={athlete.id} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
-function Where({
-  event,
-  session,
-  className = "",
-}: {
-  event: AthleteEntry["event"];
-  session: EntrySession["session"];
-  className?: string;
-}) {
+// From the small breakpoint up, one row of tiles where they fit, else rows of four
+const COLUMNS: Record<number, string> = {
+  5: "sm:grid-cols-5",
+  6: "sm:grid-cols-6",
+  7: "sm:grid-cols-4 lg:grid-cols-7",
+};
+
+/**
+ * The view of the session's results a best is shown in: its apparatus, except
+ * a championship qualification's second vault, which only the vault final's
+ * two-vault ranking shows.
+ */
+function bestView(best: AthleteDetail["personalBests"][number]): string {
+  const championshipQualification = best.session.round === "QUAL" && best.session.apparatus == null;
+  return best.apparatus === "VT" && best.vault === 2 && championshipQualification
+    ? VAULT_FINAL_QUALIFYING
+    : best.apparatus;
+}
+
+function BestTile({ best, athleteId }: { best: Best; athleteId: number }) {
   return (
     <Link
-      to={sessionPath(event.slug, session)}
-      className={`block text-xs text-gray-500 hover:underline sm:text-sm sm:text-inherit ${className}`}
+      to={resultsPath(best.event.slug, best.session, best.view, athleteId)}
+      className="flex h-full flex-col rounded-lg border border-gray-200 p-3 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-900"
     >
-      {event.title}, {sessionLabel(session)}
+      <span className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+        {best.code}
+        {best.icon && <ApparatusIcon apparatus={best.icon} />}
+      </span>
+      <span className="mt-1 text-xl font-semibold tabular-nums">{formatScore(best.score)}</span>
+      {best.breakdown && <Breakdown routine={best.breakdown} />}
+      <span className="mt-auto pt-2 text-xs text-gray-500">
+        <span className="block" title={best.event.title}>
+          {best.event.shortName}
+        </span>
+        <span className="block">{shortSessionLabel(best.session)}</span>
+      </span>
     </Link>
+  );
+}
+
+/** What the score is made of: D and E, and bonus and penalties where there are any. */
+function Breakdown({ routine }: { routine: Routine }) {
+  const items: [short: string, label: string, value: string][] = [
+    ["D", "Difficulty", difficultyText(routine)],
+    ["E", "Execution", formatScore(routine.execution)],
+    ["B", "Bonus", routine.bonus ? formatValue(routine.bonus) : ""],
+    ["P", "Penalty", routine.penalty ? formatValue(routine.penalty) : ""],
+    ["SJ", "Superior Jury penalty", routine.sjPenalty ? formatValue(routine.sjPenalty) : ""],
+  ];
+  return (
+    <span className="mt-0.5 flex flex-wrap gap-x-2 text-xs text-gray-500 tabular-nums">
+      {items
+        .filter(([, , value]) => value !== "")
+        .map(([short, label, value]) => (
+          <span key={short} className="whitespace-nowrap">
+            <Abbreviation short={short} label={label} /> {value}
+          </span>
+        ))}
+    </span>
   );
 }
 

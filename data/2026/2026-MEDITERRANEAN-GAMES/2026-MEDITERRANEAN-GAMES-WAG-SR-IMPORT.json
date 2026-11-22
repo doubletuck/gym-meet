@@ -1,6 +1,7 @@
 {
     "event" : {
         "title" : "XX Mediterranean Games",
+        "shortName" : "Med Games 2026",
         "disciplines" : "WAG",
         "ageCategory" : "SR",
         "level" : "CONTINENTAL_GAMES",

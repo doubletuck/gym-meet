@@ -1,6 +1,7 @@
 {
     "event" : {
         "title" : "World Challenge Cup 2026 Koper",
+        "shortName" : "Koper WCC 2026",
         "disciplines" : "MAG",
         "ageCategory" : "SR",
         "level" : "WORLD_CHALLENGE_CUP",

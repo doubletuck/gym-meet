@@ -28,6 +28,7 @@ import doubletuck.meet.repository.AthleteRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.SessionRepository;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +43,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /** Reads athletes for the public site: search, and an athlete's career. */
 @Service
@@ -134,8 +134,8 @@ public class AthleteQueryService {
                 .toList();
         for (Participant participant : participants) {
             Event event = participant.getEvent();
-            EntryEvent eventRef = new EntryEvent(event.getSlug(), event.getTitle(), event.getStartDate(),
-                    event.getEndDate());
+            EntryEvent eventRef = new EntryEvent(event.getSlug(), event.getTitle(),
+                    event.getShortName(), event.getStartDate(), event.getEndDate());
             List<Score> scores = scoreRepository.findByParticipant(participant);
             List<AllAroundResult> allAround = allAroundResultRepository.findByParticipant(participant);
             List<ApparatusResult> standings = apparatusResultRepository.findByParticipant(participant);
@@ -172,11 +172,9 @@ public class AthleteQueryService {
                                 .toList()));
 
                 for (Score score : sessionScores) {
-                    Stream.of(score.getRoutine(), score.getSecondRoutine())
-                            .filter(routine -> routine != null && routine.getStatus() == ScoreStatus.COMPLETED
-                                    && routine.getScore() != null)
-                            .forEach(routine -> bests.add(new PersonalBest(score.getApparatus(), routine.getScore(),
-                                    routine.getDifficulty(), routine.getExecution(), eventRef, summary)));
+                    boolean twoVaults = score.getSecondRoutine() != null;
+                    addBest(bests, score, score.getRoutine(), twoVaults ? 1 : null, eventRef, summary);
+                    addBest(bests, score, score.getSecondRoutine(), twoVaults ? 2 : null, eventRef, summary);
                 }
                 if (sessionAllAround != null && sessionAllAround.getTotalScore() != null
                         && completeAllAround(sessionScores, order)
@@ -192,6 +190,14 @@ public class AthleteQueryService {
         return new AthleteResponse(athlete.getId(), athlete.getSurname(), athlete.getGivenName(),
                 athlete.getDiscipline(), athlete.getBirthYear(), otherNames, personalBests(bests, order),
                 allAroundBest, entries);
+    }
+
+    private static void addBest(List<PersonalBest> bests, Score score, @Nullable Routine routine,
+            @Nullable Integer vault, EntryEvent event, SessionSummaryResponse session) {
+        if (routine != null && routine.getStatus() == ScoreStatus.COMPLETED && routine.getScore() != null) {
+            bests.add(new PersonalBest(score.getApparatus(), routine.getScore(), SessionResultsService.routine(routine),
+                    vault, event, session));
+        }
     }
 
     /**

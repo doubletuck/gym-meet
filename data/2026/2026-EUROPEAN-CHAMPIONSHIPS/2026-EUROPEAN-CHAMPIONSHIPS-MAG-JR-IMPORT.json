@@ -2,6 +2,7 @@
     "event" : {
         "slug" : "2026-european-championships-mag-jr",
         "title" : "37th Junior European Championships",
+        "shortName" : "Euros 2026",
         "disciplines" : "MAG",
         "ageCategory" : "JR",
         "level" : "CONTINENTAL_CHAMPIONSHIPS",

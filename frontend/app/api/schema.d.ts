@@ -108,6 +108,7 @@ export interface components {
       figEventNumber?: string;
       slug: string;
       title: string;
+      shortName: string;
       /** Format: date */
       startDate: string;
       /** Format: date */
@@ -136,6 +137,7 @@ export interface components {
       figEventNumber?: string;
       slug?: string;
       title?: string;
+      shortName?: string;
       /** Format: date */
       startDate?: string;
       /** Format: date */
@@ -445,6 +447,7 @@ export interface components {
     EntryEvent: {
       slug: string;
       title: string;
+      shortName: string;
       /** Format: date */
       startDate: string;
       /** Format: date */
@@ -461,10 +464,9 @@ export interface components {
       apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
       /** Format: double */
       score: number;
-      /** Format: double */
-      difficulty: number | null;
-      /** Format: double */
-      execution: number | null;
+      routine: components["schemas"]["Routine"];
+      /** Format: int32 */
+      vault: number | null;
       event: components["schemas"]["EntryEvent"];
       session: components["schemas"]["SessionSummaryResponse"];
     };

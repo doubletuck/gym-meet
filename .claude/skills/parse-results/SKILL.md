@@ -22,7 +22,7 @@ something is ambiguous; never guess a value, a date or a mapping silently.
 ## 1. Survey the source
 
 1. Confirm the inputs: the PDF(s) in `data/<year>/<EVENT>/` and `<EVENT>-EVENT.csv`
-   (one row per discipline and age category: Prefix, Slug, Title, Disciplines, Age Category,
+   (one row per discipline and age category: Prefix, Slug, Title, Short Name, Disciplines, Age Category,
    Level, dates, City, IOC country code, Venue, FIG event number, Apparatus Suppliers).
    **If the rows for this PDF don't exist, draft them** from the book (title page, schedule,
    sponsor logos), the FIG event page, the meets tracker (`data/<year>/*-MEETS.csv`)

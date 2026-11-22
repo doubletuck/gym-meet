@@ -1,6 +1,7 @@
 {
     "event" : {
         "title" : "2026 Xfinity U.S. Gymnastics Championships",
+        "shortName" : "US Champs 2026",
         "disciplines" : "MAG",
         "ageCategory" : "SR",
         "level" : "NATIONAL_CHAMPIONSHIPS",

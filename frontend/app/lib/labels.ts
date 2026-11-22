@@ -66,3 +66,29 @@ export function sessionPath(
 ): string {
   return `/events/${eventSlug}/${divisionPath(session.discipline, session.ageCategory)}/${session.slug}`;
 }
+
+/** The view of a championship qualification's two-vault ranking for the vault final. */
+export const VAULT_FINAL_QUALIFYING = "VT-final";
+
+/**
+ * The session as briefly as a tile under an apparatus can put it, the
+ * apparatus already being shown: "Qualification", "Final", "AA Final", "Team
+ * Final, Part 1".
+ */
+export function shortSessionLabel(session: Pick<SessionSummary, "round" | "part">): string {
+  const round = { QUAL: "Qualification", TEAM: "Team Final", AA: "AA Final", EVENT: "Final" }[session.round];
+  return session.part != null ? `${round}, Part ${session.part}` : round;
+}
+
+/**
+ * A session's results opened at a view, with an athlete's rows highlighted:
+ * "/events/2026-world-championships/wag/sr/qualification?view=UB&athlete=12".
+ */
+export function resultsPath(
+  eventSlug: string,
+  session: Pick<SessionSummary, "discipline" | "ageCategory" | "slug">,
+  view: string,
+  athleteId: number,
+): string {
+  return `${sessionPath(eventSlug, session)}?${new URLSearchParams({ view, athlete: String(athleteId) })}`;
+}

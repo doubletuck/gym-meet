@@ -62,6 +62,10 @@ names the file and line.
    disciplines can run on different days under one title (the 2026 US
    Championships: MAG 6–8 August, WAG 7–9 August), so a manifest that matches
    on title and overlapping dates widens the event's dates to cover its own.
+   Every manifest needs a `shortName`; an existing event takes the
+   manifest's when it differs ("event short names updated"). Databases from
+   before short names start with each event's title cut to 40 characters,
+   until its manifests are imported again.
    More than one event matching is an error. A new event's slug is
    the manifest's `slug`, when it has one: the 2026 European Championships are
    four events (one per discipline and age category, each with its own FIG

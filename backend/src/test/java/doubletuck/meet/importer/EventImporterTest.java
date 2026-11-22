@@ -178,6 +178,35 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_EventShortNameComesFromTheManifest() {
+        importFixture(WORLDS_WAG);
+
+        assertEquals("Worlds 2026", eventRepository.findAll().get(0).getShortName());
+    }
+
+    @Test
+    void testImport_ImportedAgainWithAnotherShortName_UpdatesIt(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        eventImporter.importManifest(manifest, false);
+        Files.writeString(manifest, Files.readString(manifest).replace("\"shortName\": \"Mini\"",
+                "\"shortName\": \"Mini 2026\""));
+
+        ImportReport report = eventImporter.importManifest(manifest, true);
+
+        assertEquals("Mini 2026", eventRepository.findAll().get(0).getShortName());
+        assertEquals(1, report.getCount("event short names updated"));
+    }
+
+    @Test
+    void testImport_NoShortName_Fails(@TempDir Path dir) throws IOException {
+        Path manifest = writeMinimalMeet(dir, "5.5", "101");
+        Files.writeString(manifest, Files.readString(manifest).replace("\"shortName\": \"Mini\", ", ""));
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
+        assertTrue(e.getMessage().contains("shortName is required"), e.getMessage());
+    }
+
+    @Test
     void testImport_SlugTakenByAnotherEvent_AddsTheDiscipline(@TempDir Path dir) throws IOException {
         eventImporter.importManifest(writeMinimalMeet(dir.resolve("first"), "5.5", "101"), false);
         Path second = writeMinimalMeet(dir.resolve("second"), "5.5", "101");
@@ -657,7 +686,7 @@ class EventImporterTest {
         Files.createDirectories(dir);
         Files.writeString(dir.resolve("MINI-MAG-SR-IMPORT.json"), """
                 {
-                    "event": { "title": "Mini Meet", "disciplines": "MAG", "ageCategory": "SR",
+                    "event": { "title": "Mini Meet", "shortName": "Mini", "disciplines": "MAG", "ageCategory": "SR",
                                "level": "INTERNATIONAL_TOURNAMENTS", "startDate": "2026-03-01",
                                "endDate": "2026-03-01", "city": "Utrecht", "country": "NED" },
                     "participants": [ "MINI-MAG-SR-PARTICIPANTS.csv" ],

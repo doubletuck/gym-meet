@@ -85,16 +85,16 @@ earlier.
 |-------|------|-------------|
 | apparatus | String | Apparatus code |
 | score | Double | The routine's score |
-| difficulty | Double, nullable | Its D score |
-| execution | Double, nullable | Its E score |
-| event | Object | `{slug, title, startDate, endDate}` of the meet |
+| routine | [Routine](api-session.md#routine-object) | Its breakdown: D, E, bonus and penalties, as on the session's results |
+| vault | Integer, nullable | Which of the session's two vaults it was, `1` or `2`; `null` on other apparatus, or where only one vault was expected |
+| event | Object | `{slug, title, shortName, startDate, endDate}` of the meet; `shortName` is a few words for it, e.g. `Euros 2026` |
 | session | [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) | Where it was scored, for a link to its results page |
 
 ### Entry Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| event | Object | `{slug, title, startDate, endDate}` |
+| event | Object | `{slug, title, shortName, startDate, endDate}`, as on [PersonalBest](#personalbest-object) |
 | noc | String | The country they competed for (IOC code) |
 | club | String, nullable | The club they entered for, where the entry list names one (national meets) |
 | entryStatus | String | `COMPETITOR`, `RESERVE`, `WITHDRAWN` or `HORS_CONCOURS`, as the entry list shows them; a reserve, withdrawn or hors concours athlete usually has no sessions |

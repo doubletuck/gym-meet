@@ -129,6 +129,28 @@ describe("ScoreTable", () => {
     expect(within(linCell).queryByTitle("Penalty")).not.toBeInTheDocument();
   });
 
+  it("highlights the athlete a link came from and opens their details", () => {
+    const plain: ScoreRow = {
+      ...yeo,
+      secondRoutine: null,
+      routine: routine({ difficulty: 6, execution: 8, score: 14 }),
+      total: 14,
+    };
+    const penalised: ScoreRow = {
+      ...plain,
+      athlete: { id: 2, surname: "Penalised", givenName: "A" },
+      routine: routine({ difficulty: 6, execution: 8, sjPenalty: -1, score: 13 }),
+    };
+    render(
+      <ScoreTable apparatus="UB" scores={[plain, penalised]} qualification={false} teamScoring={false} athleteId={2} />,
+    );
+
+    const row = screen.getByText("A Penalised").closest("tr")!;
+    expect(row).toHaveAttribute("data-highlighted", "true");
+    expect(screen.getByText("Seojeong Yeo").closest("tr")).not.toHaveAttribute("data-highlighted");
+    expect(within(row).getByRole("button", { name: "Hide details" })).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("expands only rows with more to show than the columns", () => {
     const plain: ScoreRow = {
       ...yeo,

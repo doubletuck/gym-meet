@@ -217,6 +217,7 @@ Unique key: `(athlete_id, surname, given_name)`.
 | figEventNumber | String | Yes | FIG-assigned event code, when the event is FIG-sanctioned. Null for competitions run entirely by a domestic federation (e.g. a national championship). |
 | slug | String | No | The event's name in addresses, e.g. `2026-world-championships`: lowercase words separated by hyphens, unique across events. The importer takes it from the manifest's name ([import-process.md](import-process.md)). |
 | title | String | No | The event's name, e.g. "2026 European Championships." |
+| shortName | String | No | A few words for where the title won't fit, such as an athlete's personal bests: the name readers use, then the year, e.g. `Euros 2026`. The events of one competition share it (the 2026 European Championships' four events are all `Euros 2026`). At most 40 characters. |
 | startDate | LocalDate | No | First day of competition. |
 | endDate | LocalDate | No | Last day of competition. |
 | city | String | No | Host city. |

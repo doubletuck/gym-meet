@@ -15,7 +15,7 @@ import {
   vaultFinalQualifying,
 } from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
-import { divisionLabel, sessionLabel } from "~/lib/labels";
+import { divisionLabel, sessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
 import { ApparatusCode } from "~/components/Abbreviation";
 
 /** Finds the session the address names, then loads its results. */
@@ -40,8 +40,6 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
 }
 
 type View = { key: string; label: ReactNode };
-
-const VAULT_FINAL_QUALIFYING = "VT-final";
 
 /**
  * The views a session's results offer, in the order a results book prints
@@ -86,6 +84,11 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
   const rankedOnFirstVault = qualification && session.apparatus == null;
   const views = viewsOf(results, rankedOnFirstVault);
   const current = views.find((view) => view.key === searchParams.get("view")) ?? views[0];
+  // A link from an athlete's page highlights their rows, kept as the views change
+  const athleteParam = Number(searchParams.get("athlete"));
+  const athleteId = Number.isInteger(athleteParam) && athleteParam > 0 ? athleteParam : undefined;
+  const viewPath = (key: string) =>
+    `?${new URLSearchParams({ view: key, ...(athleteId != null && { athlete: String(athleteId) }) })}`;
   const apparatusOrder: Apparatus[] = results.apparatus.map(({ apparatus }) => apparatus);
   const allAroundApparatus: Apparatus[] = apparatusOrder.length
     ? apparatusOrder
@@ -109,7 +112,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
             {views.map((view) => (
               <li key={view.key}>
                 <Link
-                  to={`?view=${view.key}`}
+                  to={viewPath(view.key)}
                   replace
                   preventScrollReset
                   aria-current={view.key === current?.key ? "page" : undefined}
@@ -135,7 +138,12 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
           <TeamTable rows={results.teams} apparatus={apparatusOrder} qualification={qualification} />
         )}
         {current?.key === "all-around" && (
-          <AllAroundTable rows={results.allAround} apparatus={allAroundApparatus} qualification={qualification} />
+          <AllAroundTable
+            rows={results.allAround}
+            apparatus={allAroundApparatus}
+            qualification={qualification}
+            athleteId={athleteId}
+          />
         )}
         {results.apparatus
           .filter(({ apparatus }) => apparatus === current?.key)
@@ -147,6 +155,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 scores={scores}
                 qualification={qualification}
                 teamScoring={teamScoring}
+                athleteId={athleteId}
               />
             ) : rankedOnFirstVault ? (
               // The vault final's qualifiers are marked in its own view
@@ -156,9 +165,10 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 scores={firstVaults(scores)}
                 qualification={false}
                 teamScoring={teamScoring}
+                athleteId={athleteId}
               />
             ) : (
-              <VaultTable key={apparatus} scores={scores} qualification={qualification} />
+              <VaultTable key={apparatus} scores={scores} qualification={qualification} athleteId={athleteId} />
             ),
           )}
         {current?.key === VAULT_FINAL_QUALIFYING &&
@@ -170,12 +180,13 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 scores={vaultFinalQualifying(scores)}
                 qualification
                 caption="Vault final qualification"
+                athleteId={athleteId}
               />
             ))}
         {results.apparatusStandings
           .filter(({ apparatus }) => `combined-${apparatus}` === current?.key)
           .map(({ apparatus, rows }) => (
-            <StandingsTable key={apparatus} apparatus={apparatus} rows={rows} />
+            <StandingsTable key={apparatus} apparatus={apparatus} rows={rows} athleteId={athleteId} />
           ))}
       </div>
 

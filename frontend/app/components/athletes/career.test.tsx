@@ -8,7 +8,13 @@ import { EntryResults, PersonalBests } from "./career";
 
 const render = (ui: ReactElement) => renderInPage(<MemoryRouter>{ui}</MemoryRouter>);
 
-const worlds = { slug: "2026-world-championships", title: "Worlds", startDate: "2026-10-17", endDate: "2026-10-25" };
+const worlds = {
+  slug: "2026-world-championships",
+  title: "54th Artistic Gymnastics World Championships",
+  shortName: "Worlds 2026",
+  startDate: "2026-10-17",
+  endDate: "2026-10-25",
+};
 
 function session(slug: string, round: "QUAL" | "AA" | "EVENT", apparatus: "UB" | "VT" | null = null) {
   return {
@@ -39,38 +45,101 @@ function routine(difficulty: number, execution: number, score: number): Routine 
 }
 
 describe("PersonalBests", () => {
-  it("lists the best on each apparatus and the all-around, linking to where each was scored", () => {
-    const athlete: AthleteDetail = {
-      id: 1,
+  function athlete(overrides: Partial<AthleteDetail>): AthleteDetail {
+    return {
+      id: 7,
       surname: "Nemour",
       givenName: "Kaylia",
       discipline: "WAG",
       birthYear: 2006,
       otherNames: [],
-      personalBests: [
-        {
-          apparatus: "UB",
-          score: 15.333,
-          difficulty: 7.0,
-          execution: 8.333,
-          event: worlds,
-          session: session("uneven-bars-final", "EVENT", "UB"),
-        },
-      ],
-      allAroundBest: { total: 55.999, event: worlds, session: session("qualification", "QUAL") },
+      personalBests: [],
+      allAroundBest: null,
       entries: [],
+      ...overrides,
     };
-    render(<PersonalBests athlete={athlete} />);
+  }
 
-    const bars = screen.getByRole("row", { name: /Uneven Bars/ });
-    expect(bars).toHaveTextContent("7.08.33315.333");
-    expect(within(bars).getAllByRole("link")[0]).toHaveAttribute(
-      "href",
-      "/events/2026-world-championships/wag/sr/uneven-bars-final",
+  it("shows a tile for each apparatus and the all-around, linking to the athlete's row in the results", () => {
+    render(
+      <PersonalBests
+        athlete={athlete({
+          personalBests: [
+            {
+              apparatus: "UB",
+              score: 15.333,
+              routine: routine(7.0, 8.333, 15.333),
+              vault: null,
+              event: worlds,
+              session: session("uneven-bars-final", "EVENT", "UB"),
+            },
+          ],
+          allAroundBest: { total: 55.999, event: worlds, session: session("qualification", "QUAL") },
+        })}
+      />,
     );
-    const allAround = screen.getByRole("row", { name: /All-around/ });
+
+    const [bars, allAround] = screen.getAllByRole("link");
+    expect(bars).toHaveTextContent(/Uneven Bars/);
+    expect(bars).toHaveTextContent("15.333");
+    expect(bars).toHaveTextContent("D 7.0E 8.333");
+    expect(bars).toHaveTextContent("Worlds 2026Final");
+    expect(bars).toHaveAttribute("href", "/events/2026-world-championships/wag/sr/uneven-bars-final?view=UB&athlete=7");
     expect(allAround).toHaveTextContent("55.999");
-    expect(within(allAround).getAllByRole("link")[0]).toHaveTextContent("Worlds, Qualification");
+    expect(allAround).toHaveTextContent("Worlds 2026Qualification");
+    expect(allAround).toHaveAttribute(
+      "href",
+      "/events/2026-world-championships/wag/sr/qualification?view=all-around&athlete=7",
+    );
+  });
+
+  it("shows bonus and penalties only where there are any, so the breakdown adds up", () => {
+    render(
+      <PersonalBests
+        athlete={athlete({
+          personalBests: [
+            {
+              apparatus: "FX",
+              score: 12.9,
+              routine: { ...routine(5.3, 7.9, 12.9), bonus: 0, penalty: -0.3 },
+              vault: null,
+              event: worlds,
+              session: session("qualification", "QUAL"),
+            },
+          ],
+        })}
+      />,
+    );
+
+    const floor = screen.getByRole("link");
+    expect(floor).toHaveTextContent("D 5.3E 7.900P -0.3");
+    expect(floor).not.toHaveTextContent(/\bB\b|SJ/);
+  });
+
+  it("names the vault, and opens a championship qualification's second vault in the vault final ranking", () => {
+    render(
+      <PersonalBests
+        athlete={athlete({
+          personalBests: [
+            {
+              apparatus: "VT",
+              score: 14.4,
+              routine: routine(5.2, 9.2, 14.4),
+              vault: 2,
+              event: worlds,
+              session: session("qualification", "QUAL"),
+            },
+          ],
+        })}
+      />,
+    );
+
+    const vault = screen.getByRole("link");
+    expect(vault).toHaveTextContent(/Vault 2/);
+    expect(vault).toHaveAttribute(
+      "href",
+      "/events/2026-world-championships/wag/sr/qualification?view=VT-final&athlete=7",
+    );
   });
 });
 

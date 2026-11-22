@@ -3,7 +3,7 @@ import { Link } from "react-router";
 
 import type { Athlete, QualificationResult, Routine } from "~/api/types";
 import { countryName, flagUrl } from "~/lib/countries";
-import { athleteName, formatScore } from "~/lib/format";
+import { athleteName, formatScore, formatValue } from "~/lib/format";
 
 const QUALIFICATION_LABELS: Record<QualificationResult, string> = {
   Q: "Qualified",
@@ -90,6 +90,12 @@ export function Country({ noc, club }: { noc: string; club?: string | null }) {
       {club ? (flag ? club : `${club} · ${country}`) : country}
     </>
   );
+}
+
+/** A D score as published: a leading "!" marks one under inquiry. */
+export function difficultyText(routine: Routine): string {
+  const d = formatValue(routine.difficulty);
+  return d && routine.difficultyInquiry ? `!${d}` : d;
 }
 
 export function statusLabel(routine: Routine): string {

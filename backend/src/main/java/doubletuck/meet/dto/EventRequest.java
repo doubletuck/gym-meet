@@ -22,6 +22,10 @@ public record EventRequest(
         @Size(max = 200, message = "Title must have 200 or fewer characters")
         String title,
 
+        @NotBlank(message = "Short name is required")
+        @Size(max = 40, message = "Short name must have 40 or fewer characters")
+        String shortName,
+
         @NotNull(message = "Start date is required")
         LocalDate startDate,
 
