@@ -123,30 +123,28 @@ export function Rank({ rank }: { rank: number | null }) {
 }
 
 const MEDALS: Record<number, [name: string, colors: string]> = {
-  1: ["Gold", "border-gold-ring bg-gold-fill text-gold-text"],
-  2: ["Silver", "border-silver-ring bg-silver-fill text-silver-text"],
-  3: ["Bronze", "border-bronze-ring bg-bronze-fill text-bronze-text"],
+  1: ["Gold", "bg-gold-fill text-gold-text"],
+  2: ["Silver", "bg-silver-fill text-silver-text"],
+  3: ["Bronze", "bg-bronze-fill text-bronze-text"],
 };
 
-/** A placing, as a medal-coloured disc for a final's top three. */
+/**
+ * A placing, tagged in its medal's colour for a final's top three. Every
+ * placing has the tag's padding, so the numbers line up in a column.
+ */
 export function Placing({ rank, final }: { rank: number | null | undefined; final: boolean }) {
   if (rank == null) {
     return null;
   }
   const medal = final ? MEDALS[rank] : undefined;
   if (!medal) {
-    return <>{rank}</>;
+    return <span className="px-1.5">{rank}</span>;
   }
   const [name, colors] = medal;
   return (
-    <span
-      title={`${name} medal`}
-      className={`inline-grid size-5 place-items-center rounded-full border-[1.5px] text-[11px] font-bold ${colors}`}
-    >
-      <span aria-hidden="true">{rank}</span>
-      <span className="sr-only">
-        {rank}, {name.toLowerCase()}
-      </span>
+    <span title={`${name} medal`} className={`rounded px-1.5 py-0.5 font-semibold ${colors}`}>
+      {rank}
+      <span className="sr-only">, {name.toLowerCase()} medal</span>
     </span>
   );
 }

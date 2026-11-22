@@ -269,7 +269,7 @@ describe("CareerResults", () => {
     expect(roundHeaders().map((header) => header.textContent)).toEqual(["Qualification", "Apparatus Finals"]);
     const [qualifyingBars, finalBars] = screen.getAllByRole("row", { name: /Uneven Bars/ });
     expect(within(qualifyingBars).queryByTitle(/medal/)).not.toBeInTheDocument();
-    expect(within(finalBars).getByTitle("Gold medal")).toHaveTextContent("1");
+    expect(within(finalBars).getByTitle("Gold medal")).toHaveTextContent("1, gold medal");
     expect(within(screen.getAllByRole("row", { name: /^Vault/ })[1]).queryByTitle(/medal/)).not.toBeInTheDocument();
   });
 
