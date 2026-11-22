@@ -105,6 +105,24 @@ class AthleteControllerTest {
     }
 
     @Test
+    void testFindAthlete_TeamResultInEachSessionThatRanksTeams() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_MAG);
+
+        mockMvc.perform(get("/api/athletes/{id}", athleteId("Jarman")))
+                .andExpect(jsonPath("$.entries[0].sessions[0].session.slug").value("qualification"))
+                .andExpect(jsonPath("$.entries[0].sessions[1].session.slug").value("team-final"))
+                .andExpect(jsonPath("$.entries[0].sessions[2].session.slug").value("all-around-final"))
+                .andExpect(jsonPath("$.entries[0].sessions[0].team.noc").value("GBR"))
+                .andExpect(jsonPath("$.entries[0].sessions[0].team.rank").value(2))
+                .andExpect(jsonPath("$.entries[0].sessions[0].team.total").value(251.46))
+                .andExpect(jsonPath("$.entries[0].sessions[0].team.qualification").value("Q"))
+                .andExpect(jsonPath("$.entries[0].sessions[1].team.rank").value(4))
+                .andExpect(jsonPath("$.entries[0].sessions[1].team.total").value(247.395))
+                .andExpect(jsonPath("$.entries[0].sessions[1].team.qualification").value(nullValue()))
+                .andExpect(jsonPath("$.entries[0].sessions[2].team").value(nullValue()));
+    }
+
+    @Test
     void testFindAthlete_SplitRound_BestAllAroundIsOneDayNotTheCombinedTotal() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
 

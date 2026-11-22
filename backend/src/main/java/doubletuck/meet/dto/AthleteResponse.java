@@ -59,11 +59,17 @@ public record AthleteResponse(
 
     /**
      * @param allAround          their all-around result in the session, if it has one
+     * @param team               the result of the team they competed for, where the session ranks teams
      * @param scores             their scores in the session, in Olympic order
      * @param apparatusStandings a split round's combined session: their place and total on each apparatus
      */
     public record EntrySession(SessionSummaryResponse session, @Nullable AllAroundResult allAround,
-            List<ApparatusScore> scores, List<ApparatusStanding> apparatusStandings) {
+            @Nullable EntryTeam team, List<ApparatusScore> scores, List<ApparatusStanding> apparatusStandings) {
+    }
+
+    /** As in {@link SessionResultsResponse.TeamRow}, without the apparatus totals. */
+    public record EntryTeam(String noc, @Nullable Integer rank, @Nullable Double total,
+            @Nullable QualificationResult qualification) {
     }
 
     public record AllAroundResult(@Nullable Integer rank, @Nullable Double total,

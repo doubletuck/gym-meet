@@ -16,7 +16,7 @@ const worlds = {
   endDate: "2026-10-25",
 };
 
-function session(slug: string, round: "QUAL" | "AA" | "EVENT", apparatus: Apparatus | null = null) {
+function session(slug: string, round: "QUAL" | "TEAM" | "AA" | "EVENT", apparatus: Apparatus | null = null) {
   return {
     id: slug.length * 10 + (apparatus?.length ?? 0) + round.length,
     slug,
@@ -192,6 +192,7 @@ describe("CareerResults", () => {
             {
               session: session("qualification", "QUAL"),
               allAround: { rank: 3, total: 55.1, qualification: "Q" },
+              team: null,
               scores: [
                 score("VT", {
                   rank: 1,
@@ -238,24 +239,28 @@ describe("CareerResults", () => {
               {
                 session: session("vault-qualification", "QUAL", "VT"),
                 allAround: null,
+                team: null,
                 scores: [score("VT", { rank: 2 })],
                 apparatusStandings: [],
               },
               {
                 session: session("uneven-bars-qualification", "QUAL", "UB"),
                 allAround: null,
+                team: null,
                 scores: [score("UB", { rank: 3, qualification: "Q" })],
                 apparatusStandings: [],
               },
               {
                 session: session("vault-final", "EVENT", "VT"),
                 allAround: null,
+                team: null,
                 scores: [score("VT", { rank: 4 })],
                 apparatusStandings: [],
               },
               {
                 session: session("uneven-bars-final", "EVENT", "UB"),
                 allAround: null,
+                team: null,
                 scores: [score("UB", { rank: 1 })],
                 apparatusStandings: [],
               },
@@ -273,6 +278,56 @@ describe("CareerResults", () => {
     expect(within(screen.getAllByRole("row", { name: /^Vault/ })[1]).queryByTitle(/medal/)).not.toBeInTheDocument();
   });
 
+  it("gives medals for what a final awards them for: the all-around in an all-around final, the team in a team final", () => {
+    const sixth = (apparatus: Apparatus, rank: number) => score(apparatus, { rank });
+    render(
+      <CareerResults
+        athlete={athlete([
+          entry([
+            {
+              session: session("qualification", "QUAL"),
+              allAround: { rank: 2, total: 84.632, qualification: "Q" },
+              team: { noc: "JPN", rank: 1, total: 254.529, qualification: "Q" },
+              scores: [sixth("UB", 1)],
+              apparatusStandings: [],
+            },
+            {
+              session: session("team-final", "TEAM"),
+              allAround: null,
+              team: { noc: "JPN", rank: 1, total: 251.928, qualification: null },
+              scores: [score("UB")],
+              apparatusStandings: [],
+            },
+            {
+              session: session("all-around-final", "AA"),
+              allAround: { rank: 1, total: 85.998, qualification: null },
+              team: null,
+              scores: [sixth("UB", 1), sixth("BB", 3)],
+              apparatusStandings: [],
+            },
+          ]),
+        ])}
+      />,
+    );
+
+    const medals = screen.getAllByTitle(/medal/);
+    expect(medals).toHaveLength(2);
+    const [qualifyingTeam, finalTeam] = screen.getAllByRole("row", { name: /Team JPN/ });
+    expect(qualifyingTeam).toHaveTextContent("254.5291Q");
+    expect(within(qualifyingTeam).queryByTitle(/medal/)).not.toBeInTheDocument();
+    expect(within(finalTeam).getByTitle("Gold medal")).toBeInTheDocument();
+    expect(within(finalTeam).getByRole("link")).toHaveAttribute(
+      "href",
+      "/events/2026-world-championships/wag/sr/team-final?view=teams&athlete=7",
+    );
+    const allAroundFinal = screen.getAllByRole("row", { name: /All-Around/ }).at(-1)!;
+    expect(within(allAroundFinal).getByTitle("Gold medal")).toBeInTheDocument();
+    // Placing on an apparatus within the all-around final wins no medal
+    for (const bars of screen.getAllByRole("row", { name: /Uneven Bars/ })) {
+      expect(within(bars).queryByTitle(/medal/)).not.toBeInTheDocument();
+    }
+  });
+
   it("shows bonus and penalty columns when any result has them, the Superior Jury's penalty counted in", () => {
     render(
       <CareerResults
@@ -281,6 +336,7 @@ describe("CareerResults", () => {
             {
               session: session("qualification", "QUAL"),
               allAround: null,
+              team: null,
               scores: [
                 score("BB", { routine: { ...routine(5.8, 7.9, 13.3), penalty: -0.1, sjPenalty: -0.3 } }),
                 score("FX", { routine: { ...routine(5.3, 7.9, 13.3), bonus: 0.1 } }),
@@ -314,6 +370,7 @@ describe("CareerResults", () => {
             {
               session: session("qualification", "QUAL"),
               allAround: null,
+              team: null,
               scores: [score("UB")],
               apparatusStandings: [],
             },
@@ -329,6 +386,7 @@ describe("CareerResults", () => {
     const qualification = {
       session: session("qualification", "QUAL"),
       allAround: null,
+      team: null,
       scores: [score("UB")],
       apparatusStandings: [],
     };
@@ -355,6 +413,7 @@ describe("CareerResults", () => {
               {
                 session: { ...session("all-around-final", "AA"), discipline: "MAG" },
                 allAround: { rank: 5, total: 163.896, qualification: null },
+                team: null,
                 scores: [],
                 apparatusStandings: [{ apparatus: "VT", rank: 12, total: 26.35 }],
               },

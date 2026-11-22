@@ -129,20 +129,24 @@ const MEDALS: Record<number, [name: string, colors: string]> = {
 };
 
 /**
- * A placing, tagged in its medal's colour for a final's top three. Every
- * placing has the tag's padding, so the numbers line up in a column.
+ * A placing, on a disc in its medal's colour for the top three where `medal`
+ * says the result wins one. Other placings are padded so a one-digit number
+ * lines up with the one centred on a disc.
  */
-export function Placing({ rank, final }: { rank: number | null | undefined; final: boolean }) {
+export function Placing({ rank, medal: awarded }: { rank: number | null | undefined; medal: boolean }) {
   if (rank == null) {
     return null;
   }
-  const medal = final ? MEDALS[rank] : undefined;
+  const medal = awarded ? MEDALS[rank] : undefined;
   if (!medal) {
     return <span className="px-1.5">{rank}</span>;
   }
   const [name, colors] = medal;
   return (
-    <span title={`${name} medal`} className={`rounded px-1.5 py-0.5 font-semibold ${colors}`}>
+    <span
+      title={`${name} medal`}
+      className={`inline-flex size-5 items-center justify-center rounded-full font-semibold ${colors}`}
+    >
       {rank}
       <span className="sr-only">, {name.toLowerCase()} medal</span>
     </span>

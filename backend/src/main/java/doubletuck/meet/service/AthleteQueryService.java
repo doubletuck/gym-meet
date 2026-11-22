@@ -11,12 +11,14 @@ import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.dto.AthleteResponse;
 import doubletuck.meet.dto.AthleteResponse.AllAroundBest;
 import doubletuck.meet.dto.AthleteResponse.ApparatusScore;
 import doubletuck.meet.dto.AthleteResponse.ApparatusStanding;
 import doubletuck.meet.dto.AthleteResponse.Entry;
 import doubletuck.meet.dto.AthleteResponse.EntrySession;
+import doubletuck.meet.dto.AthleteResponse.EntryTeam;
 import doubletuck.meet.dto.AthleteResponse.EntryEvent;
 import doubletuck.meet.dto.AthleteResponse.PersonalBest;
 import doubletuck.meet.dto.AthleteSummaryResponse;
@@ -28,6 +30,7 @@ import doubletuck.meet.repository.AthleteRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.TeamResultRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,11 +61,13 @@ public class AthleteQueryService {
     private final AllAroundResultRepository allAroundResultRepository;
     private final ApparatusResultRepository apparatusResultRepository;
     private final SessionRepository sessionRepository;
+    private final TeamResultRepository teamResultRepository;
 
     public AthleteQueryService(AthleteRepository athleteRepository,
             AthleteNameVariantRepository nameVariantRepository, ParticipantRepository participantRepository,
             ScoreRepository scoreRepository, AllAroundResultRepository allAroundResultRepository,
-            ApparatusResultRepository apparatusResultRepository, SessionRepository sessionRepository) {
+            ApparatusResultRepository apparatusResultRepository, SessionRepository sessionRepository,
+            TeamResultRepository teamResultRepository) {
         this.athleteRepository = athleteRepository;
         this.nameVariantRepository = nameVariantRepository;
         this.participantRepository = participantRepository;
@@ -70,6 +75,7 @@ public class AthleteQueryService {
         this.allAroundResultRepository = allAroundResultRepository;
         this.apparatusResultRepository = apparatusResultRepository;
         this.sessionRepository = sessionRepository;
+        this.teamResultRepository = teamResultRepository;
     }
 
     /**
@@ -163,6 +169,10 @@ public class AthleteQueryService {
                         sessionAllAround == null ? null : new AthleteResponse.AllAroundResult(
                                 sessionAllAround.getRank(), sessionAllAround.getTotalScore(),
                                 sessionAllAround.getQualificationResult()),
+                        // Teams aren't rostered: a team is the country's entry in the session
+                        teamResultRepository.findBySessionAndNoc(session, participant.getNoc())
+                                .map(AthleteQueryService::entryTeam)
+                                .orElse(null),
                         sessionScores.stream().map(AthleteQueryService::apparatusScore).toList(),
                         standings.stream()
                                 .filter(result -> result.getSession().equals(session))
@@ -230,6 +240,11 @@ public class AthleteQueryService {
                 SessionResultsService.routine(score.getRoutine()),
                 SessionResultsService.routine(score.getSecondRoutine()), score.getCombinedBonus(),
                 score.getTotalScore(), score.getQualificationRank(), score.getQualificationResult());
+    }
+
+    private static EntryTeam entryTeam(TeamResult result) {
+        return new EntryTeam(result.getNoc(), result.getRank(), result.getTotalScore(),
+                result.getQualificationResult());
     }
 
     private static String fullName(String givenName, String surname) {

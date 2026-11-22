@@ -156,7 +156,7 @@ function columnsFor(entries: AthleteEntry[]): Columns {
     penalty: routines.some((routine) => routine.penalty || routine.sjPenalty),
     qualification:
       scores.some((score) => score.qualification) ||
-      sessions.some((entrySession) => entrySession.allAround?.qualification),
+      sessions.some((entrySession) => entrySession.allAround?.qualification || entrySession.team?.qualification),
   };
 }
 
@@ -264,7 +264,7 @@ function EntryResults({
                 .sort(byApparatus(round.sessions[0].session.discipline))
                 .flatMap((block) => block.lines)
                 .map((line) => (
-                  <ResultLine key={line.key} line={line} final={round.final} columns={columns} />
+                  <ResultLine key={line.key} line={line} columns={columns} />
                 ))}
             </tbody>
           ))}
@@ -282,7 +282,7 @@ function ColumnHeader({ short, label }: { short: string; label: string }) {
   );
 }
 
-type Round = { key: string; label: string; final: boolean; sessions: EntrySession[] };
+type Round = { key: string; label: string; sessions: EntrySession[] };
 
 /**
  * An entry's sessions as rounds. A World Cup publishes each apparatus's
@@ -304,11 +304,11 @@ function roundsOf(entry: AthleteEntry): Round[] {
         : sessions.length > 1
           ? "Apparatus Finals"
           : sessionLabel(session);
-    return { key, label, final: session.round !== "QUAL", sessions };
+    return { key, label, sessions };
   });
 }
 
-type LineKind = "apparatus" | "vault" | "last-vault" | "all-around";
+type LineKind = "apparatus" | "vault" | "last-vault" | "all-around" | "team";
 
 type Line = {
   key: string;
@@ -319,6 +319,8 @@ type Line = {
   bonus?: number | null;
   score: ReactNode;
   rank?: number | null;
+  /** Whether the rank is a medal placing: the result the final awards medals for */
+  medal?: boolean;
   qualification?: QualificationResult | null;
 };
 
@@ -326,11 +328,15 @@ type Block = { apparatus?: Apparatus; lines: Line[] };
 
 /**
  * A session's results as lines, an apparatus to a block: two vaults are their
- * result, then each vault under it. The all-around comes last.
+ * result, then each vault under it. The all-around and the team come last.
  */
 function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: number): Block[] {
-  const { session, scores, apparatusStandings, allAround } = entrySession;
+  const { session, scores, apparatusStandings, allAround, team } = entrySession;
   const to = (view: string) => resultsPath(eventSlug, session, view, athleteId);
+  // A final awards medals for one result: an apparatus final for the apparatus, an all-around final for the
+  // all-around (not each apparatus in it), a team final for the team. A split round awards them on the
+  // combined results, not a part's.
+  const awards = session.part == null ? session.round : undefined;
   // A championship qualification ranks vault on the first vault, and the vault final on both
   const championshipQualification = session.round === "QUAL" && session.apparatus == null;
   const blocks: Block[] = scores.map((score) => {
@@ -349,6 +355,7 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
             bonus: routine.bonus,
             score: <RoutineScore routine={routine} />,
             rank: score.rank,
+            medal: awards === "EVENT",
             qualification: score.qualification,
           },
         ],
@@ -376,6 +383,7 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
           bonus: score.combinedBonus,
           score: formatScore(score.total),
           rank: championshipQualification ? score.qualificationRank : score.rank,
+          medal: awards === "EVENT",
           qualification: score.qualification,
         },
         vault(1, routine),
@@ -394,6 +402,8 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
           to: to(`combined-${standing.apparatus}`),
           score: formatScore(standing.total),
           rank: standing.rank,
+          // A national championship's apparatus titles are decided on the combined results
+          medal: awards != null && awards !== "QUAL",
         },
       ],
     });
@@ -408,7 +418,24 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
           to: to("all-around"),
           score: formatScore(allAround.total),
           rank: allAround.rank,
+          medal: awards === "AA",
           qualification: allAround.qualification,
+        },
+      ],
+    });
+  }
+  if (team) {
+    blocks.push({
+      lines: [
+        {
+          key: `${session.id}-team`,
+          kind: "team",
+          label: <Abbreviation short="Team" label={`Team ${team.noc}`} spoken />,
+          to: to("teams"),
+          score: formatScore(team.total),
+          rank: team.rank,
+          medal: awards === "TEAM",
+          qualification: team.qualification,
         },
       ],
     });
@@ -416,7 +443,7 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
   return blocks;
 }
 
-/** Olympic order, the all-around last. */
+/** Olympic order, the all-around and team last. */
 function byApparatus(discipline: Discipline) {
   const position = (block: Block) =>
     block.apparatus ? APPARATUS_ORDER[discipline].indexOf(block.apparatus) : APPARATUS_ORDER[discipline].length;
@@ -441,12 +468,17 @@ const LINE_STYLES: Record<LineKind, { row: string; cell: string; label: string }
     cell: "py-1.5",
     label: "",
   },
+  team: {
+    row: "border-t-[1.5px] border-gray-200 font-semibold dark:border-gray-800",
+    cell: "py-1.5",
+    label: "",
+  },
 };
 
 const GUIDE =
   "before:border-gray-300 after:absolute after:top-1/2 after:left-2 after:w-2 after:border-t after:border-gray-300 dark:before:border-gray-700 dark:after:border-gray-700";
 
-function ResultLine({ line, final, columns }: { line: Line; final: boolean; columns: Columns }) {
+function ResultLine({ line, columns }: { line: Line; columns: Columns }) {
   const styles = LINE_STYLES[line.kind];
   const vault = line.kind === "vault" || line.kind === "last-vault";
   const { routine } = line;
@@ -474,7 +506,7 @@ function ResultLine({ line, final, columns }: { line: Line; final: boolean; colu
       )}
       <td className={`px-2 text-right ${vault ? "" : "font-semibold"} ${styles.cell}`}>{line.score}</td>
       <td className={`pl-2 text-right text-gray-500 ${styles.cell}`}>
-        <Placing rank={line.rank} final={final} />
+        <Placing rank={line.rank} medal={line.medal ?? false} />
       </td>
       {columns.qualification && (
         <td className={`pl-2 text-left ${styles.cell}`}>

@@ -456,8 +456,18 @@ export interface components {
     EntrySession: {
       session: components["schemas"]["SessionSummaryResponse"];
       allAround: components["schemas"]["AllAroundResult"] | null;
+      team: components["schemas"]["EntryTeam"] | null;
       scores: components["schemas"]["ApparatusScore"][];
       apparatusStandings: components["schemas"]["ApparatusStanding"][];
+    };
+    EntryTeam: {
+      noc: string;
+      /** Format: int32 */
+      rank: number | null;
+      /** Format: double */
+      total: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
     };
     PersonalBest: {
       /** @enum {string} */
