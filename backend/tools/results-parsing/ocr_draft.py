@@ -7,6 +7,7 @@ Usage:
     python3 -I ocr_draft.py <ocr_dir> vault-list <first> <last>
     python3 -I ocr_draft.py <ocr_dir> team <first> <last> <number of apparatus>
     python3 -I ocr_draft.py <ocr_dir> entries <first> <last>
+    python3 -I ocr_draft.py <fast_dir> merge <accurate_dir> <out_dir>
 
 `<ocr_dir>` holds `p-NNN.png.tsv` per page (from `pdftoppm -r 220 -png <pdf> <dir>/p`). Each mode
 prints a draft in the transcription format of the Senior Pan Americans
@@ -18,6 +19,9 @@ prints a draft in the transcription format of the Senior Pan Americans
 - vault-list: sporttech.io's two-vault list (`D [B] E [Pen] Total` on two lines, then the totals);
 - team: sporttech.io's team report, members' values placed under the learned member columns;
 - entries: an organizer entry list (NOC, legal name, short name, licence, bib, year).
+- merge: combines two OCR runs of the same pages (`ocr_pages --fast` and the accurate default) into
+  `<out_dir>`: every fast word, plus the accurate words that overlap none of them (the lone ranks
+  and markers the fast recognizer drops). The other modes then read `<out_dir>`.
 
 A drafted line that doesn't parse or add up starts with `!` and carries the raw OCR text; the
 parsers reject `!` lines, so every one must be corrected against the page image. Rows that parse are
@@ -325,7 +329,29 @@ def entries(ocr_dir, first, last):
             elif any(c.values()) and 'SPIETH' not in r['s'] and 'GYM' not in r['s']:
                 print('!? ' + ' | '.join(f'{k}={v}' for k, v in c.items() if v))
 
+def merge(fast_dir, accurate_dir, out_dir):
+    def boxes(path):
+        return [l.rstrip('\n').split('\t', 5) for l in open(path, encoding='utf-8')]
+
+    def overlap(a, b):
+        ax0, ay0, ax1, ay1 = map(float, a[:4])
+        bx0, by0, bx1, by1 = map(float, b[:4])
+        ix = max(0.0, min(ax1, bx1) - max(ax0, bx0))
+        iy = max(0.0, min(ay1, by1) - max(ay0, by0))
+        return ix * iy > 0.3 * min((ax1 - ax0) * (ay1 - ay0), (bx1 - bx0) * (by1 - by0))
+
+    os.makedirs(out_dir, exist_ok=True)
+    for name in sorted(os.listdir(fast_dir)):
+        fast = boxes(os.path.join(fast_dir, name))
+        accurate = boxes(os.path.join(accurate_dir, name))
+        words = fast + [a for a in accurate if not any(overlap(a, f) for f in fast)]
+        with open(os.path.join(out_dir, name), 'w', encoding='utf-8') as f:
+            f.write(''.join('\t'.join(w) + '\n' for w in words))
+
 if __name__ == '__main__':
+    if sys.argv[2] == 'merge':
+        merge(sys.argv[1], sys.argv[3], sys.argv[4])
+        raise SystemExit
     ocr_dir, mode, first, last = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
     if mode == 'layout':
         layout(ocr_dir, first, last)

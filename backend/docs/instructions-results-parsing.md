@@ -54,7 +54,9 @@ gymnastics book from another competition.
 ### 2.3 Scanned pages
 
 A page with no text layer gives `pdftotext` nothing (`pdfimages -list` shows a
-full-page image). No OCR package is installed; read the pages as images instead:
+full-page image, or, for a page laid out in CorelDRAW with its text converted to
+outlines, only the logos: the 2026 African Championships). No OCR package is
+installed; read the pages as images instead:
 
 - **Map the book** with
   [`contact_sheet.py`](../tools/results-parsing/contact_sheet.py): it stacks
@@ -82,6 +84,14 @@ full-page image). No OCR package is installed; read the pages as images instead:
   look-alikes in names; arithmetic alone misses a dropped bare `0`, so compare
   with a text copy when there is one. Other layouts need a new `ocr_draft.py`
   mode.
+- **When OCR drops whole columns** of numbers (the African Championships'
+  outlined text: Vision's accurate recognizer skipped most D scores on a page),
+  run `ocr_pages.swift --fast` too, into a second folder: the fast recognizer
+  reads the numbers but drops lone characters (ranks, `Q`). `ocr_draft.py
+  <fast> merge <accurate> <out>` keeps every fast word plus the accurate words
+  that overlap none, and the drafting modes read the merged folder. A dense
+  multi-apparatus table reads better still cropped into one strip per
+  apparatus (`sips -c <h> <w> --cropOffset <y> <x>`) and OCR'd strip by strip.
 
 ### 2.4 Read the header row first, every time
 
@@ -216,7 +226,9 @@ decisions that come up while parsing.
   ZAVORY share 5th on equal E and D), and so does Koper's, which prints no
   shared rank at all. Szombathely's too (WAG beam qualification: MAYER and
   ANDRADE share 1st on equal E and D; vault on the higher vault). Paris breaks every tie, vault
-  on the higher vault, then the higher E of either vault, then D.
+  on the higher vault, then the higher E of either vault, then D. The African Championships break
+  every tie in qualification, even at `0.000`, on E (vault: the higher vault), and the finals on
+  E then D (WAG floor: DARIES 4th over MOALLIC, 12.100 and E 7.400 both).
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -258,6 +270,10 @@ decisions that come up while parsing.
   MAKOVICKOVA: `0.3` printed unsigned under `SJ Pen.` between vault 1's score
   and the vault score, which is the average + 0.2 − 0.3; neither vault's own
   score includes it) goes in `Combined SJ Penalty`, written negative (§6).
+- **A score never goes below zero.** Where D + E + bonus − penalty is negative,
+  the printed total is `0.000` and the components are kept as printed (African
+  Championships MAG pommel horse MGBAKOBO: 1.000 + 4.300 − 6.000; WAG bars
+  TENEKU, CISSE): `COMPLETED`, not `DNS`, and the arithmetic check allows it.
 - US all-around totals for partial all-arounders are printed and kept.
 
 ### 4.4 Session dates
@@ -289,6 +305,11 @@ decisions that come up while parsing.
   comes from the all-around report, with `Rank` blank (no vault ranking of the
   field is published); the double list adds vault 2, `Total`, Q/R and
   `Qualification Rank`, and its vault 1 must match the all-around report's.
+- **One vault table, with an all-around report that ranks vault 1** (African
+  Championships): the table ranks the two-vault athletes (`Qualification Rank`,
+  Q/R) and lists the one-vault athletes after them, unranked; the all-around
+  report's vault `RK` column ranks the whole field on vault 1 (shared on equal
+  scores), and that is `Rank`, as a single-vault list's would be.
 - **Per-attempt vs combined bonus**: MAG prints a per-vault bonus inside each
   vault score (`B1`/`B2`). WAG's +0.2 applies to the combined result
   (`Combined Bonus`) — printed as a `*` on the total (Europeans), its own
@@ -342,7 +363,10 @@ decisions that come up while parsing.
   Szombathely has three (§5.13), one qualifier missing two finals.
 - **Two per country, reopened**: when a qualifier withdraws, a compatriot
   marked `NR` can take the place ahead of the reserves (Mediterranean Games WAG
-  floor: GAVA for TONELLI, both ITA). Their `Qualification` stays `NR`.
+  floor: GAVA for TONELLI, both ITA). Their `Qualification` stays `NR`. The
+  African Championships print no `NR`, so the compatriot's stays blank: nine
+  finals there changed after qualification, by a reserve or a compatriot
+  (§5.15).
 - **Replacements without reserve markers** (Senior Pan Americans all-around:
   `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
   `Qualification`; the parser reports absent qualifiers and their replacements
@@ -356,7 +380,7 @@ decisions that come up while parsing.
 | `Time Judge`, `Time Judge 1`, `Time 1` | `T`, `T1`, `T1` |
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
-| `AS` / `SA` (Pan American and Cairo WAG panel supervisor) | `SV`, with the panel's apparatus |
+| `AS` / `SA` (Pan American, Cairo and African Championships WAG panel supervisor) | `SV`, with the panel's apparatus |
 | `S` (Osijek panel supervisor, printed after `E5`) | `SV`, with the panel's apparatus |
 | Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
 | Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
@@ -364,7 +388,7 @@ decisions that come up while parsing.
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
-| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG), or `SJ: <name> FIG` (Szombathely) | `TD`, apparatus blank |
+| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG), or `SJ: <name> FIG` (Szombathely); the African Championships MAG `Competition Jury` (credited `UAG`: blank, like `UPAG`) | `TD`, apparatus blank |
 | `Technical Delegate`, `Technical Delegate Assistant` (Paris Superior Jury) | `TD`, `TDA`, apparatus blank |
 | `Supervisor`; `Time`, `Line` printed once or twice on a panel (Antalya WAG) | `SV`; `T`/`L`, or `T1 T2`/`L1 L2` |
 | `Time Judge` (printed twice on Varna's beam panels), `Line Judge`, `Line Judge 1` | `T` or `T1 T2`, `L`, `L1` |
@@ -399,6 +423,9 @@ finals line judges lent by the women's panel print `WAG` as their federation
   `AIN2`/`AIN1` for the same judge. Each code is its own group,
   entering its own team (Europeans' `WG1` and `WG2` teams), so never merge them.
 - Some entry lists print the NOC only on each country's first row.
+- **An ISO code where the IOC code differs** is corrected and logged (`NOC`):
+  the African Championships print Zimbabwe `ZWE` on the entry list and results,
+  `ZIM` on the entries by NOC page; written `ZIM`.
 - The US Championships prints no NOC; participants are written as `USA`.
 
 ### 4.9 Competition structures
@@ -411,6 +438,7 @@ Map the meet onto `Session`s (`data-model.md` §3) before parsing:
 | Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
 | All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
 | Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games |
+| Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
 
@@ -1238,6 +1266,71 @@ Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/par
   MAG lists round reserves `R1`… below the panels (apparatus blank). Judge names are kept as
   printed, as a World Gymnastics book: `EECKHOUTTE Sebastien` (the Europeans' `Sébastien`).
 
+### 5.15 Organizer media book, CorelDRAW outlines (African Championships)
+
+The Union Africaine de Gymnastique's senior media book (`18377-ResultsbookMedia.pdf`, 60 pages, made
+in CorelDRAW). Pages 1-6 have text: the cover, the Competition Schedule (pp. 2-3), the Number of
+Entries by NOC (p. 4) and the Entries List by NOC (p. 5: `# NOC SURNAME Given Discipline FIG-ID BIB
+date of birth`). Every results page is text converted to outlines (no text layer, §2.3) and the
+judges' pages are photographs. Per discipline: qualification start lists, judges, the team report,
+the all-around report, a table per apparatus, Tie Break pages, the Apparatus Finals Start List, the
+finals judges and a table per final. Parser:
+[`parse_2026_african_championships.py`](../tools/results-parsing/parse_2026_african_championships.py),
+reading [`transcriptions/2026-AFRICAN-CHAMPIONSHIPS/`](../tools/results-parsing/transcriptions/2026-AFRICAN-CHAMPIONSHIPS/).
+
+**Structure.** Qualification on 23 April decides the team and all-around titles (no team or
+all-around final, §4.9); the top eight per apparatus (two per country, no `NR` printed) and two
+reserves (a plain `R`, written `R1`, `R2`, §4.6) go to the finals: 25 April MAG FX/PH/SR, WAG VT/UB;
+26 April MAG VT/PB/HB, WAG BB/FX (schedule; the footers agree). The book is the seniors' only; the
+juniors competed on 24 April.
+
+| Report | Gives |
+|---|---|
+| Entries List by NOC (p. 5, text) | bib, FIG licence, `SURNAME Given`, NOC, full date of birth (`dd/mm/yyyy`, Egypt `yyyy/mm/dd`): the participants |
+| Number of Entries by NOC (p. 4, text) | MAG and WAG per country, blank for none (cross-checked; WAG slips below) |
+| Team report (`<n> Country  total`) | each member's scores, the counting ones in bold, and the team total; no apparatus totals |
+| All-Around Results | every routine `D E P Total RK` (no bonus, `0.000` for no penalty) and the all-around total; incomplete all-arounds print `<partial> DNF` |
+| Apparatus tables (qualification and finals) | every SCORES file |
+| Tie Break pages | the tied athletes' rank and total and the deciding E (vault: the higher vault) (cross-checked) |
+| Apparatus Finals Start List | 1-8, `R1`, `R2` per final (cross-checked) |
+
+**Gotchas**
+
+- **No team apparatus totals.** `SUMMARY-QUAL-TEAM`'s `<APP> Total` is the sum of the member scores
+  printed in bold, which are checked to be each apparatus's best three and to add up to the printed
+  team total (agreed with the user). Namibia's fifth WAG entry, HANDURA (born 2010), is not on its
+  team page and competed as an individual.
+- **Vault** prints vault 1 on the athlete's line and vault 2 below, each `D E [PEN] Score`; the
+  athlete's line ends with the two-vault `Total`, and WAG's +0.2 sits in a `Bonus` column on the
+  vault 2 line (`Combined Bonus`). MAG's vault bonus column is always empty. Athletes with one vault
+  follow the ranking, unranked; `Rank` comes from the all-around report (§4.5). WAG ABDALLA: vault 2
+  `DNS`, total `DNF`.
+- **PEN is unsigned** (written negative), up to `10.000` (MAG high bar SAMB: D 0.000, E 6.500,
+  total 0.000). Scores floor at zero (§4.3). Pommel horse and every WAG table have no BONUS column.
+- **Finals that changed** (each printed marker kept; the parser reports them): MAG pommel horse
+  MOHAMED and HOSSAINI (`Q`) out for NGORBO (`R`) and AFIFY (EGY, unmarked); rings MCLEAN out for
+  SODEA (`R`); vault CHESTER out for NGORBO (`R`), after the start list was printed; high bar CHESTER
+  out for SODEA (`R`) on the start list, and AFIFY, on it, replaced by AHMED (EGY) at the final. WAG
+  bars and beam ABDALLA out, for SOLIMAN (EGY) and MUCHATUTA (`R`); floor ROOSKRANTZ and N. DARIES out
+  for Z. DARIES and NHLEKO (all RSA). The start list's reserves move up in turn. No reasons given.
+- **The WAG uneven bars final prints `Q`** beside all eight finalists, a leftover; ignored.
+- **Names as printed differ**: ALHAMIDI Yacer Nadir prints `ALHAMIDI Nadir` (tables) and `Nadir
+  HAMIDI` (team, start list); HANDURA Nagaititue prints `Ngaititue` everywhere after the entry
+  list. Results files take the entry list's name.
+- **Entries by NOC page slips** (WAG): it counts one Namibian (five entered and competed) and three
+  Senegalese (two), 26 in all (29), and prints Zimbabwe `ZIM` where everything else prints `ZWE`
+  (written `ZIM`, §4.8). The MAG counts agree.
+- Judges: MAG (photographed sheets) heads the page with `Competition Jury  ZAYED Yasser UAG`
+  (`TD`, §4.7); panels `SV D1 D2 E1-E5`, floor `T L1 L2`, vault `L`, laid out FX/PH, SR/VT, PB/HB
+  under icons; `R1`, `R2` printed empty. WAG prints `SUPERIOR JURY 1  2058  Debbie  RSA` and
+  `SUPERIOR JURY 2  4646  Rawan  EGY` with no surnames, written `Member`: Rawan as ABOUSHOUSHA
+  Rawan (EGY), a judge at the Cairo World Cup, logged as a `JUDGE_NAME` correction noting the book
+  gives no full name (agreed with the user); Debbie is not written (§6). WAG panels `AS D1 D2
+  E1-E5` (`AS` written `SV`) plus vault `L`, bars `T`, beam `T1 T2`, floor `L1 L2 T`, each row with
+  a seat number and a judge number (not written). The finals sheet cuts `DELGADO MIRANDA` to
+  `DELGADO MIRAND` on two panels (`JUDGE_NAME`).
+- A stale footer: the WAG bars tie-break page also prints `26 May 2023`.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1271,6 +1364,10 @@ Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/par
    on the beam start list only) off the entry list too, so she isn't written at all. Paris's six
    late French entries (§5.14) aren't marked hors concours, but their rows print no result either.
    Their scores would need another source (the FIG results system) and a way to keep them out of the ranks.
+10. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury prints
+   `Debbie` (RSA, judge number 2058) and `Rawan` (EGY, 4646) only. Rawan is written as ABOUSHOUSHA
+   Rawan (EGY), the Cairo World Cup judge (a correction; the book gives no full name). Debbie isn't
+   written, a judge needing a surname; add her if her surname is found.
 9. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
    (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral

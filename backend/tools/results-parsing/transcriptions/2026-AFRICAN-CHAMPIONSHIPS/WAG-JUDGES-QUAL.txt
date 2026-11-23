@@ -1,0 +1,45 @@
+# p42 Judges assignment, QUALIFICATIONS (a photograph). APP|function|SURNAME|Given|NOC as printed; each row
+# also prints a seat number and a judge number, not transcribed. Panels two to a row: VT UB / BB FX (named).
+# The Superior Jury prints a given name only. "SUPERIOR JURY 2  4646  Rawan  EGY" is transcribed with the
+# surname blank (supplied by a correction); "SUPERIOR JURY 1  2058  Debbie  RSA" is not transcribed, a judge
+# needing a surname. Reserve rows printed empty.
+|SUPERIOR JURY 2||Rawan|EGY
+VT|AS|SEBIHI|Ouahiba|ALG
+VT|D1|MONTREUIL|Andrée|CAN
+VT|D2|BEZUIDENHOUT|Leandri|RSA
+VT|E1|SAKR|Chahed|TUN
+VT|E2|SAHLAL|Karima|MAR
+VT|E3|PAULSON|Samuel|CMR
+VT|E4|MORENO GAMBOA|Mabel Nayibe|COL
+VT|E5|FAHMY|Amira|EGY
+VT|L|KAMBA|Christale|CMR
+UB|AS|LALIBERTE|Helene|CAN
+UB|D1|FRAUENKNECHT|Christine|SUI
+UB|D2|AHMED ELMERIDI|Mariam Samir|EGY
+UB|E1|DELGADO MIRANDA|Diana|PER
+UB|E2|BAKKER|Mariolize|RSA
+UB|E3|JAEGER|Nadine|NAM
+UB|E4|GEORGIOU|Marilena|CYP
+UB|E5|IDDIR|Lylia|ALG
+UB|T|EWANE|Saya|CMR
+BB|AS|SEBIHI|Ouahiba|ALG
+BB|D1|MONTREUIL|Andrée|CAN
+BB|D2|BEZUIDENHOUT|Leandri|RSA
+BB|E1|SAKR|Chahed|TUN
+BB|E2|SAHLAL|Karima|MAR
+BB|E3|PAULSON|Samuel|CMR
+BB|E4|MORENO GAMBOA|Mabel Nayibe|COL
+BB|E5|ELKHASHAB|Ingi|EGY
+BB|T1|HAUPTFLEISCH|Elizabeth|RSA
+BB|T2|KAMBA|Christale|CMR
+FX|AS|LALIBERTE|Helene|CAN
+FX|D1|FRAUENKNECHT|Christine|SUI
+FX|D2|AHMED ELMERIDI|Mariam Samir|EGY
+FX|E1|DELGADO MIRANDA|Diana|PER
+FX|E2|BAKKER|Mariolize|RSA
+FX|E3|JAEGER|Nadine|NAM
+FX|E4|GEORGIOU|Marilena|CYP
+FX|E5|LAROUSSI|Saadia|ALG
+FX|L1|IDDIR|Lylia|ALG
+FX|L2|FAHMY|Amira|EGY
+FX|T|COLINETTE|Biamou|CMR

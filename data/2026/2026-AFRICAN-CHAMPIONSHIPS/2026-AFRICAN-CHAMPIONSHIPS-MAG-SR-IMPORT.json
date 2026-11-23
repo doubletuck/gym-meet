@@ -1,0 +1,41 @@
+{
+    "event" : {
+        "slug" : "2026-african-championships",
+        "title" : "19th Senior African Championships",
+        "shortName" : "African Champs 2026",
+        "disciplines" : "MAG",
+        "ageCategory" : "SR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-04-21",
+        "endDate" : "2026-04-27",
+        "city" : "Yaounde",
+        "country" : "CMR",
+        "figEventNumber" : "18377",
+        "venue" : "Palais Polyvalent des Sports de Yaound\u00e9",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-EVENT-FX.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-EVENT-HB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-EVENT-PB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-EVENT-PH.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-EVENT-SR.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-EVENT-VT.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-QUAL-FX.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-QUAL-HB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-QUAL-PB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-QUAL-PH.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-QUAL-SR.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-MAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

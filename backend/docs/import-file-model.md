@@ -94,7 +94,7 @@ One row per discipline+age sub-event making up the competition.
 | Prefix | The `<PREFIX>` used to name every other file for this sub-event | |
 | Slug | Optional. The event's address on the site, lowercase words separated by hyphens (`2026-european-championships-wag-sr`). Needed when one folder holds several events, as the 2026 European Championships do; without it, the slug comes from the prefix (see [import-process.md](import-process.md)) | `Event.slug` |
 | Title | The sub-event's official title | `Event.title` |
-| Short Name | The name readers use, then the year, at most 40 characters; the same for every event in the folder: `Euros 2026`, `Worlds 2026`, `Pan Ams 2026`, `US Champs 2026`, `Baku WC 2026` (Apparatus World Cup), `Paris WCC 2026` (World Challenge Cup) | `Event.shortName` |
+| Short Name | The name readers use, then the year, at most 40 characters; the same for every event in the folder: `Euros 2026`, `Worlds 2026`, `Pan Ams 2026`, `African Champs 2026`, `US Champs 2026`, `Baku WC 2026` (Apparatus World Cup), `Paris WCC 2026` (World Challenge Cup) | `Event.shortName` |
 | Discipline | The discipline of this sub-event covers | `Event.discipline` |
 | Age Category | Age category of this sub-event: [AgeCategory](../src/main/java/doubletuck/meet/domain/AgeCategory.java) | |
 | Level | The competition's tier: [EventLevel](../src/main/java/doubletuck/meet/domain/EventLevel.java) | `Event.level` |
@@ -182,7 +182,7 @@ result, which decides the Vault final.
 |---|:-:|:-:|---|---|
 | Round | ✓ | ✓ | | `Session.round` |
 | Apparatus | ✓ | ✓ | | `Score.apparatus` |
-| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1); blank where the source has no single-vault list (2026 Junior Pan Americans, whose first vaults come from the all-around report). `EVENT`: the final's placement | `Score.rank` |
+| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1), or the all-around report's vault rank column where that is the only such ranking (2026 African Championships); blank where the source has neither (2026 Junior Pan Americans, whose first vaults come from the all-around report). `EVENT`: the final's placement | `Score.rank` |
 | Bib | ✓ | ✓ | | *(join key)* |
 | Name | ✓ | ✓ | | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | | *(not stored)* |
@@ -261,7 +261,7 @@ publishes no per-part placement.
 | Bib | Identifies the athlete. **All-Around summary only** | |
 | Name | Athlete name as printed. **All-Around summary only** | |
 | NOC Code | Country/federation the row represents | `TeamResult.noc` |
-| `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG | *(not stored — on a team summary, used to work out `Score.countsTowardTeamResult`)* |
+| `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG. The one exception: the 2026 African Championships' team report prints no apparatus totals, so each is the sum of the member scores it prints in bold (the counting ones), checked against the printed team total | *(not stored — on a team summary, used to work out `Score.countsTowardTeamResult`)* |
 | SJ Penalty | Penalty on the row as a whole, distinct from an individual routine's `Penalty`, as printed (negative) and already deducted from `Total` — e.g. a team penalty (2026 Senior Pan Americans MAG CUB, `-1.000`) | `TeamResult.sjPenalty` / `AllAroundResult.sjPenalty` |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |
