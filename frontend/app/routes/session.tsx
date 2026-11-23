@@ -4,7 +4,7 @@ import { data, Link, useSearchParams } from "react-router";
 
 import type { Route } from "./+types/session";
 import { eventQuery, queryClient, sessionResultsQuery } from "~/api/client";
-import type { Apparatus, SessionResults } from "~/api/types";
+import type { SessionResults } from "~/api/types";
 import {
   AllAroundTable,
   ScoreTable,
@@ -12,6 +12,7 @@ import {
   TeamTable,
   VaultTable,
   firstVaults,
+  standingsApparatus,
   vaultFinalQualifying,
 } from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
@@ -91,10 +92,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
   const athleteId = Number.isInteger(athleteParam) && athleteParam > 0 ? athleteParam : undefined;
   const viewPath = (key: string) =>
     `?${new URLSearchParams({ view: key, ...(athleteId != null && { athlete: String(athleteId) }) })}`;
-  const apparatusOrder: Apparatus[] = results.apparatus.map(({ apparatus }) => apparatus);
-  const allAroundApparatus: Apparatus[] = apparatusOrder.length
-    ? apparatusOrder
-    : results.apparatusStandings.map(({ apparatus }) => apparatus);
+  const columns = standingsApparatus(results);
 
   return (
     <>
@@ -138,12 +136,12 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
           <p className="text-gray-600 dark:text-gray-400">No results have been published for this session.</p>
         )}
         {current?.key === "teams" && (
-          <TeamTable rows={results.teams} apparatus={apparatusOrder} qualification={qualification} />
+          <TeamTable rows={results.teams} apparatus={columns} qualification={qualification} />
         )}
         {current?.key === "all-around" && (
           <AllAroundTable
             rows={results.allAround}
-            apparatus={allAroundApparatus}
+            apparatus={columns}
             qualification={qualification}
             athleteId={athleteId}
           />

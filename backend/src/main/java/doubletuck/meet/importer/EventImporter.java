@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -225,7 +226,10 @@ public class EventImporter {
             allAroundResultRepository.deleteBySession(session);
             apparatusResultRepository.deleteBySession(session);
         }
-        sessionRepository.deleteAll(sessions);
+        // A session ranking another's scores goes first, as it refers to that one
+        sessionRepository.deleteAll(sessions.stream()
+                .sorted(Comparator.comparing((Session session) -> session.getScoresSession() == null))
+                .toList());
         sessionRepository.flush();
         report.count("sessions replaced", sessions.size());
 

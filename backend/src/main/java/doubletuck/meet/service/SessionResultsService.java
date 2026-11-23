@@ -65,7 +65,9 @@ public class SessionResultsService {
 
     private SessionResultsResponse results(Session session) {
         List<Apparatus> order = SessionNaming.apparatusOrder(session.getDiscipline());
-        List<Score> scores = scoreRepository.findResultsBySession(session);
+        // Standings ranking another session's routines show them, without repeating its score tables
+        List<Score> scores = scoreRepository.findResultsBySession(session.sessionWithScores());
+        boolean ownScores = session.getScoresSession() == null;
         List<Session> division = sessionRepository.findByEventAndDisciplineAndAgeCategory(session.getEvent(),
                 session.getDiscipline(), session.getAgeCategory());
         List<Part> parts = SplitRound.parts(session, division).stream()
@@ -74,7 +76,7 @@ public class SessionResultsService {
                 .toList();
         List<ApparatusResult> standings = apparatusResultRepository.findResultsBySession(session);
 
-        List<ApparatusScores> apparatus = order.stream()
+        List<ApparatusScores> apparatus = !ownScores ? List.of() : order.stream()
                 .map(app -> new ApparatusScores(app, scores.stream()
                         .filter(score -> score.getApparatus() == app)
                         .sorted(byRank(Score::getRank, Score::getTotalScore, Score::getParticipant))

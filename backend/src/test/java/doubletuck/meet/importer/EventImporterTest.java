@@ -62,6 +62,7 @@ class EventImporterTest {
     private static final String BAKU_WAG = "baku/2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-IMPORT.json";
     private static final String US_MAG = "us/2026-US-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String EUROPEANS_MAG = "europeans/2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
+    private static final String ASIAN_WAG = "asian/2026-ASIAN-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
 
     @Autowired
     private EventImporter eventImporter;
@@ -611,6 +612,67 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_FinalsRankingTheQualificationsRoutines_HaveNoScoresOfTheirOwn() {
+        ImportReport report = importFixture(ASIAN_WAG);
+
+        assertEquals(List.of(), report.getWarnings());
+        List<Session> sessions = sessionRepository.findAll();
+        Session qualification = session(sessions, Round.QUAL, null);
+        for (Round round : List.of(Round.TEAM, Round.AA)) {
+            Session finals = session(sessions, round, null);
+            assertEquals(qualification.getId(), finals.getScoresSession().getId());
+            assertEquals(LocalDate.of(2026, 6, 25), finals.getDate());
+            assertTrue(scoreRepository.findAll().stream().noneMatch(score -> score.getSession().equals(finals)));
+        }
+        assertEquals(qualification, qualification.sessionWithScores());
+        assertEquals(qualification, session(sessions, Round.AA, null).sessionWithScores());
+        // Re-ranked two per country: 10th in qualification, 9th in the final
+        assertEquals(10, allAround("Yeap", Round.QUAL).getRank());
+        assertEquals(QualificationResult.Q, allAround("Yeap", Round.QUAL).getQualificationResult());
+        assertEquals(9, allAround("Yeap", Round.AA).getRank());
+        TeamResult china = teamResultRepository.findBySessionAndNoc(session(sessions, Round.TEAM, null), "CHN")
+                .orElseThrow();
+        assertEquals(1, china.getRank());
+        assertEquals(168.498, china.getTotalScore());
+    }
+
+    @Test
+    void testImport_FinalsRankingTheQualificationsRoutines_TotalsCheckedAgainstThem(@TempDir Path dir)
+            throws IOException {
+        Path manifest = copyFixture(ASIAN_WAG, dir);
+        Path summary = dir.resolve("2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv");
+        Files.writeString(summary, Files.readString(summary).replace(",56.299,", ",56.300,"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(1, report.getWarnings().size(), report.getWarnings().toString());
+        assertTrue(report.getWarnings().get(0).contains("bib 502 AA all-around total 56.3 differs from the sum of "
+                + "its scores, 56.299"), report.getWarnings().get(0));
+    }
+
+    @Test
+    void testImport_FinalsRankingARoundWithNoScores_Fails(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(ASIAN_WAG, dir);
+        Path summary = dir.resolve("2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv");
+        Files.writeString(summary, Files.readString(summary).replace(",QUAL\n", ",TEAM\n"));
+
+        ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
+        assertTrue(e.getMessage().contains("no scores were imported for the TEAM session whose scores the AA "
+                + "session ranks"), e.getMessage());
+    }
+
+    @Test
+    void testImport_FinalsRankingTheQualificationsRoutines_ReplaceReimports() {
+        importFixture(ASIAN_WAG);
+        long sessions = sessionRepository.count();
+
+        eventImporter.importManifest(fixture(ASIAN_WAG), true);
+        sessionRepository.flush();
+
+        assertEquals(sessions, sessionRepository.count());
+    }
+
+    @Test
     void testImport_ScoreForUnknownBib_Fails(@TempDir Path dir) throws IOException {
         Path manifest = writeMinimalMeet(dir, "5.5", "999");
 
@@ -661,6 +723,13 @@ class EventImporterTest {
         Path path = fixture(manifest);
         return files.apply(ImportManifest.read(path)).stream()
                 .mapToLong(file -> CsvRow.read(path.getParent().resolve(file)).size()).sum();
+    }
+
+    private AllAroundResult allAround(String surname, Round round) {
+        return allAroundResultRepository.findAll().stream()
+                .filter(result -> result.getParticipant().getAthlete().getSurname().equals(surname)
+                        && result.getSession().getRound() == round)
+                .findFirst().orElseThrow(() -> new AssertionError("no " + round + " result for " + surname));
     }
 
     private Score score(String surname, String givenName, Round round, Apparatus apparatus) {

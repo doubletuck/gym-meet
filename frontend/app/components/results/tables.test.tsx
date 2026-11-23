@@ -4,12 +4,13 @@ import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import type { AllAroundRow, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
+import type { AllAroundRow, ApparatusStandingRow, Routine, ScoreRow, SessionResults, TeamRow } from "~/api/types";
 import {
   AllAroundTable,
   firstVaults,
   ScoreTable,
   StandingsTable,
+  standingsApparatus,
   TeamTable,
   VaultTable,
   vaultFinalQualifying,
@@ -462,5 +463,47 @@ describe("TeamTable", () => {
     const cells = screen.getAllByRole("row").map((row) => row.textContent);
     expect(cells.filter((text) => text?.includes("-1.000"))).toHaveLength(1);
     expect(cells.find((text) => text?.includes("-1.000"))).toContain("190.728");
+  });
+});
+
+describe("standingsApparatus", () => {
+  const results = (overrides: Partial<SessionResults>): SessionResults => ({
+    event: { slug: "2026-asian-championships-wag-sr", title: "13th Senior Asian Championships" },
+    session: {
+      id: 1,
+      slug: "all-around-final",
+      discipline: "WAG",
+      ageCategory: "SR",
+      round: "AA",
+      apparatus: null,
+      part: null,
+      date: "2026-06-25",
+      endDate: null,
+    },
+    apparatus: [],
+    allAround: [],
+    teams: [],
+    apparatusStandings: [],
+    ...overrides,
+  });
+
+  it("takes the score tables' apparatus", () => {
+    expect(standingsApparatus(results({ apparatus: [{ apparatus: "BB", scores: [] }] }))).toEqual(["BB"]);
+  });
+
+  it("without score tables, takes the apparatus the standings have scores on, in Olympic order", () => {
+    const row: AllAroundRow = {
+      rank: 1,
+      bib: "502",
+      athlete: { id: 1, surname: "Ke", givenName: "Qinqin" },
+      noc: "CHN",
+      club: null,
+      total: 56.299,
+      sjPenalty: null,
+      qualification: null,
+      apparatusScores: { FX: 13.233, BB: 14.933, UB: 14.4, VT: 13.733 },
+      parts: [],
+    };
+    expect(standingsApparatus(results({ allAround: [row] }))).toEqual(["VT", "UB", "BB", "FX"]);
   });
 });

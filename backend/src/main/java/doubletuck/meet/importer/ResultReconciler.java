@@ -63,10 +63,13 @@ class ResultReconciler {
      * the published total. Groups differing only by athletes whose scores never
      * counted agree on what counted; if the groups that fit disagree, or none fits,
      * every score is left as counting and a warning is reported.
+     *
+     * <p>Standings ranking another session's routines are checked the same way,
+     * but which scores counted is that session's own team standings to decide.
      */
     private void resolveTeamCount(ImportContext context, Team team, List<ImportContext.PublishedTeamTotal> totals) {
         List<Score> scores = context.getScores().stream()
-                .filter(score -> score.getSession().equals(team.session())
+                .filter(score -> score.getSession().equals(team.session().sessionWithScores())
                         && score.getParticipant().getNoc().equals(team.noc())
                         && score.getRoutine().getScore() != null)
                 .toList();
@@ -106,6 +109,9 @@ class ResultReconciler {
             return;
         }
 
+        if (team.session().getScoresSession() != null) {
+            return;
+        }
         Set<Apparatus> apparatusWithTotals = totals.stream().map(ImportContext.PublishedTeamTotal::apparatus)
                 .collect(Collectors.toSet());
         for (Score score : scores) {
@@ -188,7 +194,7 @@ class ResultReconciler {
                     .mapToDouble(Double::doubleValue).sum();
         } else {
             List<Score> scores = scoresOf(context, result.getParticipant(),
-                    score -> score.getSession().equals(session));
+                    score -> score.getSession().equals(session.sessionWithScores()));
             // Some results print 0.000 for an athlete who didn't compete that day
             if (scores.isEmpty() && result.getTotalScore() == 0) {
                 return;

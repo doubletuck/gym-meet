@@ -103,7 +103,11 @@ held as one session per apparatus:
 
 The session's date is the `Session Start Date` of its scores. A split round's
 whole-round session (part blank), which holds only combined standings, is
-created from the summaries and dated on its first part.
+created from the summaries and dated on its first part. A summary with a
+`Scores Round` (2026 Asian Championships: the team and all-around finals,
+`QUAL`) creates its session too, linked to that round's session
+(`Session.scoresSession`) and dated on it; that round's scores must already be
+imported, and the session can have no scores of its own.
 
 A judge with no apparatus (Superior Jury) in a round held as one session per
 apparatus is attached to each of those sessions: the finals' Superior Jury
@@ -148,9 +152,12 @@ scores and reports any that don't agree as a warning:
   agree on what counted. If no group fits, or groups that fit disagree, every
   score is left as counting and a warning is reported. The team total is then
   checked against the sum of its published apparatus totals plus any team
-  penalty (`SJ Penalty`).
+  penalty (`SJ Penalty`). Team standings ranking another session's routines
+  are checked against that session's scores the same way, but leave which
+  scores counted to that session's own team standings.
 - **All-around totals** against the sum of the athlete's scores in that
-  session, plus any penalty on the result (`SJ Penalty`); for a split round's
+  session (or the session it ranks), plus any penalty on the result
+  (`SJ Penalty`); for a split round's
   whole-round session, against the sum of the parts' totals. A published
   `0.000` for an athlete with no scores that day is not reported.
 - **Combined apparatus totals** (split rounds) against the sum of the parts'

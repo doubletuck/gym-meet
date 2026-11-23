@@ -174,6 +174,28 @@ class SessionControllerTest {
     }
 
     @Test
+    void testFindResults_FinalRankingTheQualificationsRoutines_ShowsThemWithoutScoreTables() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.ASIAN_WAG);
+        Long allAroundFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.AA, null, null);
+        Long teamFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.TEAM, null, null);
+
+        mockMvc.perform(get("/api/sessions/{id}/results", allAroundFinal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.session.slug").value("all-around-final"))
+                .andExpect(jsonPath("$.apparatus", empty()))
+                .andExpect(jsonPath("$.allAround", hasSize(6)))
+                .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Yeap')].rank").value(9))
+                .andExpect(jsonPath("$.allAround[0].athlete.surname").value("Ke"))
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.BB").value(14.933))
+                .andExpect(jsonPath("$.allAround[0].qualification").value(nullValue()));
+        mockMvc.perform(get("/api/sessions/{id}/results", teamFinal))
+                .andExpect(jsonPath("$.apparatus", empty()))
+                .andExpect(jsonPath("$.teams[0].noc").value("CHN"))
+                .andExpect(jsonPath("$.teams[0].total").value(168.498))
+                .andExpect(jsonPath("$.teams[0].apparatusTotals.BB").value(44.899));
+    }
+
+    @Test
     void testFindResults_Unknown_NotFound() throws Exception {
         mockMvc.perform(get("/api/sessions/{id}/results", -1)).andExpect(status().isNotFound());
     }

@@ -191,7 +191,9 @@ decisions that come up while parsing.
   entry struck through on the list is `WITHDRAWN` (Senior Pan Americans WAG
   bib 127; the "Number of Entries" counts include it). An entry marked
   `(Hors Concours)` is `HORS_CONCOURS` (Varna: five BUL athletes, counted
-  `6 + 4 (HC)` on the entries by NOC page).
+  `6 + 4 (HC)` on the entries by NOC page), and so is an invited country that
+  "does not enter any ranking" (Asian Championships MAG: Australia, whose rows
+  print `*` for a rank and are kept with `Rank` blank).
 - **Truncation happens anywhere a name is long** — narrow vault columns, but
   also normal tables (`BORDELAIS-MAISONNABLE` without his given name, initials
   like `KUBON CV` in all-around tables). Always diff against `PARTICIPANTS`.
@@ -229,6 +231,12 @@ decisions that come up while parsing.
   on the higher vault, then the higher E of either vault, then D. The African Championships break
   every tie in qualification, even at `0.000`, on E (vault: the higher vault), and the finals on
   E then D (WAG floor: DARIES 4th over MOALLIC, 12.100 and E 7.400 both).
+  The Asian Championships print a Tie Break Report per table (E, then D; vault: the higher vault,
+  then E, then D; all-around: the best five, four, … apparatus scores, then E, then D) whose ranks
+  match the tables, except where it shares a rank the table splits on equal E and D (MAG floor
+  DE LEON and TRINH `=45`, the table 45 and 46; parallel bars TIAN and ERGASHEV `=14`): the shared
+  rank is written, as the report's rule ("will share the same classification") says, and logged
+  as a `TIE_BREAK` correction.
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -366,7 +374,8 @@ decisions that come up while parsing.
   floor: GAVA for TONELLI, both ITA). Their `Qualification` stays `NR`. The
   African Championships print no `NR`, so the compatriot's stays blank: nine
   finals there changed after qualification, by a reserve or a compatriot
-  (§5.15).
+  (§5.15). Asian Championships WAG bars: KE Qinqin (`Q`, on the start list) out for
+  QIU Qiyuan (`NR`), both CHN.
 - **Replacements without reserve markers** (Senior Pan Americans all-around:
   `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
   `Qualification`; the parser reports absent qualifiers and their replacements
@@ -380,7 +389,8 @@ decisions that come up while parsing.
 | `Time Judge`, `Time Judge 1`, `Time 1` | `T`, `T1`, `T1` |
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
-| `AS` / `SA` (Pan American, Cairo and African Championships WAG panel supervisor) | `SV`, with the panel's apparatus |
+| `AS` / `SA` (Pan American, Cairo, African and Asian Championships panel supervisor) | `SV`, with the panel's apparatus |
+| `MAG AGU President` / `WAG AGU President:` heading the Asian Championships sheets | `President`, NOC blank |
 | `S` (Osijek panel supervisor, printed after `E5`) | `SV`, with the panel's apparatus |
 | Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
 | Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
@@ -407,7 +417,9 @@ someone else).
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
 have no NOC (blank); a Superior Jury credited to `FIG` is written blank too. Judges credited to a continental union print it as their
-federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank. Men's
+federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank, and so is the Asian
+Gymnastics Union's `AGU` where nothing better is known (the Asian Championships' Presidents;
+its apparatus supervisors' federations were looked up, §5.16). Men's
 finals line judges lent by the women's panel print `WAG` as their federation
 (Senior Pan Americans); that is blank too.
 
@@ -439,6 +451,7 @@ Map the meet onto `Session`s (`data-model.md` §3) before parsing:
 | All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
 | Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games |
 | Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
+| Qualification that is also the team and all-around finals, published as separate final rankings of the same routines | `QUAL` (every routine, `SUMMARY-QUAL-TEAM`/`-AA` with Q/R/NR), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL`, `EVENT` per apparatus | Asian Championships |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
 
@@ -1331,6 +1344,65 @@ juniors competed on 24 April.
   `DELGADO MIRAND` on two panels (`JUDGE_NAME`).
 - A stale footer: the WAG bars tie-break page also prints `26 May 2023`.
 
+### 5.16 Media book in the FIG layout, Starting Future print (Asian Championships)
+
+The Asian Gymnastics Union's senior media books, one per discipline (`18565-ResultsbookMedia.pdf`
+MAG, 73 pages; `18567-ResultsbookMedia.pdf` WAG, 66 pages), every results page with text. The
+layout and report suffixes are the FIG books' (§5.1); the footer code is `GA` + `M`/`W` + a unit
+(`101` team, `102` all-around, `103`… apparatus in Olympic order, `000` the whole meet) + a phase
+(`900` qualification, `100` finals, `000` the medal pages) + the suffix: `GAM103900_73I` is MAG floor
+qualification. The Team Final and Team Qualification pages share a code (`_73C`/`_73D`), as do the
+two all-around reports (`_73G`/`_73H`); the printed title tells them apart. Parser:
+[`parse_2026_asian_championships.py`](../tools/results-parsing/parse_2026_asian_championships.py)
+(both books in one run).
+
+**Structure.** One competition (MAG 18 June, WAG 25 June, in subdivisions) is the qualification
+and the team and all-around finals (§4.9): the book prints the Team and All-Around Qualification
+rankings (every team and athlete, `Q`/`R1-R4`/`NR`) and, from the same routines, a Team Final (the
+top eight, same ranks and totals) and an All-Around Final (the 24 `Q`s, two per country, ranked 1-24:
+MAG HUNG 8th in qualification, 7th in the final). Apparatus finals MAG 20 June FX/PH/SR, 21 June
+VT/PB/HB; WAG 27 June VT/UB, 28 June BB/FX (schedule). Seniors only: the entry list starts at its
+page 3 of 5; the juniors' results are not in these books.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`) | NOC heading, `SURNAME Given`, licence, bib, date of birth: the participants |
+| Judges Assignments (`_57A`/`_57B`, qualification and finals) | President, panels in the icon grid (MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX), reserves |
+| Apparatus tables (`_73I`; vault `_73I` "Vault 1" and the two-vault `_73J`) | every SCORES file; finals add `Qualification Rank` and `Start Order` (not written) |
+| Team Qualification / Team Final (`_73C`/`_73D`) | `SUMMARY-QUAL-TEAM`, `SUMMARY-FINAL-TEAM`; each member's D and E lines (cross-checked) |
+| All-Around Qualification / Final (`_73G`/`_73H`) | `SUMMARY-QUAL-AA`, `SUMMARY-FINAL-AA`; every routine (cross-checked) |
+| Tie Break Reports (`_77A`-`_77C`) | the tied athletes' ranks (cross-checked, §4.2) |
+| List of Qualifiers (`_53B`/`_53C`), finals Start List (`_51G`) | Q/R/NR per final (cross-checked) |
+| Medallists by Event (`_93`) | the top three of every final (cross-checked) |
+
+**Gotchas**
+
+- **Apparatus tables print D to one decimal** (`6.0`), the team and all-around reports to three
+  (`6.000`); the files copy the tables, the cross-checks compare values. A bonus prints `+0.1`
+  (written `0.1`), a penalty `-0.3`, between E and the score. WAG vault's +0.2 sits between vault 1's
+  score and the result (`Combined Bonus`); MAG's per-vault bonus sits before each vault's score.
+- **Team report columns drift.** On a page, the team's header line (apparatus totals and ranks) can
+  sit a column away from its members' lines, so the apparatus columns are taken from where the
+  team's all-arounders' routines end (`DNS` is right-aligned under the score). The E line carries
+  each routine's E with its penalty and bonus after it, in column order. No BP line.
+- **Long names wrap** onto the E line in the all-around reports (`KAMILJANOV` / `Ravshan`);
+  names come from the entry list.
+- **Invited Australia** (MAG): `*` for a rank in every qualification table and report, including
+  the team row (apparatus totals without ranks); unranked, entered `HORS_CONCOURS` (§4.1).
+- **Finals that changed**: MAG high bar LI Hongyan (`Q`) prints `DNS` with his qualification rank
+  and start order; WAG bars KE Qinqin out for QIU Qiyuan (`NR`, §4.6).
+- **WAG KRASNOPEROVA** (KGZ): "withdrawn on Uneven Bars" on the start lists; no bars row.
+- **Names**: MAG AZIZOV prints `Llyas` (Ilyas elsewhere, same licence: a `NAME` correction). Judges
+  `CHENG Feng-Yi` and `CHEN Ming-Yao` are written as World Gymnastics' books print them (`JUDGE_NAME`).
+  MAG apparatus supervisors `LIPING Huang`, printed given name first, is written `HUANG Liping`,
+  and `KIM Alexander`, KAZ's `KIM Alexandr` at the World Championships, is written `KIM Alexandr`
+  (both confirmed by the user). The MAG apparatus supervisors are all credited to `AGU`; each is
+  written with their federation from World Gymnastics, given by the user (`NOC` corrections). The
+  WAG finals sheet credits its supervisors and reserves R2-R4 to `AGU` too; the qualification sheet
+  gives their federations, which are used. The two Presidents stay blank, as a Superior Jury does.
+  The WAG qualification judges sheet is marked REVISED (floor E5 renamed TSAI I-Hsien); the
+  revised sheet is the one printed.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1372,3 +1444,7 @@ juniors competed on 24 April.
    (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral
    group beside `AIN1`/`AIN2`. Revisit if the site groups results by country.
+11. **World Gymnastics judge IDs.** Every judge has an ID in the World Gymnastics database
+   (the African Championships WAG sheets print some as judge numbers). Backfill them, which would
+   link a judge across meets despite spelling and federation differences (item 7), and replace the
+   hand-checked federations of judges credited to a continental union.

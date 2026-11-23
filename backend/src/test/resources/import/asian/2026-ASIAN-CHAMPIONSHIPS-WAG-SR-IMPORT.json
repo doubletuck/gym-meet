@@ -1,0 +1,33 @@
+{
+    "event" : {
+        "slug" : "2026-asian-championships-wag-sr",
+        "title" : "13th Senior Asian Championships",
+        "shortName" : "Asian Champs 2026",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-06-25",
+        "endDate" : "2026-06-28",
+        "city" : "Zunyi",
+        "country" : "CHN",
+        "figEventNumber" : "18567",
+        "venue" : "Zunyi Olympic Sports Center",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [],
+    "scores" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-TEAM.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

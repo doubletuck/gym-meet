@@ -47,6 +47,11 @@ Which parts are filled depends on the round:
 | Apparatus final, or apparatus-format qualification (World Cup) | one apparatus | | | |
 | A split round's part (US Championships' Day 1, Day 2) | every apparatus | ✓ | | |
 | A split round's combined session | | ✓ | | ✓ |
+| Team or All-Around final ranking another session's routines (2026 Asian Championships) | | ✓ (All-Around) | ✓ (Team) | |
+
+A final ranking another session's routines has no score tables of its own; its
+all-around rows' `apparatusScores` and team rows' `apparatusTotals` come from
+the routines it ranks (the qualification's), shown in that session's tables.
 
 | Field | Type | Description |
 |-------|------|-------------|

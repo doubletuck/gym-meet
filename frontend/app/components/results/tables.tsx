@@ -1,8 +1,16 @@
 import type { ReactNode } from "react";
 
-import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
+import type {
+  AllAroundRow,
+  Apparatus,
+  ApparatusStandingRow,
+  Routine,
+  ScoreRow,
+  SessionResults,
+  TeamRow,
+} from "~/api/types";
 import { formatScore, formatValue } from "~/lib/format";
-import { APPARATUS_LABELS } from "~/lib/labels";
+import { APPARATUS_LABELS, APPARATUS_ORDER } from "~/lib/labels";
 import { Abbreviation } from "../Abbreviation";
 import { ExpandableTable, type Column } from "./ExpandableTable";
 import {
@@ -658,4 +666,24 @@ export function StandingsTable({
 /** Picks out an athlete's rows, when there's an athlete to highlight. */
 function athleteRow(athleteId: number | undefined) {
   return athleteId == null ? undefined : (row: { athlete: { id: number } }) => row.athlete.id === athleteId;
+}
+
+/**
+ * The apparatus columns of a session's team and all-around standings: its
+ * score tables', else a split round's combined standings', else, for
+ * standings ranking another session's routines (which have no score tables of
+ * their own), those its rows have scores on, in Olympic order.
+ */
+export function standingsApparatus(results: SessionResults): Apparatus[] {
+  if (results.apparatus.length) {
+    return results.apparatus.map(({ apparatus }) => apparatus);
+  }
+  if (results.apparatusStandings.length) {
+    return results.apparatusStandings.map(({ apparatus }) => apparatus);
+  }
+  const scored = new Set([
+    ...results.allAround.flatMap((row) => Object.keys(row.apparatusScores)),
+    ...results.teams.flatMap((row) => Object.keys(row.apparatusTotals)),
+  ]);
+  return APPARATUS_ORDER[results.session.discipline].filter((apparatus) => scored.has(apparatus));
 }

@@ -265,6 +265,7 @@ publishes no per-part placement.
 | SJ Penalty | Penalty on the row as a whole, distinct from an individual routine's `Penalty`, as printed (negative) and already deducted from `Total` — e.g. a team penalty (2026 Senior Pan Americans MAG CUB, `-1.000`) | `TeamResult.sjPenalty` / `AllAroundResult.sjPenalty` |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |
+| Scores Round | **Optional.** The round whose routines these standings rank, when the round has no `SCORES` files of its own: the 2026 Asian Championships' team and all-around finals rank the qualification's routines (`QUAL`), re-ranked among the qualifiers. A missing column or blank cell means the standings rank their own round's scores | `Session.scoresSession` |
 
 ## `SUMMARY-FINAL-<APP>.csv`
 

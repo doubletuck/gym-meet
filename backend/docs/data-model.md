@@ -243,6 +243,7 @@ Europeans' Senior and Junior championships) are separate `Event`s.
 | ageCategory | AgeCategory | No | The age division competing in this round. |
 | apparatus | Apparatus, nullable | Yes | Which apparatus this session is for. Set when `round` is `EVENT` — an Apparatus Final is its own session per apparatus — and for `QUAL` at an apparatus-format event (a World Cup), where qualification on each apparatus is its own competition with its own day and judges. Null otherwise, since a championship's `QUAL`/`AA`/`TEAM` each cover all apparatus within one session (see `Score.apparatus` for the per-apparatus split of scores within those). |
 | part | Integer, nullable | Yes | Which occurrence of this round this session is, for a round split across more than one session — e.g. US Championships' two-day All-Around, where `round` is `AA` on both sessions and `part` is `1` and `2`, respectively. Null means the round as a whole: for the ordinary single-session round that's the only session, and for a split round it's an additional **whole-round session** holding the combined results (see below). |
+| scoresSessionId | Long, FK → `Session`, nullable | Yes | The session whose `Score`s this session's standings rank, when it has none of its own (see below). Null for every other session. |
 
 Unique key: `(event_id, round, discipline, ageCategory, apparatus, part)`,
 declared `NULLS NOT DISTINCT`. A standard SQL unique constraint treats two
@@ -260,6 +261,15 @@ combined standings: an `AllAroundResult` per athlete for the combined
 all-around and an `ApparatusResult` (§5.3) per athlete per apparatus for the
 combined apparatus standings. The whole-round session holds no `Score`s of its
 own. Its `date` is the first part's date, since it covers several days.
+
+**Standings ranking another session's routines.** When one competition is
+also the team and all-around finals, published as separate rankings of the
+same routines (2026 Asian Championships: the qualification's top eight teams
+and its 24 all-around qualifiers, two per country, re-ranked), the `TEAM` and
+`AA` sessions hold only those rankings (`TeamResult`, `AllAroundResult`), and
+`scoresSession` points at the `QUAL` session holding the `Score`s. Their `date`
+is that session's. `Session.sessionWithScores()` gives the session holding a
+session's routines: the one it ranks, or itself.
 
 ### `Judge`
 

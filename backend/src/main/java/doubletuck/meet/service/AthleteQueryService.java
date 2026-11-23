@@ -150,6 +150,13 @@ public class AthleteQueryService {
             scores.forEach(score -> sessions.add(score.getSession()));
             allAround.forEach(result -> sessions.add(result.getSession()));
             standings.forEach(result -> sessions.add(result.getSession()));
+            // Team standings ranking the routines of a session they competed in, for their country's team
+            for (Session other : sessionRepository.findByEvent(event)) {
+                if (other.getScoresSession() != null && sessions.contains(other.getScoresSession())
+                        && teamResultRepository.findBySessionAndNoc(other, participant.getNoc()).isPresent()) {
+                    sessions.add(other);
+                }
+            }
             Map<Session, List<Session>> divisions = new HashMap<>();
 
             List<EntrySession> entrySessions = new ArrayList<>();
