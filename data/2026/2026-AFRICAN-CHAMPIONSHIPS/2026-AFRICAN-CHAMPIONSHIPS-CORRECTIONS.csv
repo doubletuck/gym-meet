@@ -1,4 +1,6 @@
 File,Key,Field,Printed,Corrected,Category,Source,Note
+WAG-SR-PARTICIPANTS,105,Birth Date,2006-07-11,2005-01-15,BIRTH_DATE,World Championships,"LAROUI Djenna (licence 48297): the entry list prints 11/07/2006; the World Championships, Paris World Challenge Cup and Mediterranean Games entry lists all give 2005-01-15"
+WAG-SR-PARTICIPANTS,105,Birth Year,2006,2005,BIRTH_DATE,World Championships,As above
 WAG-SR-PARTICIPANTS,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,"MUCHATUTA Kylana: the entry list and results print ZWE (the ISO code); the entries by NOC page (p. 4) prints ZIM, the IOC code World Gymnastics uses"
 WAG-SR-SUMMARY-QUAL-AA,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
 WAG-SR-SCORES-QUAL-VT,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
