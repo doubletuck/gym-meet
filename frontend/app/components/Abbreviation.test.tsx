@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { Abbreviation, ApparatusCode } from "./Abbreviation";
+import { Abbreviation, ApparatusCode, DisciplineCode, Division } from "./Abbreviation";
 
 describe("ApparatusCode", () => {
   it("shows the code, with the full name as a tooltip and for screen readers", () => {
@@ -27,5 +27,24 @@ describe("Abbreviation", () => {
     render(<Abbreviation short="D" label="Difficulty" />);
 
     expect(screen.getByTitle("Difficulty")).toHaveTextContent(/^D$/);
+  });
+});
+
+describe("DisciplineCode", () => {
+  it("shows the code, with the full name as a tooltip and for screen readers", () => {
+    render(<DisciplineCode discipline="WAG" />);
+
+    expect(screen.getByTitle("Women's Artistic Gymnastics")).toContainElement(screen.getByText("WAG"));
+    expect(screen.getByText("WAG")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByText("Women's Artistic Gymnastics")).toHaveClass("sr-only");
+  });
+});
+
+describe("Division", () => {
+  it("names the discipline by its code, then the age category", () => {
+    const { container } = render(<Division discipline="MAG" ageCategory="JR" />);
+
+    expect(screen.getByTitle("Men's Artistic Gymnastics")).toBeInTheDocument();
+    expect(container).toHaveTextContent(/^MAGMen's Artistic Gymnastics Junior$/);
   });
 });

@@ -4,9 +4,9 @@ import { Link, useSearchParams } from "react-router";
 
 import type { Route } from "./+types/athletes";
 import { athleteSearchQuery } from "~/api/client";
+import { DisciplineCode } from "~/components/Abbreviation";
 import { Country } from "~/components/results/parts";
 import { athleteName } from "~/lib/format";
-import { DISCIPLINE_LABELS } from "~/lib/labels";
 
 /** Shorter queries match too much of every name to be useful. */
 const MIN_QUERY = 2;
@@ -70,7 +70,9 @@ export default function Athletes() {
                     </span>
                   )}
                 </span>
-                <span className="shrink-0 text-sm text-gray-500">{DISCIPLINE_LABELS[athlete.discipline]}</span>
+                <span className="shrink-0 text-sm text-gray-500">
+                  <DisciplineCode discipline={athlete.discipline} />
+                </span>
               </Link>
             </li>
           ))}

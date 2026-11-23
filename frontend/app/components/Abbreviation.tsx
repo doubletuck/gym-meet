@@ -1,5 +1,5 @@
-import type { Apparatus } from "~/api/types";
-import { APPARATUS_LABELS } from "~/lib/labels";
+import type { AgeCategory, Apparatus, Discipline } from "~/api/types";
+import { AGE_CATEGORY_LABELS, APPARATUS_LABELS, DISCIPLINE_LABELS } from "~/lib/labels";
 
 /**
  * A short form with its full form as a tooltip. A spoken abbreviation is also
@@ -30,5 +30,19 @@ export function ApparatusCode({ apparatus, routine }: { apparatus: Apparatus; ro
       label={`${APPARATUS_LABELS[apparatus]}${suffix && ` ${suffix}`}`}
       spoken
     />
+  );
+}
+
+/** A discipline by its FIG code ("WAG"), read out in full. */
+export function DisciplineCode({ discipline }: { discipline: Discipline }) {
+  return <Abbreviation short={discipline} label={DISCIPLINE_LABELS[discipline]} spoken />;
+}
+
+/** A discipline and age category, as results are grouped: "WAG Senior". */
+export function Division({ discipline, ageCategory }: { discipline: Discipline; ageCategory: AgeCategory }) {
+  return (
+    <>
+      <DisciplineCode discipline={discipline} /> {AGE_CATEGORY_LABELS[ageCategory]}
+    </>
   );
 }

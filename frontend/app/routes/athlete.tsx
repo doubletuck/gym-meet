@@ -3,10 +3,10 @@ import { data } from "react-router";
 
 import type { Route } from "./+types/athlete";
 import { athleteQuery, queryClient } from "~/api/client";
+import { DisciplineCode } from "~/components/Abbreviation";
 import { CareerResults, PersonalBests } from "~/components/athletes/career";
 import { Country } from "~/components/results/parts";
 import { athleteName } from "~/lib/format";
-import { DISCIPLINE_LABELS } from "~/lib/labels";
 
 function athleteId(params: Route.ClientLoaderArgs["params"]): number {
   const id = Number(params.athleteId);
@@ -38,7 +38,7 @@ export default function Athlete({ loaderData }: Route.ComponentProps) {
             <Country noc={latest.noc} /> ·{" "}
           </>
         )}
-        {DISCIPLINE_LABELS[athlete.discipline]}
+        <DisciplineCode discipline={athlete.discipline} />
         {athlete.birthYear != null && <> · Born {athlete.birthYear}</>}
       </p>
       {athlete.otherNames.length > 0 && (

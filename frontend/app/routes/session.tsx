@@ -15,8 +15,8 @@ import {
   vaultFinalQualifying,
 } from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
-import { divisionLabel, sessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
-import { Abbreviation, ApparatusCode } from "~/components/Abbreviation";
+import { sessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
+import { Abbreviation, ApparatusCode, Division } from "~/components/Abbreviation";
 
 /** Finds the session the address names, then loads its results. */
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -105,7 +105,8 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
       </nav>
       <h1 className="mt-2 text-2xl font-semibold">{loaderData.title}</h1>
       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {divisionLabel(session.discipline, session.ageCategory)} · {formatSessionDate(session.date, session.endDate)}
+        <Division discipline={session.discipline} ageCategory={session.ageCategory} /> ·{" "}
+        {formatSessionDate(session.date, session.endDate)}
       </p>
 
       {views.length > 1 && (

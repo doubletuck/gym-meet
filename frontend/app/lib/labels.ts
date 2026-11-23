@@ -1,8 +1,8 @@
 import type { AgeCategory, Apparatus, Discipline, EventLevel, SessionSummary } from "~/api/types";
 
 export const DISCIPLINE_LABELS: Record<Discipline, string> = {
-  MAG: "Men's",
-  WAG: "Women's",
+  MAG: "Men's Artistic Gymnastics",
+  WAG: "Women's Artistic Gymnastics",
 };
 
 export const AGE_CATEGORY_LABELS: Record<AgeCategory, string> = {
@@ -42,11 +42,6 @@ export const LEVEL_LABELS: Record<EventLevel, string> = {
   DOMESTIC_COMPETITION: "Domestic Competition",
   UNKNOWN: "Competition",
 };
-
-/** "Women's Senior" */
-export function divisionLabel(discipline: Discipline, ageCategory: AgeCategory): string {
-  return `${DISCIPLINE_LABELS[discipline]} ${AGE_CATEGORY_LABELS[ageCategory]}`;
-}
 
 /** The session's name as a results book heads it: "Qualification", "Balance Beam Final", "All-Around Final, Part 1". */
 export function sessionLabel(session: Pick<SessionSummary, "round" | "apparatus" | "part">): string {
