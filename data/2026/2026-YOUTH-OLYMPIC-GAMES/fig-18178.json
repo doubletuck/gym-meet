@@ -1,0 +1,134 @@
+{
+ "id": 18178,
+ "status": "approved",
+ "title": "Youth Olympic Games of the IV Olympiad",
+ "minisiteUrl": "https://live.gymnastics.sport/event.php?idevent=18178",
+ "city": {
+  "name": "DAKAR",
+  "country": {
+   "name": "Senegal",
+   "code": "SEN"
+  }
+ },
+ "startEvent": "2026-10-31",
+ "endEvent": "2026-11-13",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Junior",
+     "minAge": 14,
+     "maxAge": 18
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Junior",
+     "minAge": 14,
+     "maxAge": 15
+    }
+   ]
+  }
+ ],
+ "venue": "Dakar Expo Center",
+ "capacity": null,
+ "locContact": "SEMEGA JANNEH Howsoun",
+ "locUrl": "https://www.olympics.com/cio/dakar-2026",
+ "locEmails": [
+  "semega.janneh@dakar2026.org"
+ ],
+ "figContact": [
+  {
+   "firstname": "Céline",
+   "lastname": "CACHEMAILLE",
+   "email": "ccachemaille@worldgymnastics.sport"
+  },
+  {
+   "firstname": "Stéphane",
+   "lastname": "DETRAZ",
+   "email": "sdetraz@worldgymnastics.sport"
+  }
+ ],
+ "mediaEmails": [],
+ "level": {
+  "name": "Youth Olympic Games",
+  "group": 2
+ },
+ "olympicCycle": {
+  "name": "16th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Taishan Sports Equipment"
+  }
+ ],
+ "registrationStart": null,
+ "provisionalDeadline": null,
+ "definitiveDeadline": null,
+ "nominativeDeadline": null,
+ "nominativeModificationDeadline": null,
+ "content": "<p>GAR competitions: 07-11 November 2026</p>",
+ "files": [
+  {
+   "title": "1_Competition Programme",
+   "filename": "Dakar 2026 - Competition programme by day.pdf",
+   "url": "../../asset.php?id=fidb_18586"
+  },
+  {
+   "title": "2_Participation Principles",
+   "filename": "Participation Principles.zip",
+   "url": "../../asset.php?id=fidb_19165"
+  },
+  {
+   "title": "3_Rule 50",
+   "filename": "R50-Dakar2026-EN-WGYM-Gymnastics-04.pdf",
+   "url": "../../asset.php?id=fidb_21923"
+  },
+  {
+   "title": "4_Criteria for ITO Selection",
+   "filename": "ITO_2026_YOG_Criteria for ITO Selection.pdf",
+   "url": "../../asset.php?id=fidb_21209"
+  },
+  {
+   "title": "5_List of Apparatus",
+   "filename": "GAR_2026_IV SUMMER YOUTH OLYMPIC GAMES DAKAR 2026_List of Apparatus.pdf",
+   "url": "../../asset.php?id=fidb_22565"
+  },
+  {
+   "title": "6_NOC Allocated Quota Places",
+   "filename": "GAR - DAKAR 2026 FINAL ALLOCATION JUN 22.pdf",
+   "url": "../../asset.php?id=fidb_22977"
+  },
+  {
+   "title": "7_Drawing of Lots - Results and Procedures",
+   "filename": "DrawingofLots-ResultsandProcedures_18.09.2026.pdf",
+   "url": "../../asset.php?id=fidb_24252"
+  },
+  {
+   "title": "8_GAR Dakar 2026 Sport Guide",
+   "filename": "GAR Dakar 2026 Sport Guide.zip",
+   "url": "../../asset.php?id=fidb_23927"
+  },
+  {
+   "title": "9_Official Entries",
+   "filename": "gymnast_GAR - Dakar 2026 Official Entries_23 October 2026.pdf",
+   "url": "../../asset.php?id=fidb_24139"
+  },
+  {
+   "title": "Results book (Delegation)",
+   "filename": "SYOG_Dakar_2026_ResultBook_Delegation.pdf",
+   "url": "../../asset.php?id=fidb_24368"
+  },
+  {
+   "title": "Results book (Media)",
+   "filename": "18178 - Results book (Media).pdf",
+   "url": "../../asset.php?id=fidb_24389"
+  }
+ ]
+}

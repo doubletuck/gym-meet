@@ -1,0 +1,137 @@
+{
+ "id": 18608,
+ "status": "approved",
+ "title": "20th Asian Games Aichi-Nagoya 2026",
+ "minisiteUrl": null,
+ "city": {
+  "name": "NAGOYA",
+  "country": {
+   "name": "Japan",
+   "code": "JPN"
+  }
+ },
+ "startEvent": "2026-09-21",
+ "endEvent": "2026-10-04",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 18,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "RGI",
+   "name": "Rhythmic Individual",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "RGG",
+   "name": "Rhythmic Group",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "TRA",
+   "name": "Trampoline",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 17,
+     "maxAge": 99
+    }
+   ]
+  }
+ ],
+ "venue": "Nagoya City Rainbow Hall",
+ "capacity": 5000,
+ "locContact": "FUJII Toshiaki and Asian Gymnastics Union",
+ "locUrl": "https://agu-gymnastics.com/",
+ "locEmails": [
+  "info@agu-gymnastics.com"
+ ],
+ "figContact": [
+  {
+   "firstname": "Sports",
+   "lastname": "WGYM",
+   "email": "sports@worldgymnastics.sport"
+  }
+ ],
+ "mediaEmails": [],
+ "level": {
+  "name": "Continental Games",
+  "group": 2
+ },
+ "olympicCycle": {
+  "name": "16th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Taishan Sports Equipment"
+  }
+ ],
+ "registrationStart": null,
+ "provisionalDeadline": null,
+ "definitiveDeadline": null,
+ "nominativeDeadline": null,
+ "nominativeModificationDeadline": null,
+ "content": null,
+ "files": [
+  {
+   "title": "01_Directives-ART",
+   "filename": "ART_2026_Asian Games_Aichi-Nagoya_Technical Handbook..pdf",
+   "url": "../../asset.php?id=fidb_22949"
+  },
+  {
+   "title": "01_directives-RG",
+   "filename": "RG_2026_Asian Games_Aichi-Nagoya_Technical Handbook..pdf",
+   "url": "../../asset.php?id=fidb_22950"
+  },
+  {
+   "title": "01_directives-TRA",
+   "filename": "TRA_2026_Asian Games_Aichi-Nagoya_Technical Handbook..pdf",
+   "url": "../../asset.php?id=fidb_22951"
+  },
+  {
+   "title": "02_ART_Competition files update 20261005",
+   "filename": "GAR_Competition files update 20261005.zip",
+   "url": "../../asset.php?id=fidb_23961"
+  },
+  {
+   "title": "02_RG_Competition files update 20261005",
+   "filename": "GRY_Competition files update 20261005.zip",
+   "url": "../../asset.php?id=fidb_23962"
+  },
+  {
+   "title": "02_TRA Competition files",
+   "filename": "GTR Competition files.zip",
+   "url": "../../asset.php?id=fidb_23749"
+  }
+ ]
+}

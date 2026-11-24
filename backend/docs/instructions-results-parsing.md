@@ -6,6 +6,8 @@ each kind of source document does. The *what* — every file, column and its
 database mapping — is [`import-file-model.md`](import-file-model.md); the
 entities are in [`data-model.md`](data-model.md).
 
+- Where the PDFs, the FIG records and the draft `EVENT.csv` in a meet folder come from, and
+  how meets are tracked, is [`results-sourcing.md`](results-sourcing.md).
 - The step-by-step procedure is the `parse-results` skill
   (`.claude/skills/parse-results/SKILL.md`), which refers back here.
 - Parsers live in [`tools/results-parsing/`](../tools/results-parsing/): one

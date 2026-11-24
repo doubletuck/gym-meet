@@ -1,0 +1,148 @@
+{
+ "id": 18708,
+ "status": "approved",
+ "title": "XIII Juegos Suramericanos - Santa Fe 2026",
+ "minisiteUrl": null,
+ "city": {
+  "name": "ROSARIO SANTA FE",
+  "country": {
+   "name": "Argentina",
+   "code": "ARG"
+  }
+ },
+ "startEvent": "2026-09-13",
+ "endEvent": "2026-09-21",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 18,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "RGI",
+   "name": "Rhythmic Individual",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "RGG",
+   "name": "Rhythmic Group",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "TRA",
+   "name": "Trampoline",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 17,
+     "maxAge": 99
+    }
+   ]
+  }
+ ],
+ "venue": "Invencible Arena - Blvd. Nicasio Oroño Bis 2493, S2000 Rosario, Santa Fe",
+ "capacity": 2300,
+ "locContact": "Juan Medina",
+ "locUrl": "http://www.santafe2026.ar/es",
+ "locEmails": [
+  "juanmedinapresidente@gmail.com"
+ ],
+ "figContact": [
+  {
+   "firstname": "Sports",
+   "lastname": "WGYM",
+   "email": "sports@worldgymnastics.sport"
+  }
+ ],
+ "mediaEmails": [],
+ "level": {
+  "name": "Other Regional Championships / Games",
+  "group": 4
+ },
+ "olympicCycle": {
+  "name": "16th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Gaofei Sports"
+  },
+  {
+   "name": "Gymnova"
+  },
+  {
+   "name": "Sasaki"
+  }
+ ],
+ "registrationStart": null,
+ "provisionalDeadline": null,
+ "definitiveDeadline": null,
+ "nominativeDeadline": null,
+ "nominativeModificationDeadline": null,
+ "content": null,
+ "files": [
+  {
+   "title": "1_Technical manual ART",
+   "filename": "ART_2026_Regional Games_Santa Fe_Manual Técnico Deportivo-EN.pdf",
+   "url": "../../asset.php?id=fidb_23445"
+  },
+  {
+   "title": "1_Technical manual RG",
+   "filename": "RG_2026_Regional Games_Santa Fe_Manual Técnico Deportivo-EN.pdf",
+   "url": "../../asset.php?id=fidb_23446"
+  },
+  {
+   "title": "1_Technical manual TRA",
+   "filename": "TRA_2026_Regional Games_Santa Fe_Manual Técnico Deportivo-EN.pdf",
+   "url": "../../asset.php?id=fidb_23447"
+  },
+  {
+   "title": "2_Apparatus list_ART",
+   "filename": "ART_2026_Regional Games_Santa Fe_List of apparatus.pdf",
+   "url": "../../asset.php?id=fidb_23448"
+  },
+  {
+   "title": "2_Apparatus list_RG",
+   "filename": "RG_2026_Regional Games_Santa Fe_List of apparatus.pdf",
+   "url": "../../asset.php?id=fidb_23449"
+  },
+  {
+   "title": "2_Apparatus list_TRA",
+   "filename": "TRA_2026_Regional Games_Santa Fe_List of apparatus.pdf",
+   "url": "../../asset.php?id=fidb_23450"
+  },
+  {
+   "title": "Results book (Media)",
+   "filename": "18708 - Results book (Media).pdf",
+   "url": "../../asset.php?id=fidb_24033"
+  }
+ ]
+}

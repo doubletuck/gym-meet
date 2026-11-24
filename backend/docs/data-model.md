@@ -54,8 +54,13 @@ file can use either one.
 | OLYMPIC_GAMES | Olympic Games | |
 | WORLD_CHAMPIONSHIPS | World Championships | |
 | YOUTH_OLYMPIC_GAMES | Youth Olympic Games | |
-| CONTINENTAL_GAMES | Continental Games | e.g. Mediterranean Games, Pan American Games |
+| CONTINENTAL_GAMES | Continental Games | A continent's multi-sport games, e.g. Asian Games, Pan American Games |
 | CONTINENTAL_CHAMPIONSHIPS | Continental Championships | e.g. European Championships |
+| REGIONAL_GAMES | Regional Games | e.g. Mediterranean Games, Commonwealth Games |
+| REGIONAL_COMPETITION | Regional Competition | e.g. Central American and Caribbean Games, South American Games |
+
+These levels mix FIG's competition categories with its competition groups (Groups 1–4, in the
+General Judges' Rules); how events are classified is still to be settled.
 | WORLD_CUP | World Cup | |
 | WORLD_CHALLENGE_CUP | World Challenge Cup | |
 | INTERNATIONAL_TOURNAMENTS | International Tournament | Invitational events with international entries, below World Cup status |

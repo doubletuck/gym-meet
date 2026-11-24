@@ -24,11 +24,17 @@ something is ambiguous; never guess a value, a date or a mapping silently.
 1. Confirm the inputs: the PDF(s) in `data/<year>/<EVENT>/` and `<EVENT>-EVENT.csv`
    (one row per discipline and age category: Prefix, Slug, Title, Short Name, Disciplines, Age Category,
    Level, dates, City, IOC country code, Venue, FIG event number, Apparatus Suppliers).
+   For a FIG event, `backend/tools/results-sourcing/fig_events.py fetch` fills the folder
+   (`backend/docs/results-sourcing.md`): the book, `fig-<id>.json` (FIG's record of the event)
+   and a **draft** EVENT.csv. A draft is not final: its Title is FIG's, its Start/End Date span
+   the whole event (wider than the gymnastics days at multi-sport Games), and Short Name and
+   any unmapped Level are blank. Finish it as below.
    **If the rows for this PDF don't exist, draft them** from the book (title page, schedule,
-   sponsor logos), the FIG event page, the meets tracker (`data/<year>/*-MEETS.csv`)
-   and any sibling rows (another age category of the same meet); follow the existing rows'
-   conventions for Title, Slug and Level. Show the user the drafted rows and ask for any
-   field you couldn't find or had to infer (venue, level) before relying on them.
+   sponsor logos), `fig-<id>.json` or the FIG event page, the meets list
+   (`data/<year>/<year>-ARTISTIC-GYMNASTICS-MEETS.csv`) and any sibling rows (another age
+   category of the same meet); follow the existing rows' conventions for Title, Slug and Level.
+   Show the user the drafted (or script-drafted) rows and ask for any field you couldn't find
+   or had to infer (venue, level, short name, dates) before relying on them.
 2. `pdfinfo`, then `pdftotext -layout` split on form feed. List every physical page's report
    identity and collapse runs; find pages with no text (scanned) and map them with
    `python3 -I backend/tools/results-parsing/contact_sheet.py <pdf> <scratch>.png`.
@@ -93,6 +99,7 @@ parser must exit non-zero on any failure. Then:
 - Update `instructions-results-parsing.md` with what this source taught: extend the matching
   §5 section (or add one for a new format), add any new convention to §4, and keep §6 open
   items current. Update `import-file-model.md` / `data-model.md` if columns or meanings changed.
-- If the meets tracker (`data/<year>/*-MEETS.csv`) lists this meet, set its Status to
-  `Parsed`.
+- If the meets list (`data/<year>/<year>-ARTISTIC-GYMNASTICS-MEETS.csv`) lists this meet, make
+  sure its `Folder` names the event folder and set its Status to `Parsed` (or run
+  `fig_events.py sync`, which sets it from the folder).
 - Don't commit unless the user asks.

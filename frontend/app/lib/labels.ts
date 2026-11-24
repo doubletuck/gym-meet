@@ -35,6 +35,8 @@ export const LEVEL_LABELS: Record<EventLevel, string> = {
   YOUTH_OLYMPIC_GAMES: "Youth Olympic Games",
   CONTINENTAL_GAMES: "Continental Games",
   CONTINENTAL_CHAMPIONSHIPS: "Continental Championships",
+  REGIONAL_GAMES: "Regional Games",
+  REGIONAL_COMPETITION: "Regional Competition",
   WORLD_CUP: "World Cup",
   WORLD_CHALLENGE_CUP: "World Challenge Cup",
   INTERNATIONAL_TOURNAMENTS: "International Tournament",
