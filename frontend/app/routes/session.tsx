@@ -82,7 +82,6 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
   const { session } = results;
 
   const qualification = session.round === "QUAL";
-  const teamScoring = results.teams.length > 0;
   // A championship qualification ranks vault on the first vault; elsewhere vault is decided on two
   const rankedOnFirstVault = qualification && session.apparatus == null;
   const views = viewsOf(results, rankedOnFirstVault);
@@ -155,7 +154,6 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 apparatus={apparatus}
                 scores={scores}
                 qualification={qualification}
-                teamScoring={teamScoring}
                 athleteId={athleteId}
               />
             ) : rankedOnFirstVault ? (
@@ -165,7 +163,6 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 apparatus={apparatus}
                 scores={firstVaults(scores)}
                 qualification={false}
-                teamScoring={teamScoring}
                 athleteId={athleteId}
               />
             ) : (

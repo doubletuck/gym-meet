@@ -8,6 +8,7 @@ import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.Session;
 import doubletuck.meet.domain.TeamResult;
+import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.dto.SessionResultsResponse;
 import doubletuck.meet.dto.SessionResultsResponse.AllAroundRow;
 import doubletuck.meet.dto.SessionResultsResponse.ApparatusScores;
@@ -116,7 +117,7 @@ public class SessionResultsService {
         return new ScoreRow(score.getRank(), participant.getBibNumber(), athlete(participant), participant.getNoc(),
                 club(participant), routine(score.getRoutine()), routine(score.getSecondRoutine()), score.getCombinedBonus(),
                 score.getTotalScore(), score.getQualificationRank(), score.getQualificationResult(),
-                score.getCountsTowardTeamResult());
+                score.getTeamScoreRole());
     }
 
     static SessionResultsResponse.Routine routine(Routine routine) {
@@ -199,7 +200,7 @@ public class SessionResultsService {
         Map<Apparatus, Double> apparatusTotals = new LinkedHashMap<>();
         for (Apparatus app : order) {
             List<Double> counted = scores.stream()
-                    .filter(score -> score.getApparatus() == app && score.getCountsTowardTeamResult()
+                    .filter(score -> score.getApparatus() == app && score.getTeamScoreRole() == TeamScoreRole.COUNTING
                             && score.getParticipant().getNoc().equals(result.getNoc()))
                     .map(score -> score.getRoutine().getScore())
                     .filter(Objects::nonNull)

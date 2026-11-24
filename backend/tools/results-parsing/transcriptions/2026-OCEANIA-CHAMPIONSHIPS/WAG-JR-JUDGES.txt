@@ -1,0 +1,43 @@
+# 18531 p17 (Media Book p. 6) "Oceania Continental Championships, Brisbane Australia 7 - 10 May 2026
+# (Junior)", "[SUP]ERIOR JURY  Allana Slater OGU (AUS)", then four panels under apparatus icons: vault,
+# uneven bars (top), beam, floor (bottom). The Reserve lines are empty. Format as WAG-SR-JUDGES.txt.
+|SUPERIOR JURY|Allana Slater|OGU (AUS)
+VT|Supervisor|MCMURDO Michelle|AUS
+VT|D1|WOOLF Michelle|NZL
+VT|D2|ROBBINS Nicki|AUS
+VT|E1|JURY Hayley|NZL
+VT|E2|READ Melissa|AUS
+VT|E3|GODFREY Jacqui|NZL
+VT|E4|CARTER Rebecca|AUS
+VT|E5|BAKER Shirley|NZL
+VT|Line|MORIARTY Stephanie|AUS
+UB|Supervisor|WILLCOCKS Nyssa|NZL
+UB|D1|BROOKS Tracie|AUS
+UB|D2|ENSLOW Avril|NZL
+UB|E1|BARTON Rachel|AUS
+UB|E2|MCNABB Kate|NZL
+UB|E3|WESTON Stacey|AUS
+UB|E4|SHARP Tracy|NZL
+UB|E5|KEATING Alan|AUS
+UB|Time 1|WATSON Laura|RSA
+BB|Supervisor|MCMURDO Michelle|AUS
+BB|D1|WOOLF Michelle|NZL
+BB|D2|ROBBINS Nicki|AUS
+BB|E1|JURY Hayley|NZL
+BB|E2|READ Melissa|AUS
+BB|E3|GODFREY Jacqui|NZL
+BB|E4|CARTER Rebecca|AUS
+BB|E5|BAKER Shirley|NZL
+BB|Time 1|ELLIOT Debbie|NZL
+BB|Time 2|MORIARTY Stephanie|AUS
+FX|Supervisor|WILLCOCKS Nyssa|NZL
+FX|D1|BROOKS Tracie|AUS
+FX|D2|ENSLOW Avril|NZL
+FX|E1|BARTON Rachel|AUS
+FX|E2|MCNABB Kate|NZL
+FX|E3|WESTON Stacey|AUS
+FX|E4|SHARP Tracy|NZL
+FX|E5|KEATING Alan|AUS
+FX|Time|BOW Michelle|NZL
+FX|Line 1|WATSON Laura|RSA
+FX|Line 2|DICKENS Phillipa|AUS

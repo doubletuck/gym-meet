@@ -90,8 +90,20 @@ function hasMoreDetail(row: ScoreRow): boolean {
   );
 }
 
+/** Why a score isn't one of its team's counting scores, or "" when it is (or there's no team). */
+function teamRoleNote(row: ScoreRow): string {
+  switch (row.teamRole) {
+    case "DROPPED":
+      return "Dropped from the team total";
+    case "INDIVIDUAL":
+      return "Competed as an individual, not for the team";
+    default:
+      return "";
+  }
+}
+
 /** A row's expanded panel: each routine in full, and what else the row carries. */
-function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean }) {
+function ScoreDetail({ row }: { row: ScoreRow }) {
   return (
     <div className="space-y-3">
       {row.secondRoutine ? (
@@ -113,7 +125,7 @@ function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean
           ["Combined bonus", formatValue(row.combinedBonus)],
           ["Two-vault total", row.secondRoutine ? formatScore(row.total) : ""],
           ["Qualification rank", row.qualificationRank != null ? String(row.qualificationRank) : ""],
-          ["Team", teamScoring && !row.countsTowardTeam ? "Dropped from the team total" : ""],
+          ["Team", teamRoleNote(row)],
         ]}
       />
     </div>
@@ -142,13 +154,11 @@ export function ScoreTable({
   apparatus,
   scores,
   qualification,
-  teamScoring,
   athleteId,
 }: {
   apparatus: Apparatus;
   scores: ScoreRow[];
   qualification: boolean;
-  teamScoring: boolean;
   /** The athlete whose row to highlight. */
   athleteId?: number;
 }) {
@@ -218,8 +228,8 @@ export function ScoreTable({
       align: "right",
       sortValue: (row) => row.total,
       cell: (row) =>
-        teamScoring && !row.countsTowardTeam ? (
-          <span className="text-gray-400" title="Dropped from the team total">
+        teamRoleNote(row) ? (
+          <span className="text-gray-400" title={teamRoleNote(row)}>
             <RoutineScore routine={row.routine} score={row.total} />
           </span>
         ) : (
@@ -245,7 +255,7 @@ export function ScoreTable({
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
       highlight={athleteRow(athleteId)}
-      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} teamScoring={teamScoring} />}
+      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} />}
     />
   );
 }
@@ -410,7 +420,7 @@ export function VaultTable({
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
       highlight={athleteRow(athleteId)}
-      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} teamScoring={false} />}
+      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} />}
     />
   );
 }

@@ -38,8 +38,10 @@ something is ambiguous; never guess a value, a date or a mapping silently.
 
 ## 2. Map the competition onto the model
 
-Identify the structure (parsing doc §4.9): which rounds, whether a round is split into parts,
-whether qualification is per apparatus, the vault shape per round, which summaries exist.
+Identify the structure (parsing doc §4.9): which rounds (a round is `QUAL` only if a later round of
+the same meet follows it; a meet's only round is the final it decides, `AA`), whether a round is
+split into parts, whether qualification is per apparatus, the vault shape per round, which
+summaries exist.
 Work out every session's date (§4.4) — from a Competition Schedule page, never footer
 timestamps; if there is none, propose an inference and confirm it.
 

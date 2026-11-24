@@ -80,8 +80,8 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].total").value(55.999))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].apparatusScores.UB")
                         .value(14.933))
-                .andExpect(jsonPath("$.apparatus[2].scores[?(@.athlete.givenName == 'Yihan')].countsTowardTeam")
-                        .value(false))
+                .andExpect(jsonPath("$.apparatus[2].scores[?(@.athlete.givenName == 'Yihan')].teamRole")
+                        .value("DROPPED"))
                 .andExpect(jsonPath("$.apparatus[2].scores[?(@.athlete.surname == 'Ke')].qualification")
                         .value("NR"));
     }

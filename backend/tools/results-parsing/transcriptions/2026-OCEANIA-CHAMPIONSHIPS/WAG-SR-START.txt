@@ -1,0 +1,36 @@
+# pp15-16 (Media Book pp. 4-5) Start Lists "WAG - 09.05.2026. - 01:30 - Senior - Women's" (pages 2/3 and 3/3):
+# rotation|APP|bib|Given Surname, in printed order
+1|VT|210|Audrey Hawkins
+1|VT|209|Emily Whitehead
+1|VT|206|Georgia Godwin
+1|VT|207|Asher Bayles
+1|VT|208|Lucy Stewart
+1|UB|205|Sienna Shields
+1|UB|204|Jun McDonald
+1|UB|202|Freya Reid
+2|UB|207|Asher Bayles
+2|UB|209|Emily Whitehead
+2|UB|206|Georgia Godwin
+2|UB|208|Lucy Stewart
+2|UB|210|Audrey Hawkins
+2|BB|205|Sienna Shields
+2|BB|202|Freya Reid
+2|BB|204|Jun McDonald
+2|BB|203|Reece Cobb
+3|BB|209|Emily Whitehead
+3|BB|206|Georgia Godwin
+3|BB|208|Lucy Stewart
+3|BB|210|Audrey Hawkins
+3|BB|207|Asher Bayles
+3|FX|202|Freya Reid
+3|FX|203|Reece Cobb
+3|FX|205|Sienna Shields
+3|FX|204|Jun McDonald
+4|VT|202|Freya Reid
+4|VT|204|Jun McDonald
+4|VT|205|Sienna Shields
+4|VT|201|Courtney McGregor
+4|FX|209|Emily Whitehead
+4|FX|207|Asher Bayles
+4|FX|210|Audrey Hawkins
+4|FX|208|Lucy Stewart

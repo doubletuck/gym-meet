@@ -47,12 +47,12 @@ const yeo: ScoreRow = {
   total: 14.483,
   qualificationRank: 2,
   qualification: "Q",
-  countsTowardTeam: true,
+  teamRole: "COUNTING",
 };
 
 describe("ScoreTable", () => {
   it("shows a championship qualification's first vault only, with no qualification column", () => {
-    render(<ScoreTable apparatus="VT" scores={firstVaults([yeo])} qualification={false} teamScoring={false} />);
+    render(<ScoreTable apparatus="VT" scores={firstVaults([yeo])} qualification={false} />);
 
     const row = screen.getByText("Seojeong Yeo").closest("tr")!;
     expect(within(row).getByRole("cell", { name: "14.566" })).toBeInTheDocument();
@@ -66,13 +66,34 @@ describe("ScoreTable", () => {
       secondRoutine: null,
       routine: routine({ difficulty: 5.5, difficultyInquiry: true, execution: 7.766, score: 13.266 }),
       total: 13.266,
-      countsTowardTeam: false,
+      teamRole: "DROPPED",
     };
-    render(<ScoreTable apparatus="BB" scores={[dropped]} qualification teamScoring />);
+    render(<ScoreTable apparatus="BB" scores={[dropped]} qualification />);
 
     expect(screen.getByTitle("Dropped from the team total")).toHaveTextContent("13.266");
     await userEvent.click(screen.getByRole("button", { name: "Show details" }));
     expect(screen.getByText("Difficulty").nextSibling).toHaveTextContent("!5.5");
+  });
+
+  it("fades an individual's score and says it wasn't the team's, apart from a counting one", () => {
+    const individual: ScoreRow = {
+      ...yeo,
+      athlete: { id: 2, surname: "Malik", givenName: "Ritam" },
+      secondRoutine: null,
+      routine: routine({ difficulty: 4.3, execution: 8.7, score: 13.0 }),
+      total: 13.0,
+      teamRole: "INDIVIDUAL",
+    };
+    const counting: ScoreRow = {
+      ...individual,
+      athlete: { id: 3, surname: "Thorpe", givenName: "Heath" },
+      total: 12.9,
+      teamRole: "COUNTING",
+    };
+    render(<ScoreTable apparatus="FX" scores={[individual, counting]} qualification={false} />);
+
+    expect(screen.getByTitle("Competed as an individual, not for the team")).toHaveTextContent("13.000");
+    expect(screen.getAllByTitle(/team/)).toHaveLength(1);
   });
 
   it("shows a bonus column only when someone earned a bonus", () => {
@@ -90,16 +111,14 @@ describe("ScoreTable", () => {
       total: 14,
     };
 
-    const { unmount } = render(
-      <ScoreTable apparatus="PB" scores={[zou, plain]} qualification={false} teamScoring={false} />,
-    );
+    const { unmount } = render(<ScoreTable apparatus="PB" scores={[zou, plain]} qualification={false} />);
     expect(screen.getByRole("columnheader", { name: "Bon" })).toBeInTheDocument();
     expect(
       within(screen.getByText("Jingyuan Zou").closest("tr")!).getByRole("cell", { name: "0.1" }),
     ).toBeInTheDocument();
     unmount();
 
-    render(<ScoreTable apparatus="PB" scores={[plain]} qualification={false} teamScoring={false} />);
+    render(<ScoreTable apparatus="PB" scores={[plain]} qualification={false} />);
     expect(screen.queryByRole("columnheader", { name: "Bon" })).not.toBeInTheDocument();
   });
 
@@ -116,7 +135,7 @@ describe("ScoreTable", () => {
       athlete: { id: 3, surname: "Lin", givenName: "Chaopan" },
       routine: routine({ difficulty: 6, execution: 8, score: 14 }),
     };
-    render(<ScoreTable apparatus="PB" scores={[zou, lin]} qualification={false} teamScoring={false} />);
+    render(<ScoreTable apparatus="PB" scores={[zou, lin]} qualification={false} />);
 
     const zouCell = screen.getByText("Jingyuan Zou").closest("td")!;
     expect(within(zouCell).getByTitle("Difficulty").parentElement).toHaveTextContent("D 5.8");
@@ -142,9 +161,7 @@ describe("ScoreTable", () => {
       athlete: { id: 2, surname: "Penalised", givenName: "A" },
       routine: routine({ difficulty: 6, execution: 8, sjPenalty: -1, score: 13 }),
     };
-    render(
-      <ScoreTable apparatus="UB" scores={[plain, penalised]} qualification={false} teamScoring={false} athleteId={2} />,
-    );
+    render(<ScoreTable apparatus="UB" scores={[plain, penalised]} qualification={false} athleteId={2} />);
 
     const row = screen.getByText("A Penalised").closest("tr")!;
     expect(row).toHaveAttribute("data-highlighted", "true");
@@ -166,14 +183,12 @@ describe("ScoreTable", () => {
       routine: routine({ difficulty: 6, execution: 8, sjPenalty: -1, score: 13 }),
     };
 
-    const { unmount } = render(
-      <ScoreTable apparatus="UB" scores={[plain]} qualification={false} teamScoring={false} />,
-    );
+    const { unmount } = render(<ScoreTable apparatus="UB" scores={[plain]} qualification={false} />);
     expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: "Details" })).not.toBeInTheDocument();
     unmount();
 
-    render(<ScoreTable apparatus="UB" scores={[plain, sj]} qualification={false} teamScoring={false} />);
+    render(<ScoreTable apparatus="UB" scores={[plain, sj]} qualification={false} />);
     expect(screen.getAllByRole("button", { name: "Show details" })).toHaveLength(1);
     expect(within(screen.getByText("A Penalised").closest("tr")!).getByRole("button")).toBeInTheDocument();
   });
@@ -190,7 +205,6 @@ describe("ScoreTable", () => {
         apparatus="FX"
         scores={[row("Low", 5, null), row("High", 6, -0.1), row("Mid", 5.5, -0.3)]}
         qualification={false}
-        teamScoring={false}
       />,
     );
     const order = () => screen.getAllByText(/^A /).map((name) => name.textContent);
@@ -211,7 +225,7 @@ describe("ScoreTable", () => {
       total: 0,
       qualificationRank: 109,
     };
-    render(<ScoreTable apparatus="VT" scores={firstVaults([invalid])} qualification={false} teamScoring={false} />);
+    render(<ScoreTable apparatus="VT" scores={firstVaults([invalid])} qualification={false} />);
 
     const total = within(screen.getByText("Seojeong Yeo").closest("tr")!).getAllByRole("cell").at(-1)!;
     expect(total).toHaveTextContent("Invalid vault0.000");
@@ -219,7 +233,7 @@ describe("ScoreTable", () => {
 
   it("shows did not start in place of a total", () => {
     const dns: ScoreRow = { ...yeo, rank: null, secondRoutine: null, routine: routine({ status: "DNS" }), total: null };
-    render(<ScoreTable apparatus="PH" scores={[dns]} qualification teamScoring={false} />);
+    render(<ScoreTable apparatus="PH" scores={[dns]} qualification />);
 
     expect(screen.getByText("Did not start")).toBeInTheDocument();
     expect(screen.getByText("–")).toBeInTheDocument();

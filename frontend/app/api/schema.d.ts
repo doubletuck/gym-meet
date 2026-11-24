@@ -268,7 +268,8 @@ export interface components {
       qualificationRank: number | null;
       /** @enum {string|null} */
       qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
-      countsTowardTeam: boolean;
+      /** @enum {string} */
+      teamRole: "COUNTING" | "DROPPED" | "INDIVIDUAL";
     };
     SessionResultsResponse: {
       event: components["schemas"]["EventRef"];

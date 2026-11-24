@@ -18,11 +18,14 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * State shared by the steps importing one manifest: the event and slice
@@ -56,6 +59,8 @@ class ImportContext {
     private final Map<String, Participant> participantsByBib = new HashMap<>();
     private final Map<SessionKey, Session> sessions = new LinkedHashMap<>();
     private final List<Score> scores = new ArrayList<>();
+    // Scores whose file states their team role (SCORES' Team Role column)
+    private final Set<Score> scoresWithTeamRole = Collections.newSetFromMap(new IdentityHashMap<>());
     private final List<TeamResult> teamResults = new ArrayList<>();
     private final List<AllAroundResult> allAroundResults = new ArrayList<>();
     private final List<ApparatusResult> apparatusResults = new ArrayList<>();

@@ -1,0 +1,55 @@
+# 18531 p7 (Media Book p. 6) "Judge Appointments - Junior Invitational - SJ Gareth Brettell (NZL)", a grid
+# of function rows by apparatus columns (Floor, Pommel, Rings, Vault, P Bar, H Bar). Format as MAG-SR-JUDGES.txt.
+|SJ|Gareth Brettell|NZL
+FX|D1|Kyleab Ellis|NZL
+FX|D2|Rohan Kennedy|AUS
+FX|E1|Perry Koh|SGP
+FX|E2|Kip Kemei|AUS
+FX|E3|Toby Levine|NZL
+FX|E4|Rodrigo Caron|BRA
+FX|E5|Thorstein Fischer|CAN
+FX|Line 1|Shanna Farenden|AUS
+FX|Line 2|Glenn Ng|AUS
+FX|Time|Xavier Levier|NZL
+FX|AS|Cameron Beeton|NZL
+PH|D1|Andrew Cordery|AUS
+PH|D2|Matt Palmer|NZL
+PH|E1|Damien Hewett|NZL
+PH|E2|Michael Hood|CAN
+PH|E3|Puay Sng|SGP
+PH|E4|David Williams|CAN
+PH|E5|Daren Wolfe|AUS
+PH|AS|Matthew Lean|AUS
+SR|D1|Kyleab Ellis|NZL
+SR|D2|Rohan Kennedy|AUS
+SR|E1|Perry Koh|SGP
+SR|E2|Kath Graham|AUS
+SR|E3|Toby Levine|NZL
+SR|E4|Rodrigo Caron|BRA
+SR|E5|Thorstein Fischer|CAN
+SR|AS|Cameron Beeton|NZL
+VT|D1|Andrew Cordery|AUS
+VT|D2|Matt Palmer|NZL
+VT|E1|Damien Hewett|NZL
+VT|E2|Michael Hood|CAN
+VT|E3|Puay Sng|SGP
+VT|E4|David Williams|CAN
+VT|E5|Daren Wolfe|AUS
+VT|Line 1|Xavier Levier|NZL
+VT|AS|Matthew Lean|AUS
+PB|D1|Kyleab Ellis|NZL
+PB|D2|Rohan Kennedy|AUS
+PB|E1|Perry Koh|SGP
+PB|E2|Kip Kemei|AUS
+PB|E3|Toby Levine|NZL
+PB|E4|Rodrigo Caron|BRA
+PB|E5|Thorstein Fischer|CAN
+PB|AS|Cameron Beeton|NZL
+HB|D1|Andrew Cordery|AUS
+HB|D2|Matt Palmer|NZL
+HB|E1|Damien Hewett|NZL
+HB|E2|Michael Hood|CAN
+HB|E3|Puay Sng|SGP
+HB|E4|David Williams|CAN
+HB|E5|Kath Graham|AUS
+HB|AS|Matthew Lean|AUS

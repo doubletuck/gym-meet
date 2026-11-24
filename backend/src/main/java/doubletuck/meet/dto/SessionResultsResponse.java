@@ -4,6 +4,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.QualificationResult;
 import doubletuck.meet.domain.ScoreStatus;
+import doubletuck.meet.domain.TeamScoreRole;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -49,7 +50,8 @@ public record SessionResultsResponse(
      * @param total              the result the apparatus is decided on: for two vaults,
      *                           their published combination
      * @param qualificationRank  placement in the ranking that decides the apparatus final
-     * @param countsTowardTeam   false for a score dropped from its team's total
+     * @param teamRole           what the score does for its team: counting toward the
+     *                           team's total, dropped from it, or an individual's
      */
     public record ScoreRow(
             @Nullable Integer rank,
@@ -63,7 +65,7 @@ public record SessionResultsResponse(
             @Nullable Double total,
             @Nullable Integer qualificationRank,
             @Nullable QualificationResult qualification,
-            boolean countsTowardTeam) {
+            TeamScoreRole teamRole) {
     }
 
     /** @param difficultyInquiry the D score was under inquiry, printed with a leading "!" */

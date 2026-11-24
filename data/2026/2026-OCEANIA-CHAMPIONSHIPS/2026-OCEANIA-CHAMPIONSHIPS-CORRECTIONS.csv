@@ -1,0 +1,29 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+MAG-SR-PARTICIPANTS,101,FIG License,,45150,LICENCE,earlier entry lists,"Printed Ben FOSTER with no licence; the 2026 World Championships entry list has FOSTER Benjamin (AUS), licence 45150"
+WAG-SR-SCORES-AA-BB,207,Status,,DNS,ROW,start list,"BAYLES Asher is on the beam start list (rotation 3), but the all-around report prints nothing in her beam cell; her bars and floor print Final DNS (agreed with the user)"
+MAG-SR-JUDGES,AA SR E3,NOC Code,SIN,SGP,NOC,other panels,"Puay Sng is printed (SGP) on floor and (SIN) on rings and parallel bars; SGP is Singapore's IOC code"
+MAG-SR-JUDGES,AA PB E3,NOC Code,SIN,SGP,NOC,other panels,As above
+MAG-SR-JUDGES,AA - TD,NOC Code,,NZL,NOC,World Championships,"The sheet credits the SJ Gareth Brettell to OGU (the Oceania union); he judged for NZL at the 2026 World Championships (agreed with the user)"
+WAG-SR-JUDGES,MCMURDO Michelle,Name,MCMURDO Michelle,McMURDO Michelle Jane,JUDGE_NAME,World Championships,As World Gymnastics prints her at the 2026 World Championships
+WAG-SR-JUDGES,MCMURDO Michelle,Surname,MCMURDO,McMURDO,JUDGE_NAME,World Championships,As above
+WAG-SR-JUDGES,MCMURDO Michelle,Given Name,Michelle,Michelle Jane,JUDGE_NAME,World Championships,As above
+WAG-SR-JUDGES,WOOLF Michelle,Name,WOOLF Michelle,WOOLF Michelle Jayne,JUDGE_NAME,Cairo World Cup,As World Gymnastics prints her at the 2026 Cairo and Osijek World Cups
+WAG-SR-JUDGES,WOOLF Michelle,Given Name,Michelle,Michelle Jayne,JUDGE_NAME,Cairo World Cup,As above
+WAG-SR-JUDGES,WILLCOCKS Nyssa,Name,WILLCOCKS Nyssa,WILLCOCKS Nyssa Marie,JUDGE_NAME,World Championships,As World Gymnastics prints her at the 2026 World Championships and Antalya World Cup
+WAG-SR-JUDGES,WILLCOCKS Nyssa,Given Name,Nyssa,Nyssa Marie,JUDGE_NAME,World Championships,As above
+WAG-SR-JUDGES,BROOKS Tracie,Name,BROOKS Tracie,BROOKS Tracie Lee,JUDGE_NAME,Paris World Challenge Cup,As World Gymnastics prints her at the 2026 Paris and Szombathely World Challenge Cups
+WAG-SR-JUDGES,BROOKS Tracie,Given Name,Tracie,Tracie Lee,JUDGE_NAME,Paris World Challenge Cup,As above
+WAG-SR-JUDGES,JURY Hayley,Name,JURY Hayley,JURY Hayley Dorne,JUDGE_NAME,Antalya World Cup,As World Gymnastics prints her at the 2026 Antalya World Cup
+WAG-SR-JUDGES,JURY Hayley,Given Name,Hayley,Hayley Dorne,JUDGE_NAME,Antalya World Cup,As above
+WAG-JR-SCORES-AA-UB,212,Status,,DNS,ROW,start list,"ATKINSON Shaydon is on the bars start list (rotation 1), but the all-around report prints nothing in her bars cell; her beam prints Final DNS (as for WAG SR BAYLES, agreed with the user)"
+WAG-JR-JUDGES,MCMURDO Michelle,Name,MCMURDO Michelle,McMURDO Michelle Jane,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,MCMURDO Michelle,Surname,MCMURDO,McMURDO,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,MCMURDO Michelle,Given Name,Michelle,Michelle Jane,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,WOOLF Michelle,Name,WOOLF Michelle,WOOLF Michelle Jayne,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,WOOLF Michelle,Given Name,Michelle,Michelle Jayne,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,WILLCOCKS Nyssa,Name,WILLCOCKS Nyssa,WILLCOCKS Nyssa Marie,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,WILLCOCKS Nyssa,Given Name,Nyssa,Nyssa Marie,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,BROOKS Tracie,Name,BROOKS Tracie,BROOKS Tracie Lee,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,BROOKS Tracie,Given Name,Tracie,Tracie Lee,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,JURY Hayley,Name,JURY Hayley,JURY Hayley Dorne,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES
+WAG-JR-JUDGES,JURY Hayley,Given Name,Hayley,Hayley Dorne,JUDGE_NAME,other sheets,As in WAG-SR-JUDGES

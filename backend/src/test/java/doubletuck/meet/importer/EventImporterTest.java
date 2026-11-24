@@ -18,6 +18,7 @@ import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.Session;
 import doubletuck.meet.domain.TeamResult;
+import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.EventRepository;
@@ -63,6 +64,8 @@ class EventImporterTest {
     private static final String US_MAG = "us/2026-US-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String EUROPEANS_MAG = "europeans/2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     private static final String ASIAN_WAG = "asian/2026-ASIAN-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
+    private static final String OCEANIA_MAG = "oceania/2026-OCEANIA-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
+    private static final String OCEANIA_WAG = "oceania/2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
 
     @Autowired
     private EventImporter eventImporter;
@@ -328,20 +331,82 @@ class EventImporterTest {
     void testImport_MarksScoresDroppedFromTeamTotal() {
         importFixture(WORLDS_WAG);
 
-        assertTrue(score("Zhang", "Qingying", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
-        assertTrue(score("Qiu", "Qiyuan", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
-        assertTrue(score("Ke", "Qinqin", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
-        assertFalse(score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
+        assertEquals(TeamScoreRole.COUNTING, score("Zhang", "Qingying", Round.QUAL, Apparatus.BB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, score("Qiu", "Qiyuan", Round.QUAL, Apparatus.BB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, score("Ke", "Qinqin", Round.QUAL, Apparatus.BB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getTeamScoreRole());
     }
 
     @Test
     void testImport_IndividualEnteredAlongsideTeam_DoesNotCountTowardTeam() {
         ImportReport report = importFixture(EUROPEANS_MAG);
 
-        // MURABITO competed as an individual: the best floor score, but not the team's
-        assertFalse(score("Murabito", "Luca", Round.QUAL, Apparatus.FX).getCountsTowardTeamResult());
-        assertTrue(score("Langenegger", "Florian", Round.QUAL, Apparatus.FX).getCountsTowardTeamResult());
+        // MURABITO competed as an individual: the best floor score, but not the team's. Worked out from the
+        // totals, a score left out can't be told apart from a team member's dropped one
+        assertEquals(TeamScoreRole.DROPPED, score("Murabito", "Luca", Round.QUAL, Apparatus.FX).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, score("Langenegger", "Florian", Round.QUAL, Apparatus.FX).getTeamScoreRole());
         assertEquals(List.of(), report.getWarnings());
+    }
+
+    @Test
+    void testImport_TeamRolesStatedInTheScoresFile_AreStoredAsGiven() {
+        ImportReport report = importFixture(OCEANIA_MAG);
+
+        assertEquals(List.of(), report.getWarnings());
+        // A team member on some apparatus and the country's individual on others
+        assertEquals(TeamScoreRole.INDIVIDUAL, score("Malik", "Ritam", Round.AA, Apparatus.FX).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, score("Malik", "Ritam", Round.AA, Apparatus.VT).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, score("Malik", "Ritam", Round.AA, Apparatus.PB).getTeamScoreRole());
+        // Out-scoring a team member doesn't make an individual's score count
+        assertEquals(TeamScoreRole.DROPPED, score("Hardy", "James", Round.AA, Apparatus.FX).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, score("Greene", "Keegan", Round.AA, Apparatus.FX).getTeamScoreRole());
+        assertEquals(TeamScoreRole.INDIVIDUAL, score("Greene", "Keegan", Round.AA, Apparatus.HB).getTeamScoreRole());
+    }
+
+    @Test
+    void testImport_StatedCountingScoresNotAddingUpToTheTotal_Warns(@TempDir Path dir) throws IOException {
+        Path manifest = copyFixture(OCEANIA_MAG, dir);
+        Path floor = dir.resolve("2026-OCEANIA-CHAMPIONSHIPS-MAG-SR-SCORES-AA-FX.csv");
+        Files.writeString(floor, Files.readString(floor).replace(",13.000,INDIVIDUAL", ",13.000,COUNTING"));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(1, report.getWarnings().size(), report.getWarnings().toString());
+        assertTrue(report.getWarnings().get(0).contains("AUS team: its counting FX scores add up to 53.399, not "
+                + "the published 40.399"), report.getWarnings().get(0));
+        assertEquals(TeamScoreRole.COUNTING, score("Malik", "Ritam", Round.AA, Apparatus.FX).getTeamScoreRole());
+    }
+
+    @Test
+    void testImport_StatedTeamRoles_IndividualAndDidNotStart() {
+        ImportReport report = importFixture(OCEANIA_WAG);
+
+        assertEquals(List.of(), report.getWarnings());
+        // The fifth vaulter scored below every team member, and was still no part of the team
+        assertEquals(TeamScoreRole.INDIVIDUAL, score("Stewart", "Lucy", Round.AA, Apparatus.VT).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, score("Bayles", "Asher", Round.AA, Apparatus.UB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.INDIVIDUAL, score("Bayles", "Asher", Round.AA, Apparatus.BB).getTeamScoreRole());
+        assertEquals(ScoreStatus.DNS, score("Bayles", "Asher", Round.AA, Apparatus.BB).getRoutine().getStatus());
+    }
+
+    @Test
+    void testImport_TeamFinalRankingRoutinesOfASessionWithoutTeams_WorksOutTheRoles(@TempDir Path dir)
+            throws IOException {
+        Path manifest = copyFixture(OCEANIA_WAG, dir);
+        try (var files = Files.list(dir)) {
+            for (Path file : files.filter(f -> f.getFileName().toString().contains("-SCORES-")).toList()) {
+                Files.writeString(file, Files.readString(file).replaceAll("(?m),[^,\\n]*$", ""));
+            }
+        }
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(List.of(), report.getWarnings());
+        Session team = session(sessionRepository.findAll(), Round.TEAM, null);
+        assertEquals(Round.AA, team.getScoresSession().getRound());
+        assertEquals(TeamScoreRole.COUNTING, score("Whitehead", "Emily", Round.AA, Apparatus.VT).getTeamScoreRole());
+        // Worked out from the totals, the fifth vaulter can't be told from a dropped team member
+        assertEquals(TeamScoreRole.DROPPED, score("Stewart", "Lucy", Round.AA, Apparatus.VT).getTeamScoreRole());
     }
 
     @Test
@@ -552,7 +617,7 @@ class EventImporterTest {
                 report.getWarnings().get(0));
         assertTrue(report.getWarnings().get(0).contains("BB 43.0"), report.getWarnings().get(0));
         assertTrue(report.getWarnings().get(1).contains("CHN team total 164.996 differs"), report.getWarnings().get(1));
-        assertTrue(score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getCountsTowardTeamResult());
+        assertEquals(TeamScoreRole.COUNTING, score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getTeamScoreRole());
     }
 
     @Test

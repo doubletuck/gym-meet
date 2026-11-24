@@ -1,0 +1,46 @@
+# p19 (Media Book p. 8) All Around, WAG Senior. Columns VT UB BB FX (icons).
+# rank|bib|Given Surname|NOC|total, then APP|D|E|P|S|Final per routine (WAG prints no S), or APP|DNS ("Final DNS")
+1|209|Emily Whitehead|AUS|50.998
+VT|4.6|9.266|0.0||13.866
+UB|4.8|8.300|0.0||13.100
+BB|4.9|6.266|0.0||11.166
+FX|4.7|8.166|0.0||12.866
+2|208|Lucy Stewart|AUS|50.299
+VT|3.2|8.566|0.0||11.766
+UB|4.7|8.200|0.0||12.900
+BB|5.5|7.233|0.1||12.633
+FX|4.8|8.200|0.0||13.000
+3|204|Jun McDonald|NZL|48.398
+VT|3.8|8.633|0.0||12.433
+UB|4.9|7.633|0.0||12.533
+BB|5.1|6.166|0.1||11.166
+FX|5.1|7.466|0.3||12.266
+4|210|Audrey Hawkins|AUS|46.866
+VT|4.2|8.800|0.0||13.000
+UB|4.4|5.533|0.0||9.933
+BB|4.6|6.733|0.0||11.333
+FX|4.7|7.900|0.0||12.600
+5|202|Freya Reid|NZL|46.399
+VT|3.6|8.900|0.0||12.500
+UB|4.6|5.733|0.0||10.333
+BB|4.6|7.166|0.0||11.766
+FX|4.2|7.600|0.0||11.800
+6|206|Georgia Godwin|AUS|41.199
+VT|4.8|9.200|0.0||14.000
+UB|5.8|8.266|0.0||14.066
+BB|5.4|7.733|0.0||13.133
+7|205|Sienna Shields|NZL|40.432
+VT|4.6|8.300|0.0||12.900
+UB|3.1|4.066|0.3||6.866
+BB|4.3|4.633|0.0||8.933
+FX|5.0|6.733|0.0||11.733
+|201|Courtney McGregor|NZL|13.433
+VT|4.6|8.833|0.0||13.433
+|203|Reece Cobb|NZL|21.233
+BB|5.0|6.033|0.1||10.933
+FX|3.9|6.700|0.3||10.300
+# Beam prints nothing for BAYLES, though she is on the beam start list (CORRECTIONS: a DNS row)
+|207|Asher Bayles|AUS|12.933
+VT|4.2|8.733|0.0||12.933
+UB|DNS
+FX|DNS

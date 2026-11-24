@@ -1,0 +1,13 @@
+# Not in the book: the Elevien results site's "Teams (3+2) · MEN'S · Junior (Team)" page, from a screenshot
+# the user supplied (23 Nov 2026), kept as data/2026/2026-OCEANIA-CHAMPIONSHIPS/18531-2026-Oceania-Champs-MAG-JR-Teams.png.
+# Columns FX PH SR VT PB HB; format as MAG-SR-TEAM-SCORES.txt.
+T|1|Australia|212.528
+M|118|Elijah Wu|11.800|11.000|11.800|13.566|12.300|10.833
+M|115|Harry Makridakis|12.066|~10.200|10.833|12.666|~6.933|10.900
+M|116|Josef Neumann|~11.533|11.733|11.666|~12.533|11.300|~10.733
+M|117|Oscar Scott|12.333|11.033|~10.400|12.600|12.166|11.933
+# The site also ranks New Zealand 2nd with 115.063, every score of its two athletes:
+#   114 Erasmus Viljoen  12.033|10.500||12.166|11.200|
+#   113 William Davies   12.100|9.966|11.066|13.433|11.166|11.433
+# The book enters no New Zealand team (Entries by NOC: 0 teams), ranks Australia alone and awards no
+# team silver; the book is followed, and the two are individuals.

@@ -1,0 +1,15 @@
+# Not in the book: the Elevien results site's "Teams (3+2) · WOMEN'S · Senior (Team)" page, from a
+# screenshot the user supplied (23 Nov 2026), kept as data/2026/2026-OCEANIA-CHAMPIONSHIPS/18530-2026-Oceania-Champs-WAG-SR-Team.png. Columns VT UB BB FX; format as MAG-SR-TEAM-SCORES.txt.
+# AUS bars lists five team members, BAYLES's DNS among them (four performed).
+T|1|Australia|156.497
+M|207|Asher Bayles|~12.933|~DNS||~DNS
+M|210|Audrey Hawkins|13.000|~9.933|11.333|12.600
+M|209|Emily Whitehead|13.866|13.100|~11.166|12.866
+M|206|Georgia Godwin|14.000|14.066|13.133|
+M|208|Lucy Stewart||12.900|12.633|13.000
+T|2|New Zealand|138.229
+M|201|Courtney McGregor|13.433|||
+M|202|Freya Reid|12.500|10.333|11.766|11.800
+M|204|Jun McDonald|~12.433|12.533|11.166|12.266
+M|203|Reece Cobb|||10.933|~10.300
+M|205|Sienna Shields|12.900|6.866|~8.933|11.733

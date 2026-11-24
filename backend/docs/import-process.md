@@ -140,21 +140,29 @@ Totals are stored as published, never recomputed
 ([data-model.md](data-model.md) §5), so the importer checks them against the
 scores and reports any that don't agree as a warning:
 
-- **Team totals.** The results files don't mark which scores were dropped from
-  a team total, or which of a NOC's athletes were on the team — a NOC can enter
-  individual athletes alongside its team (the 2026 Europeans let teams add a
-  sixth). So the importer works it out from the published team apparatus
-  totals: it tries every group of the NOC's athletes, and a group is the team
-  if, on every apparatus, some number of its members' top scores adds up to the
-  published total. Those top scores counted; every other score of the NOC on
-  that apparatus gets `countsTowardTeamResult = false`, including the
-  individuals'. Groups that differ only by athletes whose scores never counted
-  agree on what counted. If no group fits, or groups that fit disagree, every
-  score is left as counting and a warning is reported. The team total is then
-  checked against the sum of its published apparatus totals plus any team
-  penalty (`SJ Penalty`). Team standings ranking another session's routines
-  are checked against that session's scores the same way, but leave which
-  scores counted to that session's own team standings.
+- **Team totals.** Where a scores file states each score's team role (the
+  optional `Team Role` column: `COUNTING`, `DROPPED`, `INDIVIDUAL`), it's
+  stored as given, and each published team apparatus total is checked against
+  the sum of the NOC's `COUNTING` scores; a NOC with roles stated for only some
+  of its scores is reported too. Otherwise the results files don't say which
+  scores were dropped from a team total, or which of a NOC's athletes were on
+  the team — a NOC can enter individual athletes alongside its team (the 2026
+  Europeans let teams add a sixth). So the importer works it out from the
+  published team apparatus totals: it tries every group of the NOC's athletes,
+  and a group is the team if, on every apparatus, some number of its members'
+  top scores adds up to the published total. Those top scores counted; every
+  other score of the NOC on that apparatus gets `teamScoreRole = DROPPED`,
+  including the individuals' (the totals can't tell them apart). Groups that
+  differ only by athletes whose scores never counted agree on what counted. If
+  no group fits, or groups that fit disagree, every score is left as counting
+  and a warning is reported. This assumes an athlete is on the team for every
+  apparatus or none; where the team's line-up changes by apparatus (the 2026
+  Oceania Championships' fifth athlete), only stated roles get it right. The
+  team total is then checked against the sum of its published apparatus totals
+  plus any team penalty (`SJ Penalty`). Team standings ranking another
+  session's routines are checked against that session's scores the same way,
+  and leave which scores counted to that session's own team standings where it
+  has any.
 - **All-around totals** against the sum of the athlete's scores in that
   session (or the session it ranks), plus any penalty on the result
   (`SJ Penalty`); for a split round's
