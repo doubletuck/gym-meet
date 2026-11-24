@@ -47,3 +47,7 @@ WAG-JR-JUDGES,AL BOUAINAIN Abeer,NOC Code,,QAT,NOC,other panels,AL BOUAINAIN Abe
 WAG-JR-JUDGES,SHIRAKAWA Chihiro,NOC Code,,JPN,NOC,other panels,SHIRAKAWA Chihiro: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to JPN
 WAG-JR-JUDGES,KOSHECHKINA Stella,NOC Code,,UZB,NOC,other panels,KOSHECHKINA Stella: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to UZB
 WAG-JR-JUDGES,ORTEGA Jasmin,NOC Code,,PHI,NOC,other panels,ORTEGA Jasmin: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to PHI
+MAG-SR-PARTICIPANTS,152,Birth Year,2000,2006,BIRTH_DATE,World Gymnastics athlete database,"The entry list swaps AL-KHALIDI's (licence 54342) and NAGHOUJ's (31183) birth dates; World Gymnastics has AL-KHALIDI born 2006 and NAGHOUJ 2000 (checked by the user), as the 2026 Tashkent World Challenge Cup prints"
+MAG-SR-PARTICIPANTS,152,Birth Date,2000-12-24,2006-11-10,BIRTH_DATE,World Gymnastics athlete database,"As above; NAGHOUJ's printed date, taken as swapped whole (agreed with the user)"
+MAG-SR-PARTICIPANTS,150,Birth Year,2006,2000,BIRTH_DATE,World Gymnastics athlete database,As above
+MAG-SR-PARTICIPANTS,150,Birth Date,2006-11-10,2000-12-24,BIRTH_DATE,World Gymnastics athlete database,"As above; AL-KHALIDI's printed date, taken as swapped whole (agreed with the user)"

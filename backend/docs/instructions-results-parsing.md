@@ -1446,6 +1446,10 @@ report across the books: juniors on its pages 1-2 of 5, seniors on 3-5.
 - **Team penalty** (WAG juniors LBN): a starred beam total and team total with `* Penalty -0.6`
   (§4.3).
 - **Junior athletes with every apparatus `DNS`** (MAG BAK Junwoo) print an empty E line.
+- **Swapped birth dates**: the MAG senior entry list prints NAGHOUJ (JOR, licence 31183) born
+  10 NOV 2006 and AL-KHALIDI (54342) 24 DEC 2000; World Gymnastics has NAGHOUJ born 2000 and
+  AL-KHALIDI 2006, as the 2026 Tashkent book prints. The whole dates are written swapped
+  (`BIRTH_DATE`, agreed with the user). Found when Tashkent's import met the years already recorded.
 - **Names**: MAG AZIZOV prints `Llyas` (Ilyas elsewhere, same licence: a `NAME` correction). Judges
   `CHENG Feng-Yi` and `CHEN Ming-Yao` are written as World Gymnastics' books print them (`JUDGE_NAME`).
   MAG apparatus supervisors `LIPING Huang`, printed given name first, is written `HUANG Liping`,
@@ -1573,7 +1577,9 @@ rotations; the start lists' dates agree). Top eight per apparatus, two per count
   and vault 2; MAG's `B` is inside the attempt. WAG's +0.2 prints as `(+0.2)` after vault 2's score
   and is in the total (`Combined Bonus` 0.2). The WAG qualification table prints each vaulter's birth
   year under the name: NAYAK and SAMANTA print 1995 and 2003 against the entry list's 1997 and 1995,
-  and the table's are written (`BIRTH_DATE`, agreed with the user). TELLO prints `DNF` with vault 2
+  and the table's are written (`BIRTH_DATE`, agreed with the user). AL-KHALIDI 2006 and NAGHOUJ 2000
+  are right (World Gymnastics); the Asian Championships' book had them swapped (§5.16). TELLO prints
+  `DNF` with vault 2
   `DNS`.
 - **Ties are always broken** (E, then D; vault the highest vault, then E, then D). The MAG rings and
   WAG vault finals have ties and no tie-break page.
