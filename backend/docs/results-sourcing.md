@@ -42,7 +42,10 @@ last sync: new results books, moved dates, cancellations.
 | Column | Description |
 |---|---|
 | FIG Event | FIG's event id: the EVENT.csv `FIG Event Number` |
-| Title, Start Date, End Date, City, Country, Venue | As FIG publishes them; the dates are the whole event's span |
+| Title | As FIG publishes it |
+| Priority | From the meets-list row linked to this event |
+| Status | The event's own state in its folder, or the meets-list Status when that was set by hand. `Imported` holds only for an event that is parsed: the 2026 African Championships row is imported, but its junior event shows `Downloaded` until it is parsed too |
+| Start Date, End Date, City, Country, Venue | As FIG publishes them; the dates are the whole event's span |
 | Level | FIG's level name (`Continental Games`, `World Challenge Cup`) |
 | FIG Group | FIG's competition group (`Group 1` … `Group 4`), when FIG gives one |
 | Categories | Discipline and age category pairs, MAG/WAG only (`MAG SR, WAG JR`) |
@@ -51,8 +54,7 @@ last sync: new results books, moved dates, cancellations.
 | Results Book | The FIG asset link of the Media results book, when FIG has one |
 | Digital Results | FIG's results page, when FIG publishes rankings online. These carry only ranks and totals, not enough to import |
 | Folder | The meet folder holding this FIG event |
-| Meet, Priority | The meets-list row linked to this event |
-| Status | The event's own state in its folder, or the meets-list Status when that was set by hand. `Imported` holds only for an event that is parsed: the 2026 African Championships row is imported, but its junior event shows `Downloaded` until it is parsed too |
+| Meet | The meets-list row linked to this event |
 
 ### Meet folder
 

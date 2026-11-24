@@ -15,6 +15,14 @@ describe("flagUrl", () => {
     expect(countryName("CAY")).toBe("Cayman Islands");
   });
 
+  it("names and flags the Commonwealth Games Associations", () => {
+    expect(countryName("ENG")).toBe("England");
+    expect(countryName("IOM")).toBe("Isle of Man");
+    expect(flagUrl("SCO")).toMatch(/\/gb-sct\.svg/);
+    expect(flagUrl("NIR")).toMatch(/\/gb-nir\.svg/);
+    expect(flagUrl("JEY")).toMatch(/\/je\.svg/);
+  });
+
   it("has no flag for neutral athletes, Chinese Taipei or an unknown code", () => {
     expect(flagUrl("AIN1")).toBeUndefined();
     expect(flagUrl("TPE")).toBeUndefined();

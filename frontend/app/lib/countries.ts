@@ -1,7 +1,8 @@
 /**
  * Country names for the IOC codes World Gymnastics uses (GER, NED, SUI, not
- * ISO's DEU, NLD, CHE). Covers every code in the imported data; an unknown
- * code is shown as itself.
+ * ISO's DEU, NLD, CHE), and for the Commonwealth Games Associations that
+ * compete apart at the Commonwealth Games (ENG, SCO, WAL, NIR, IOM, JEY).
+ * Covers every code in the imported data; an unknown code is shown as itself.
  */
 const COUNTRY_NAMES: Record<string, string> = {
   ALB: "Albania",
@@ -34,6 +35,7 @@ const COUNTRY_NAMES: Record<string, string> = {
   DOM: "Dominican Republic",
   ECU: "Ecuador",
   EGY: "Egypt",
+  ENG: "England",
   ESA: "El Salvador",
   ESP: "Spain",
   FIN: "Finland",
@@ -49,12 +51,14 @@ const COUNTRY_NAMES: Record<string, string> = {
   HUN: "Hungary",
   INA: "Indonesia",
   IND: "India",
+  IOM: "Isle of Man",
   IRI: "Iran",
   IRL: "Ireland",
   ISL: "Iceland",
   ISR: "Israel",
   ITA: "Italy",
   JAM: "Jamaica",
+  JEY: "Jersey",
   JOR: "Jordan",
   JPN: "Japan",
   KAZ: "Kazakhstan",
@@ -76,8 +80,10 @@ const COUNTRY_NAMES: Record<string, string> = {
   NAM: "Namibia",
   NCA: "Nicaragua",
   NED: "Netherlands",
+  NIR: "Northern Ireland",
   NOR: "Norway",
   NZL: "New Zealand",
+  PAK: "Pakistan",
   PAN: "Panama",
   PER: "Peru",
   PHI: "Philippines",
@@ -89,6 +95,7 @@ const COUNTRY_NAMES: Record<string, string> = {
   ROU: "Romania",
   RSA: "South Africa",
   RUS: "Russia",
+  SCO: "Scotland",
   SEN: "Senegal",
   SGP: "Singapore",
   SLO: "Slovenia",
@@ -110,6 +117,7 @@ const COUNTRY_NAMES: Record<string, string> = {
   UZB: "Uzbekistan",
   VEN: "Venezuela",
   VIE: "Vietnam",
+  WAL: "Wales",
   YEM: "Yemen",
   ZIM: "Zimbabwe",
 };
@@ -150,6 +158,7 @@ const FLAG_CODES: Record<string, string> = {
   DOM: "do",
   ECU: "ec",
   EGY: "eg",
+  ENG: "gb-eng",
   ESA: "sv",
   ESP: "es",
   FIN: "fi",
@@ -165,12 +174,14 @@ const FLAG_CODES: Record<string, string> = {
   HUN: "hu",
   INA: "id",
   IND: "in",
+  IOM: "im",
   IRI: "ir",
   IRL: "ie",
   ISL: "is",
   ISR: "il",
   ITA: "it",
   JAM: "jm",
+  JEY: "je",
   JOR: "jo",
   JPN: "jp",
   KAZ: "kz",
@@ -192,8 +203,10 @@ const FLAG_CODES: Record<string, string> = {
   NAM: "na",
   NCA: "ni",
   NED: "nl",
+  NIR: "gb-nir",
   NOR: "no",
   NZL: "nz",
+  PAK: "pk",
   PAN: "pa",
   PER: "pe",
   PHI: "ph",
@@ -205,6 +218,7 @@ const FLAG_CODES: Record<string, string> = {
   ROU: "ro",
   RSA: "za",
   RUS: "ru",
+  SCO: "gb-sct",
   SEN: "sn",
   SGP: "sg",
   SLO: "si",
@@ -225,6 +239,7 @@ const FLAG_CODES: Record<string, string> = {
   UZB: "uz",
   VEN: "ve",
   VIE: "vn",
+  WAL: "gb-wls",
   YEM: "ye",
   ZIM: "zw",
 };

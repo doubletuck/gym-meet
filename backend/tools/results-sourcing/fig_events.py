@@ -53,9 +53,10 @@ LEVELS = {
 AGE_CATEGORIES = {'Senior': 'SR', 'Junior': 'JR'}
 UNKNOWN_SUPPLIER = 'Not Known at the moment'
 
-FIG_EVENTS_COLUMNS = ['FIG Event', 'Title', 'Start Date', 'End Date', 'City', 'Country', 'Venue',
-                      'Level', 'FIG Group', 'Categories', 'Apparatus Suppliers', 'FIG Status', 'Results Book',
-                      'Digital Results', 'Folder', 'Meet', 'Priority', 'Status']
+# Priority and Status follow the title, to read the plan at a glance
+FIG_EVENTS_COLUMNS = ['FIG Event', 'Title', 'Priority', 'Status', 'Start Date', 'End Date', 'City', 'Country',
+                      'Venue', 'Level', 'FIG Group', 'Categories', 'Apparatus Suppliers', 'FIG Status',
+                      'Results Book', 'Digital Results', 'Folder', 'Meet']
 EVENT_COLUMNS = ['Prefix', 'Slug', 'Title', 'Short Name', 'Disciplines', 'Age Category', 'Level',
                  'Start Date', 'End Date', 'City', 'Country', 'Venue', 'FIG Event Number',
                  'Apparatus Suppliers']
