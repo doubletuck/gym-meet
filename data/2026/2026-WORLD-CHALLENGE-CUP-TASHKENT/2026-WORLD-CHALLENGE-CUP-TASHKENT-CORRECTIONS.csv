@@ -1,0 +1,27 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+MAG-SR-PARTICIPANTS,139,Name,AZAMOVAsadbek,AZAMOV Asadbek,NAME,results tables,"The entry list (p. 10) prints the name without a space; every results table and start list prints `AZAMOV Asadbek`"
+MAG-SR-PARTICIPANTS,139,Surname,,AZAMOV,NAME,results tables,As above
+MAG-SR-PARTICIPANTS,139,Given Name,AZAMOVAsadbek,Asadbek,NAME,results tables,As above
+WAG-SR-PARTICIPANTS,212,Birth Year,1997,1995,BIRTH_DATE,WAG vault qualification table,"The entry list (p. 9) prints 1997; the vault qualification table prints 1995 (agreed with the user)"
+WAG-SR-PARTICIPANTS,213,Birth Year,1995,2003,BIRTH_DATE,WAG vault qualification table,"The entry list (p. 9) prints 1995; the vault qualification table prints 2003 (agreed with the user)"
+MAG-SR-SCORES-EVENT-SR,142,D,,4.900,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,142,E,,8.950,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,147,D,,5.200,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,147,E,,8.550,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,147,B,,0.1,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,143,D,,4.700,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,143,E,,8.800,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,104,D,,4.200,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,104,E,,8.550,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,104,B,,0.1,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,101,D,,3.700,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,101,E,,8.850,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,105,D,,3.700,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,105,E,,8.600,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,105,B,,0.1,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,112,D,,3.500,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,112,E,,8.400,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,119,D,,4.800,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-EVENT-SR,119,E,,7.050,ROW,Elevien app (18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png),The book prints the rings final with totals only (p. 51)
+MAG-SR-SCORES-QUAL-VT,112,Status1,,DNS,ROW,Elevien app,"On the vault start list (p. 23) but left out of the results table (p. 40); Elevien has him DNS (from the user)"
+MAG-SR-SCORES-QUAL-VT,112,Status2,,DNS,ROW,Elevien app,"On the vault start list (p. 23) but left out of the results table (p. 40); Elevien has him DNS (from the user)"

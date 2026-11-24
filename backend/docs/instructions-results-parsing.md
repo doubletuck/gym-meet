@@ -229,7 +229,8 @@ decisions that come up while parsing.
   is shared. Varna's book does the same (MAG floor qualification: BOURDET and
   ZAVORY share 5th on equal E and D), and so does Koper's, which prints no
   shared rank at all. Szombathely's too (WAG beam qualification: MAYER and
-  ANDRADE share 1st on equal E and D; vault on the higher vault). Paris breaks every tie, vault
+  ANDRADE share 1st on equal E and D; vault on the higher vault). Tashkent breaks every tie (E, then
+  D; vault the highest vault, then E, then D). Paris breaks every tie, vault
   on the higher vault, then the higher E of either vault, then D. The African Championships break
   every tie in qualification, even at `0.000`, on E (vault: the higher vault), and the finals on
   E then D (WAG floor: DARIES 4th over MOALLIC, 12.100 and E 7.400 both).
@@ -339,7 +340,7 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper, Szombathely and Paris publish a single ranking,
+  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper, Szombathely, Paris and Tashkent publish a single ranking,
   Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
@@ -413,7 +414,7 @@ decisions that come up while parsing.
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
-| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG), or `SJ: <name> FIG` (Szombathely); the African Championships MAG `Competition Jury` (credited `UAG`: blank, like `UPAG`) | `TD`, apparatus blank |
+| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG; Tashkent's `<name> WG` / `<name> Wgym`, NOC blank), or `SJ: <name> FIG` (Szombathely); the African Championships MAG `Competition Jury` (credited `UAG`: blank, like `UPAG`) | `TD`, apparatus blank |
 | `Technical Delegate`, `Technical Delegate Assistant` (Paris Superior Jury) | `TD`, `TDA`, apparatus blank |
 | `Supervisor`; `Time`, `Line` printed once or twice on a panel (Antalya WAG) | `SV`; `T`/`L`, or `T1 T2`/`L1 L2` |
 | `Time Judge` (printed twice on Varna's beam panels), `Line Judge`, `Line Judge 1` | `T` or `T1 T2`, `L`, `L1` |
@@ -1527,6 +1528,72 @@ WAG Australia five, New Zealand three.
   are written with the full names World Gymnastics prints (`JUDGE_NAME`). The WAG sheet is headed
   "7 - 10 May 2026".
 
+### 5.18 Organizer media book, own layout (Tashkent World Challenge Cup)
+
+The Uzbek Federation's media book (`18291-ResultsbookMedia.pdf`, 74 pages, made with PDF Candy):
+every page has text except the cover, with no report codes; pages are found by their heading lines.
+A schedule (pp. 2-4), Number of Entries by NOC (p. 5), Medallists By Event (p. 6), Medals Standing
+(p. 7), the entry list (`Number of Athletes`, pp. 8-10), then per discipline the qualification start
+lists, the qualification judges, per apparatus the results (`Apparatus Results` / `MAG
+Qualification` / apparatus) and any `Tie-Break Report` on the next page, the finals start lists (one
+page a day), the finals judges and the finals. Parser:
+[`parse_2026_world_challenge_cup_tashkent.py`](../tools/results-parsing/parse_2026_world_challenge_cup_tashkent.py).
+
+**Structure.** An apparatus competition (§4.9) on the Baku pattern: qualification on 21-22 May,
+finals on 23-24 May, MAG FX/PH/SR and WAG VT/UB first, MAG VT/PB/HB and WAG BB/FX second (schedule
+rotations; the start lists' dates agree). Top eight per apparatus, two per country (no `NR` printed),
+`R1`-`R3`.
+
+| Report | Gives |
+|---|---|
+| Number of Athletes (pp. 8-10) | under `NOC – Country`, `SURNAME Given  Bib  Licence  Year`: the participants. MAG bibs 1xx, WAG 2xx |
+| Number of Entries by NOC (p. 5) | men and women per country (cross-checked; see below) |
+| Apparatus Results | every SCORES file; `Q`/`R1`-`R3` after the total |
+| Tie-Break Report | the tied athletes' rank, total and E (vault: the highest vault) (cross-checked) |
+| Qualification start lists | MAG a page per apparatus and subdivision, WAG a page per apparatus in group columns; `(HC)` marks hors concours (cross-checked as sets) |
+| Finals start lists | each final's eight starters and `R1`-`R3`, vaulters `2VT` (cross-checked) |
+| Medallists By Event (p. 6) | a cross-check only |
+| Elevien app screenshot (in the event folder) | the MAG rings final's D, E and bonus |
+
+**Gotchas**
+
+- **The entry list's names drift**: a long name wraps, sometimes onto another athlete's line
+  (`GOBADZE Ani MOTTEN` / `Dorien`; `Arda DEMIR` / `Sercan KARTIN Emirhan` for HAMARAT Volkan Arda,
+  DEMIR Sercan, KARTIN Emirhan), and numbers sit a line from their names. Each country's names are
+  read in order, split where an upper-case word follows a given name, and paired with its numbers
+  in order; every results table then confirms the names. `AZAMOVAsadbek` prints without a space (a
+  `NAME` correction).
+- **Columns** `D score E score [B] Pen Total`: `B` (MAG, not pommel horse) prints `0.0` for none,
+  `Pen` unsigned with two decimals and `0.00` for none (written negative, or blank).
+- **The MAG rings final prints totals only** (no D or E) and ranks TEMIRKHONOV over NGUYEN Van Khanh
+  Phong on equal 13.850, with no tie-break page. D, E and bonus come from a screenshot of the Elevien
+  app the user supplied (`18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png`), logged as `ROW`
+  corrections; they add up to every total and break the tie on E (8.950 / 8.550).
+- **Vault** prints `1` and vault 1, its score and the vault total on the athlete's line, then `2`
+  and vault 2; MAG's `B` is inside the attempt. WAG's +0.2 prints as `(+0.2)` after vault 2's score
+  and is in the total (`Combined Bonus` 0.2). The WAG qualification table prints each vaulter's birth
+  year under the name: NAYAK and SAMANTA print 1995 and 2003 against the entry list's 1997 and 1995,
+  and the table's are written (`BIRTH_DATE`, agreed with the user). TELLO prints `DNF` with vault 2
+  `DNS`.
+- **Ties are always broken** (E, then D; vault the highest vault, then E, then D). The MAG rings and
+  WAG vault finals have ties and no tie-break page.
+- **Hors concours**: MAG 135-138 and WAG 225-227, all UZB, print `(HC)` on the qualification start
+  lists only; they are not on the entry list and have no results, so are not written (§6 item 8).
+- **A start-list athlete left out of the table**: MAG SITCHINAVA is on the vault start list with no
+  row, not even `DNS`. Elevien has him `DNS`, so the parser adds a blank row and `ROW` corrections
+  set both vaults `DNS` (from the user). MAG floor subdivision IV prints its bibs against the wrong names
+  (`104 VU Tien Anh`; VU is 145).
+- **Number of Entries by NOC** swaps men and women for HUN, IND and ISL and counts 3 men for GEO and
+  VIE (4 each); its totals (42, 28, 70) agree with the entry list.
+- Judges: MAG `SUPERIOR JURY : Mr. HAN Yoon Soo WG` (`TD`, NOC blank), then panels `D1 D2 E1-E4` in
+  the grid FX/VT, PH/PB, SR/HB (icons; `T L1 L2` on floor, `L` on vault): the left column is day
+  one's apparatus, the right day two's. `R1` printed under each column (`R2` blank) is left out
+  (agreed with the user). WAG `Superior Jury: GRATT Johanna Wgym` (`TD`, NOC blank), panels VT/UB,
+  BB/FX (legend) with `Function Name NOC` and a category letter, `Time Judge 1`/`2` on beam, `Line
+  Judge 1`/`2` on floor, and reserves `R1`-`R4` (apparatus blank). Wrapped labels put their number
+  on the next line, beside the next judge's name; each judge is read at their NOC and category
+  letter.
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1561,6 +1628,7 @@ WAG Australia five, New Zealand three.
    so they are entries with no results. Szombathely's leaves its one (WAG KOVACS Regina, bib 224,
    on the beam start list only) off the entry list too, so she isn't written at all. Paris's six
    late French entries (§5.14) aren't marked hors concours, but their rows print no result either.
+   Tashkent's seven (§5.18) are on the start lists only, like Szombathely's, so aren't written.
    Their scores would need another source (the FIG results system) and a way to keep them out of the ranks.
 10. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury prints
    `Debbie` (RSA, judge number 2058) and `Rawan` (EGY, 4646) only. Rawan is written as ABOUSHOUSHA
