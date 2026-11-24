@@ -1,0 +1,39 @@
+{
+    "event" : {
+        "slug" : "2026-asian-championships-wag-jr",
+        "title" : "19th Junior Asian Championships",
+        "shortName" : "Asian Champs 2026",
+        "disciplines" : "WAG",
+        "ageCategory" : "JR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-06-26",
+        "endDate" : "2026-06-28",
+        "city" : "Zunyi",
+        "country" : "CHN",
+        "figEventNumber" : "18568",
+        "venue" : "Zunyi Olympic Sports Center",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-BB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-FX.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-UB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-VT.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-BB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-FX.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-UB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-AA.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-TEAM.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-AA.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

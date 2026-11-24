@@ -277,6 +277,12 @@ decisions that come up while parsing.
   goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
   The Mediterranean Games print it unsigned in the team report's `SJ Pen`
   column (POR WAG: `0.3`); it is written negative (`-0.3`), as deducted.
+  The Asian Championships star the totals a penalty was taken from and note
+  `* Penalty -0.6` under the team (WAG juniors LBN: −0.3 off the beam total for
+  overrunning the warm-up, −0.3 off the team total for its flag). The whole
+  `-0.6` is written as `SJ Penalty` and the starred apparatus total as its best
+  three scores (a `SCORE` correction), so the counting scores can be worked out
+  and the apparatus totals plus the penalty make the team total.
 - **An SJ penalty on a two-vault result** (Baku WAG vault qualification,
   MAKOVICKOVA: `0.3` printed unsigned under `SJ Pen.` between vault 1's score
   and the vault score, which is the average + 0.2 − 0.3; neither vault's own
@@ -1380,23 +1386,29 @@ juniors competed on 24 April.
 
 ### 5.16 Media book in the FIG layout, Starting Future print (Asian Championships)
 
-The Asian Gymnastics Union's senior media books, one per discipline (`18565-ResultsbookMedia.pdf`
-MAG, 73 pages; `18567-ResultsbookMedia.pdf` WAG, 66 pages), every results page with text. The
+The Asian Gymnastics Union's media books, one per discipline and age category
+(`18565-ResultsbookMedia.pdf` MAG seniors, 73 pages; `18566-…` MAG juniors, 49; `18567-…` WAG
+seniors, 66; `18568-…` WAG juniors, 59), every results page with text; each book is recognised by
+its title band (`19th JUNIOR MEN'S ARTISTIC GYMNASTICS ASIAN CHAMPIONSHIPS`). The
 layout and report suffixes are the FIG books' (§5.1); the footer code is `GA` + `M`/`W` + a unit
-(`101` team, `102` all-around, `103`… apparatus in Olympic order, `000` the whole meet) + a phase
+(`x01` team, `x02` all-around, `x03`… apparatus in Olympic order, where `x` is 1 for seniors, 3 for
+MAG juniors and 2 for WAG juniors; `000` the whole meet) + a phase
 (`900` qualification, `100` finals, `000` the medal pages) + the suffix: `GAM103900_73I` is MAG floor
 qualification. The Team Final and Team Qualification pages share a code (`_73C`/`_73D`), as do the
 two all-around reports (`_73G`/`_73H`); the printed title tells them apart. Parser:
 [`parse_2026_asian_championships.py`](../tools/results-parsing/parse_2026_asian_championships.py)
-(both books in one run).
+(all four books in one run).
 
 **Structure.** One competition (MAG 18 June, WAG 25 June, in subdivisions) is the qualification
 and the team and all-around finals (§4.9): the book prints the Team and All-Around Qualification
 rankings (every team and athlete, `Q`/`R1-R4`/`NR`) and, from the same routines, a Team Final (the
 top eight, same ranks and totals) and an All-Around Final (the 24 `Q`s, two per country, ranked 1-24:
-MAG HUNG 8th in qualification, 7th in the final). Apparatus finals MAG 20 June FX/PH/SR, 21 June
-VT/PB/HB; WAG 27 June VT/UB, 28 June BB/FX (schedule). Seniors only: the entry list starts at its
-page 3 of 5; the juniors' results are not in these books.
+MAG HUNG 8th in qualification, 7th in the final). Seniors: MAG qualification 18 June, finals
+20 June FX/PH/SR and 21 June VT/PB/HB; WAG qualification 25 June, finals 27 June VT/UB and 28 June
+BB/FX. Juniors a day later: MAG qualification 19 June, finals 20 June PH/SR/FX and 21 June
+PB/HB/VT; WAG qualification 26 June, finals 27 June UB/VT and 28 June FX/BB (schedules; the MAG
+junior book's title band says 25-28 June, a leftover from the WAG book). The entry list is one
+report across the books: juniors on its pages 1-2 of 5, seniors on 3-5.
 
 | Report | Gives |
 |---|---|
@@ -1426,6 +1438,11 @@ page 3 of 5; the juniors' results are not in these books.
 - **Finals that changed**: MAG high bar LI Hongyan (`Q`) prints `DNS` with his qualification rank
   and start order; WAG bars KE Qinqin out for QIU Qiyuan (`NR`, §4.6).
 - **WAG KRASNOPEROVA** (KGZ): "withdrawn on Uneven Bars" on the start lists; no bars row.
+- **The MAG junior book** has no qualification judges sheet, no qualification start lists, no
+  tie-break pages and no team or all-around medal pages; its `JUDGES` holds the finals only.
+- **Team penalty** (WAG juniors LBN): a starred beam total and team total with `* Penalty -0.6`
+  (§4.3).
+- **Junior athletes with every apparatus `DNS`** (MAG BAK Junwoo) print an empty E line.
 - **Names**: MAG AZIZOV prints `Llyas` (Ilyas elsewhere, same licence: a `NAME` correction). Judges
   `CHENG Feng-Yi` and `CHEN Ming-Yao` are written as World Gymnastics' books print them (`JUDGE_NAME`).
   MAG apparatus supervisors `LIPING Huang`, printed given name first, is written `HUANG Liping`,
@@ -1434,6 +1451,9 @@ page 3 of 5; the juniors' results are not in these books.
   written with their federation from World Gymnastics, given by the user (`NOC` corrections). The
   WAG finals sheet credits its supervisors and reserves R2-R4 to `AGU` too; the qualification sheet
   gives their federations, which are used. The two Presidents stay blank, as a Superior Jury does.
+  The junior books print the same officials and spellings, corrected the same way (the WAG junior
+  sheets credit the four supervisors to `AGU` on both rounds; the senior qualification sheet gives
+  their federations).
   The WAG qualification judges sheet is marked REVISED (floor E5 renamed TSAI I-Hsien); the
   revised sheet is the one printed.
 
@@ -1521,8 +1541,10 @@ WAG Australia five, New Zealand three.
 5. **Penalties attributed to an apparatus.** sporttech.io's export records CUB's
    team penalty against one routine (bib 338's parallel bars) and has fields
    for per-apparatus team penalties and individual all-around penalties; only
-   the team-level total is modelled (`TeamResult.sjPenalty`). Revisit if a book
-   prints a penalty against a team's apparatus total.
+   the team-level total is modelled (`TeamResult.sjPenalty`). The 2026 Asian
+   Championships WAG juniors print one against LBN's beam total (§4.3); it is
+   folded into the team's `SJ Penalty`. Revisit if the site should show where a
+   team penalty was taken.
 6. **SJ penalties on vault.** Baku printed an SJ penalty on a combined
    two-vault result (§4.3), stored as `Score.combinedSjPenalty` beside the
    per-attempt `SJ Penalty1`/`SJ Penalty2`. Check the Code of Points: an SJ

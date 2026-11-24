@@ -1,19 +1,19 @@
-"""Parse the 2026 Senior Asian Championships results books into the CSV standard.
+"""Parse the 2026 Asian Championships results books (senior and junior) into the CSV standard.
 
 Usage (needs poppler's pdftotext on PATH):
 
-    python3 -I parse_2026_asian_championships.py \\
-        data/2026/2026-ASIAN-CHAMPIONSHIPS/18565-ResultsbookMedia.pdf \\
-        data/2026/2026-ASIAN-CHAMPIONSHIPS/18567-ResultsbookMedia.pdf
+    python3 -I parse_2026_asian_championships.py data/2026/2026-ASIAN-CHAMPIONSHIPS/1856[5-8]-*.pdf
 
-The first book is MAG, the second WAG. Writes PARTICIPANTS, JUDGES, SCORES-QUAL-*, SCORES-EVENT-*,
-SUMMARY-QUAL-{TEAM,AA}, SUMMARY-FINAL-{TEAM,AA} and an IMPORT.json per discipline next to the
-PDFs, reading event metadata from the EVENT.csv already there. Exits non-zero if any check fails
+One book per discipline and age category (18565 MAG SR, 18566 MAG JR, 18567 WAG SR, 18568 WAG JR),
+each recognised by its title band. Writes PARTICIPANTS, JUDGES, SCORES-QUAL-*, SCORES-EVENT-*,
+SUMMARY-QUAL-{TEAM,AA}, SUMMARY-FINAL-{TEAM,AA} and an IMPORT.json per book next to the PDFs,
+reading event metadata from the EVENT.csv already there. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.16).
 
 Media books in the FIG layout, printed by Starting Future (footer codes like GAM103900_73I: G,
-M/W, a 3-digit unit -- 101 team, 102 all-around, 103.. apparatus -- a 3-digit phase -- 900
-qualification, 100 final -- and the report suffix). Seniors only.
+M/W, a 3-digit unit -- x01 team, x02 all-around, x03.. apparatus, x 1 for seniors, 3 for MAG
+juniors, 2 for WAG juniors -- a 3-digit phase -- 900 qualification, 100 final -- and the report
+suffix).
 
 One competition is the qualification, the Team Final and the All-Around Final at once. The book
 prints the qualification rankings (every team and athlete, with Q/R/NR) and, from the same
@@ -31,13 +31,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
 from common import D, split_surname_first as split_name
 
-PDFS = {'MAG': sys.argv[1], 'WAG': sys.argv[2]}
-OUT = os.path.dirname(os.path.abspath(PDFS['MAG']))
+OUT = os.path.dirname(os.path.abspath(sys.argv[1]))
 EVENT_PREFIX = '2026-ASIAN-CHAMPIONSHIPS'
 EVENTS = common.read_events(OUT, EVENT_PREFIX)
 checks = common.Checks()
 err = checks.err
-out = common.Output(OUT, common.Corrections(OUT, EVENT_PREFIX, ['MAG-SR', 'WAG-SR'], err))
+out = common.Output(OUT, common.Corrections(OUT, EVENT_PREFIX, ['MAG-SR', 'WAG-SR', 'MAG-JR', 'WAG-JR'], err))
+# The book being parsed: they're parsed one at a time, so its age category is held here
+AGE = None
+AGE_WORD = {'SR': 'Senior', 'JR': 'Junior'}
 
 G = {'MAG': 'M', 'WAG': 'W'}
 GENDER = {'MAG': "Men's", 'WAG': "Women's"}
@@ -45,16 +47,19 @@ APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', '
 SUMMARY_APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
 APP_NAME = {'FX': 'Floor Exercise', 'PH': 'Pommel Horse', 'SR': 'Rings', 'VT': 'Vault', 'PB': 'Parallel Bars',
             'HB': 'Horizontal Bar', 'UB': 'Uneven Bars', 'BB': 'Balance Beam'}
-UNIT = {'MAG': {a: str(103 + i) for i, a in enumerate(APPS['MAG'])},
-        'WAG': {a: str(103 + i) for i, a in enumerate(APPS['WAG'])}}
 # From each book's Competition Schedule page (never from report footers, §4.4). TEAM and AA are
 # rankings of the qualification's routines, competed the same day.
 SESSION_DATE = {
-    'MAG': {'QUAL': '2026-06-18',
-            'EVENT': {'FX': '2026-06-20', 'PH': '2026-06-20', 'SR': '2026-06-20',
-                      'VT': '2026-06-21', 'PB': '2026-06-21', 'HB': '2026-06-21'}},
-    'WAG': {'QUAL': '2026-06-25',
-            'EVENT': {'VT': '2026-06-27', 'UB': '2026-06-27', 'BB': '2026-06-28', 'FX': '2026-06-28'}},
+    ('MAG', 'SR'): {'QUAL': '2026-06-18',
+                    'EVENT': {'FX': '2026-06-20', 'PH': '2026-06-20', 'SR': '2026-06-20',
+                              'VT': '2026-06-21', 'PB': '2026-06-21', 'HB': '2026-06-21'}},
+    ('MAG', 'JR'): {'QUAL': '2026-06-19',
+                    'EVENT': {'PH': '2026-06-20', 'SR': '2026-06-20', 'FX': '2026-06-20',
+                              'PB': '2026-06-21', 'HB': '2026-06-21', 'VT': '2026-06-21'}},
+    ('WAG', 'SR'): {'QUAL': '2026-06-25',
+                    'EVENT': {'VT': '2026-06-27', 'UB': '2026-06-27', 'BB': '2026-06-28', 'FX': '2026-06-28'}},
+    ('WAG', 'JR'): {'QUAL': '2026-06-26',
+                    'EVENT': {'UB': '2026-06-27', 'VT': '2026-06-27', 'FX': '2026-06-28', 'BB': '2026-06-28'}},
 }
 # Invited countries print `*` for a rank: they enter no ranking
 INVITED = {'AUS'}
@@ -70,9 +75,10 @@ def footer(page):
     return None
 
 def find(disc, code, title=None, optional=False):
-    """0-based page indexes whose footer code matches and whose title block has the line `title`."""
+    """0-based page indexes whose footer code matches the pattern `code` and whose title block has
+    the line `title`."""
     pages = PAGES[disc]
-    idx = [i for i, p in enumerate(pages) if footer(p) == code]
+    idx = [i for i, p in enumerate(pages) if re.fullmatch(code, footer(p) or '')]
     if title:
         idx = [i for i in idx if any(l.strip() == title for l in pages[i].split('\n')[:10])]
     if not idx and not optional:
@@ -83,7 +89,15 @@ def lines(disc, idx):
     return [l for i in idx for l in PAGES[disc][i].split('\n')]
 
 def title(disc, what):
-    return f'Senior {GENDER[disc]} {what}'
+    return f'{AGE_WORD[AGE]} {GENDER[disc]} {what}'
+
+def book(path):
+    """(discipline, age category) of a book, from its title band."""
+    for l in common.pdf_pages(path)[1].split('\n')[:6]:
+        m = re.search(r"(SENIOR|JUNIOR) (MEN|WOMEN)'S ARTISTIC GYMNASTICS ASIAN CHAMPIONSHIPS", l)
+        if m:
+            return ('MAG' if m.group(2) == 'MEN' else 'WAG'), m.group(1)[0] + 'R'
+    raise SystemExit(f'{path}: no title band')
 
 # ---------------------------------------------------------------- participants
 MONTHS = {m: i + 1 for i, m in enumerate('JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split())}
@@ -107,7 +121,7 @@ def participants(disc, ev):
         if bib in NAMES:
             err(f'{disc} participants: duplicate bib {bib}')
         NAMES[bib] = (name, noc)
-        rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR',
+        rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': AGE,
                      'Event Start Date': ev['Start Date'], 'Order': len(rows) + 1, 'NOC Code': noc,
                      'Bib Number': bib, 'FIG License': lic or '', 'Name': name, 'Surname': sur,
                      'Given Name': giv, 'Birth Year': y, 'Birth Date': f'{y}-{MONTHS[mon]:02d}-{int(d):02d}',
@@ -154,13 +168,18 @@ def judges(disc, ev):
         sur, giv = split_name(name)
         if not sur or not giv:
             err(f'{disc} judges: name split {name!r}')
-        rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR',
+        rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': AGE,
                      'Event Start Date': ev['Start Date'], 'Round': rnd, 'Apparatus': app, 'Function': fn,
                      'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': judge_noc(noc)})
     sfx = '57A' if disc == 'MAG' else '57B'
     for rnd, code in (('QUAL', f'GA{G[disc]}000900_{sfx}'), ('EVENT', f'GA{G[disc]}000100_{sfx}')):
         n0, block, split_at, in_res = len(rows), -1, None, False
-        for l in lines(disc, find(disc, code)):
+        pages = find(disc, code, optional=True)
+        if not pages:
+            # The MAG junior book prints no qualification judges
+            print(f'  {disc} {AGE} judges {rnd}: no sheet')
+            continue
+        for l in lines(disc, pages):
             m = re.match(r'^\s+[MW]AG AGU President:?\s+(\S.*?)\s*$', l)
             if m:
                 add(rnd, '', 'President', m.group(1), ''); continue
@@ -195,13 +214,13 @@ def judges(disc, ev):
 
 # ---------------------------------------------------------------- apparatus tables
 def prefix(disc):
-    return f'{EVENT_PREFIX}-{disc}-SR'
+    return f'{EVENT_PREFIX}-{disc}-{AGE}'
 
 def meta(disc, rnd, app):
-    date = SESSION_DATE[disc][rnd]
+    date = SESSION_DATE[(disc, AGE)][rnd]
     if isinstance(date, dict):
         date = date[app]
-    return {'Event Name': EVENTS[prefix(disc)]['Title'], 'Discipline': disc, 'Age Category': 'SR',
+    return {'Event Name': EVENTS[prefix(disc)]['Title'], 'Discipline': disc, 'Age Category': AGE,
             'Session Start Date': date, 'Round': rnd, 'Part': '', 'Apparatus': app}
 
 def split_bp(vals, ctx):
@@ -259,7 +278,8 @@ TABLES = defaultdict(dict)  # disc -> (rnd, app) -> rows, for the tie-break and 
 def app_pages(disc, rnd, app, sfx):
     phase = '900' if rnd == 'QUAL' else '100'
     what = 'Qualification' if rnd == 'QUAL' else 'Final'
-    return find(disc, f'GA{G[disc]}{UNIT[disc][app]}{phase}_{sfx}', title(disc, f'{APP_NAME[app]} {what}'))
+    unit = APPS[disc].index(app) + 3
+    return find(disc, rf'GA{G[disc]}\d0{unit}{phase}_{sfx}', title(disc, f'{APP_NAME[app]} {what}'))
 
 def single_app(disc, rnd, app):
     ctx = f'{disc} {rnd} {app}'
@@ -398,7 +418,7 @@ def e_line(line, items, ctx):
         err(f'{ctx}: expected E line, got {line!r}'); return
     done = [it for it in items if it['D'] is not None]
     k = -1
-    for v in line[m.end() - 1:].split():
+    for v in line[m.end():].split():
         if re.fullmatch(r'\d+\.\d{3}', v):
             k += 1
             if k >= len(done):
@@ -424,7 +444,7 @@ def aa_report(disc, rnd):
     """All-Around Qualification (rnd QUAL) or All-Around Final (rnd AA) ranking."""
     sfx = '73G' if disc == 'MAG' else '73H'
     what = 'All-Around Qualification' if rnd == 'QUAL' else 'All-Around Final'
-    ls = lines(disc, find(disc, f'GA{G[disc]}102900_{sfx}', title(disc, what)))
+    ls = lines(disc, find(disc, rf'GA{G[disc]}\d02900_{sfx}', title(disc, what)))
     n, ctx0, athletes = len(APPS[disc]), f'{disc} {rnd} AA', []
     for i, l in enumerate(ls):
         m = re.match(r'^\s*' + RANK + r'?\s+(\d{3})\s+(.+?)\s{2,}([A-Z]{3})\s+D\s(.*)$', l)
@@ -461,7 +481,7 @@ def team_report(disc, rnd):
     """Team Qualification (rnd QUAL) or Team Final (rnd TEAM) ranking."""
     sfx = '73C' if disc == 'MAG' else '73D'
     what = 'Team Qualification' if rnd == 'QUAL' else 'Team Final'
-    ls = lines(disc, find(disc, f'GA{G[disc]}101900_{sfx}', title(disc, what)))
+    ls = lines(disc, find(disc, rf'GA{G[disc]}\d01900_{sfx}', title(disc, what)))
     n, ctx0 = len(APPS[disc]), f'{disc} {rnd} team'
     teams, team = [], None
     for i, l in enumerate(ls):
@@ -469,17 +489,23 @@ def team_report(disc, rnd):
         if m:
             rank, noc, _, rest = m.groups()
             base = m.start(4)
-            cols = [(base + x.end(1), x.group(1), x.group(2)) for x in
-                    re.finditer(r'(\d+\.\d{3})(?:\s+\((\d+)\))?', rest)]
+            # A total with a penalty taken off it is starred, the penalty noted on the next line
+            cols = [(base + x.end(1), x.group(1), x.group(3), bool(x.group(2))) for x in
+                    re.finditer(r'(\d+\.\d{3})(?:\s+(\*)?\((\d+)\))?', rest)]
             tail = rest.split()
             q = tail.pop() if tail[-1] in MARKERS else ''
+            starred = tail[-1].startswith('*')
+            pen = re.match(r'^\s+\* Penalty (-\d+\.\d+)\s*$', ls[i + 1])
+            if (any(c[3] for c in cols) or starred) != bool(pen):
+                err(f'{ctx0} {noc}: starred totals {[c[1] for c in cols if c[3]]} and penalty note {ls[i + 1]!r}')
             if len(cols) != n + 1:
                 err(f'{ctx0} {noc}: {len(cols) - 1} apparatus totals'); continue
             if (noc in INVITED) == any(c[2] for c in cols[:n]):
                 err(f'{ctx0} {noc}: apparatus ranks printed {[c[2] for c in cols[:n]]}')
             team = dict(Rank=check_rank(ctx0, rank, noc), NOC=noc, cols=[c[0] for c in cols[:n]],
                         totals=[c[1] for c in cols[:n]], ranks=[c[2] or '' for c in cols[:n]],
-                        Total=cols[n][1], Q=q, athletes=[], raw=[])
+                        Total=cols[n][1], Q=q, athletes=[], raw=[],
+                        starred=[c[3] for c in cols[:n]], Penalty=pen.group(1) if pen else '')
             teams.append(team)
             continue
         m = re.match(r'^\s+(\d{3}) (.+?)\s{2,}D(\s.*)?$', l)
@@ -510,13 +536,16 @@ def team_report(disc, rnd):
             apps = {APPS[disc][a]: routine(it, f'{ctx} {APPS[disc][a]}') for a, it in sorted(items.items())}
             team['athletes'].append(dict(Bib=bib, NOC=team['NOC'], apps=apps))
     for t in teams:
+        best = []
         for a, app in enumerate(APPS[disc]):
             sc = sorted((D(x['apps'][app]['Total']) for x in t['athletes']
                          if app in x['apps'] and x['apps'][app]['Total']), reverse=True)
-            if sum(sc[:3]) != D(t['totals'][a]):
+            best.append(sum(sc[:3]))
+            # A starred apparatus total has part of the team's penalty taken off it
+            if sum(sc[:3]) != D(t['totals'][a]) and not t['starred'][a]:
                 err(f'{ctx0} {t["NOC"]} {app}: best three {sum(sc[:3])} != {t["totals"][a]}')
-        if sum(D(x) for x in t['totals']) != D(t['Total']):
-            err(f'{ctx0} {t["NOC"]}: total mismatch')
+        if sum(best) + D(t['Penalty']) != D(t['Total']):
+            err(f'{ctx0} {t["NOC"]}: best threes {sum(best)} and penalty {t["Penalty"] or 0} != {t["Total"]}')
     checks.check_rank_order(ctx0, [dict(t, Bib=t['NOC']) for t in teams])
     return teams
 
@@ -536,7 +565,7 @@ def cross_check_qual(disc, athletes, ctx):
 
 def summary_meta(disc, rnd):
     ev = EVENTS[prefix(disc)]
-    return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
+    return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': AGE, 'Event Start Date': ev['Start Date'],
             'Round': rnd, 'Part': ''}
 
 SUMMARY_HEAD = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part']
@@ -546,7 +575,7 @@ def summary_team(disc, rnd, teams):
     hdr += ['Qualification'] if rnd == 'QUAL' else ['Scores Round']
     rows = []
     for t in teams:
-        r = summary_meta(disc, rnd) | {'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
+        r = summary_meta(disc, rnd) | {'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['Penalty'],
                                        'Total': t['Total'], 'Qualification': t['Q'], 'Scores Round': 'QUAL'}
         for a, app in enumerate(APPS[disc]):
             r[f'{app} Total'] = t['totals'][a]
@@ -595,18 +624,18 @@ def tie_breaks(disc):
         if not re.fullmatch(r'GA[MW]\d{6}_77[A-C]', code):
             continue
         head = [l.strip() for l in page.split('\n')[:10]]
-        what = next((h for h in head if h.startswith('Senior ')), '')
-        unit, phase = code[3:6], code[6:9]
-        if unit == '102':
+        what = next((h for h in head if h.startswith(AGE_WORD[AGE] + ' ')), '')
+        unit, phase = int(code[4:6]), code[6:9]
+        if unit == 2:
             # The all-around tie-break is titled "All-Around Final" but ranks the qualification
             table = {r['Bib']: r['Rank'] for r in AA_QUAL[disc]}
         else:
-            app = next(a for a, u in UNIT[disc].items() if u == unit)
+            app = APPS[disc][unit - 3]
             rnd = 'QUAL' if phase == '900' else 'EVENT'
             table = {r['Bib']: r['Rank'] for r in TABLES[disc][(rnd, app)]}
         # A rank the report shares (equal E and D) but the table splits is written shared and logged
         corrected = {(c['Key'], c['Corrected']) for c in out.corrections.rows
-                     if c['File'].startswith(f'{disc}-SR-SCORES-') and c['Field'] == 'Rank'}
+                     if c['File'].startswith(f'{disc}-{AGE}-SCORES-') and c['Field'] == 'Rank'}
         n = 0
         for l in page.split('\n'):
             m = re.match(r'^\s*(=?\d+)\s+(\d{3})\s+\S', l)
@@ -661,7 +690,7 @@ def medallists(disc):
     ls = lines(disc, find(disc, 'GA0000000_93'))
     medals, event = defaultdict(list), None
     for l in ls:
-        m = re.match(r'^(Senior \S+ [A-Za-z -]+?)\s{2,}\S{3} \d{2} [A-Z]{3}\s+(GOLD|SILVER|BRONZE)\s+(.+?)\s{2,}([A-Z]{3})\s*$', l)
+        m = re.match(r'^((?:Senior|Junior) \S+ [A-Za-z -]+?)\s{2,}\S{3} \d{2} [A-Z]{3}\s+(GOLD|SILVER|BRONZE)\s+(.+?)\s{2,}([A-Z]{3})\s*$', l)
         if m:
             event = m.group(1).split(' ', 2)[2]
             medals[event].append((m.group(2), m.group(3), m.group(4)))
@@ -685,9 +714,11 @@ def medallists(disc):
 # ---------------------------------------------------------------- run
 AA_QUAL, AA_FINAL, TEAM_FINAL = {}, {}, {}
 
-for disc in ('MAG', 'WAG'):
-    print(f'===== {disc}')
-    PAGES[disc] = common.pdf_pages(PDFS[disc])
+for path in sys.argv[1:]:
+    disc, AGE = book(path)
+    print(f'===== {disc} {AGE}')
+    PAGES[disc] = common.pdf_pages(path)
+    QUAL[disc].clear(); TABLES[disc].clear()
     ev = EVENTS[prefix(disc)]
     participants(disc, ev)
     judges(disc, ev)
