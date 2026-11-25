@@ -1844,8 +1844,11 @@ up to four, three counting; individuals from other NOCs.
   HAMIDI (`R1`). WAG bars KE for QIU (`NR`); floor ZHANG Qingying for ZHANG Yihan and AN Chang Ok for
   HAN Yon Mi (both `NR`).
 - Birth dates for GHADIMI Mehrdad (QAT, 137: 16 Jun 2003) and ANDREW Chiara Dawn (PHI, 537: 30 May
-  2006) differ from the 2026 Asian Championships entry list (5 Oct 2003, 20 May 2006); written as
-  printed (agreed with the user).
+  2006) differ from the 2026 Asian Championships entry list (5 Oct 2003, 20 May 2006). This book's are
+  right (checked by the user; World Gymnastics for ANDREW): the Asian Championships files carry
+  `BIRTH_DATE` corrections, and the two athletes' stored birth dates were corrected by hand, since a
+  reimport keeps athlete records. KANETA Kiichi (JPN, 116) prints licence 49174; his licence is 49574,
+  as the Baku Apparatus World Cup has it (a `LICENCE` correction).
 
 ## 6. Open items
 
