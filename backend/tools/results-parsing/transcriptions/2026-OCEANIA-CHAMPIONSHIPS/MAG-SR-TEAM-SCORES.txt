@@ -1,0 +1,18 @@
+# Not in the book: the Elevien results site's "Teams (3+2) · MEN'S · Senior (Team)" page, from a screenshot
+# the user supplied (23 Nov 2026), kept as data/2026/2026-OCEANIA-CHAMPIONSHIPS/18530-2026-Oceania-Champs-MAG-SR-Teams.png. Each team's members are listed with their scores per apparatus
+# (FX PH SR VT PB HB); a blank is an apparatus the athlete wasn't up on for the team (an athlete who
+# competed there did so as the individual); a score printed grey (dropped from the team total) is
+# written with a leading ~.
+# T|rank|Country|total, then M|bib|Given Surname|FX|PH|SR|VT|PB|HB
+T|1|Australia|234.294
+M|101|Ben Foster|13.433|~11.666|~11.233||12.766|12.666
+M|106|Heath Thorpe|12.900|||14.000||~12.200
+M|103|James Hardy|~12.866|11.766|12.800|~13.000|12.733|
+M|105|Jesse Moore|14.066|12.666|12.733|14.000|13.000|13.700
+M|104|Ritam Malik||12.333|12.633|13.266|~10.633|12.833
+T|2|New Zealand|205.294
+M|108|Alexander Istock|12.500|12.100|11.200|12.233|11.866|13.266
+M|112|Daniel Stoddart|12.266|5.766|12.900|12.900|11.133|11.133
+M|110|Keegan Greene|~12.000|||||
+M|107|Mikhail Koudinov|||||13.433|11.266
+M|109|William Fu-Allen|12.966|4.800|11.533|12.033|~8.300|~7.766

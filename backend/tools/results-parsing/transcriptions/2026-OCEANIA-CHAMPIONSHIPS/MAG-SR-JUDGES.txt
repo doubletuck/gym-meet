@@ -1,0 +1,56 @@
+# p7 (Media Book p. 6) "Judge Appointments - Continental - SJ Gareth Brettell (OGU)", a grid of
+# function rows by apparatus columns (Floor, Pommel, Rings, Vault, P Bar, High Bar).
+# APP|function as printed|name as printed (Given Surname)|federation as printed; the SJ has no apparatus.
+|SJ|Gareth Brettell|OGU
+FX|D1|Rohan Kennedy|AUS
+FX|D2|Toby Levine|NZL
+FX|E1|Damien Hewett|NZL
+FX|E2|Michael Hood|CAN
+FX|E3|Puay Sng|SGP
+FX|E4|David Williams|CAN
+FX|E5|Kath Graham|AUS
+FX|Line 1|Xavier Levier|NZL
+FX|Line 2|Glenn Ng|AUS
+FX|Time|Shanna Farenden|AUS
+FX|AS|Cameron Beeton|NZL
+PH|D1|Matt Palmer|NZL
+PH|D2|Andrew Cordery|AUS
+PH|E1|Perry Koh|SGP
+PH|E2|Kip Kemei|AUS
+PH|E3|Kyleab Ellis|NZL
+PH|E4|Rodrigo Caron|BRA
+PH|E5|Thorstein Fischer|CAN
+PH|AS|Matthew Lean|AUS / OGU
+SR|D1|Rohan Kennedy|AUS
+SR|D2|Toby Levine|NZL
+SR|E1|Damien Hewett|NZL
+SR|E2|Michael Hood|CAN
+SR|E3|Puay Sng|SIN
+SR|E4|David Williams|CAN
+SR|E5|Daren Wolfe|AUS
+SR|AS|Cameron Beeton|NZL
+VT|D1|Matt Palmer|NZL
+VT|D2|Andrew Cordery|AUS
+VT|E1|Perry Koh|SGP
+VT|E2|Kip Kemei|AUS
+VT|E3|Kyleab Ellis|NZL
+VT|E4|Rodrigo Caron|BRA
+VT|E5|Thorstein Fischer|CAN
+VT|Line 1|Shanna Farenden|AUS
+VT|AS|Matthew Lean|AUS / OGU
+PB|D1|Rohan Kennedy|AUS
+PB|D2|Toby Levine|NZL
+PB|E1|Damien Hewett|NZL
+PB|E2|Michael Hood|CAN
+PB|E3|Puay Sng|SIN
+PB|E4|David Williams|CAN
+PB|E5|Kath Graham|AUS
+PB|AS|Cameron Beeton|NZL
+HB|D1|Matt Palmer|NZL
+HB|D2|Andrew Cordery|AUS
+HB|E1|Perry Koh|SGP
+HB|E2|Daren Wolfe|AUS
+HB|E3|Kyleab Ellis|NZL
+HB|E4|Rodrigo Caron|BRA
+HB|E5|Thorstein Fischer|CAN
+HB|AS|Matthew Lean|AUS / OGU

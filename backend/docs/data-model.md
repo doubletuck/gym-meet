@@ -54,8 +54,13 @@ file can use either one.
 | OLYMPIC_GAMES | Olympic Games | |
 | WORLD_CHAMPIONSHIPS | World Championships | |
 | YOUTH_OLYMPIC_GAMES | Youth Olympic Games | |
-| CONTINENTAL_GAMES | Continental Games | e.g. Mediterranean Games, Pan American Games |
+| CONTINENTAL_GAMES | Continental Games | A continent's multi-sport games, e.g. Asian Games, Pan American Games |
 | CONTINENTAL_CHAMPIONSHIPS | Continental Championships | e.g. European Championships |
+| REGIONAL_GAMES | Regional Games | e.g. Mediterranean Games, Commonwealth Games |
+| REGIONAL_COMPETITION | Regional Competition | e.g. Central American and Caribbean Games, South American Games |
+
+These levels mix FIG's competition categories with its competition groups (Groups 1–4, in the
+General Judges' Rules); how events are classified is still to be settled.
 | WORLD_CUP | World Cup | |
 | WORLD_CHALLENGE_CUP | World Challenge Cup | |
 | INTERNATIONAL_TOURNAMENTS | International Tournament | Invitational events with international entries, below World Cup status |
@@ -217,6 +222,7 @@ Unique key: `(athlete_id, surname, given_name)`.
 | figEventNumber | String | Yes | FIG-assigned event code, when the event is FIG-sanctioned. Null for competitions run entirely by a domestic federation (e.g. a national championship). |
 | slug | String | No | The event's name in addresses, e.g. `2026-world-championships`: lowercase words separated by hyphens, unique across events. The importer takes it from the manifest's name ([import-process.md](import-process.md)). |
 | title | String | No | The event's name, e.g. "2026 European Championships." |
+| shortName | String | No | A few words for where the title won't fit, such as an athlete's personal bests: the name readers use, then the year, e.g. `Euros 2026`. The events of one competition share it (the 2026 European Championships' four events are all `Euros 2026`). At most 40 characters. |
 | startDate | LocalDate | No | First day of competition. |
 | endDate | LocalDate | No | Last day of competition. |
 | city | String | No | Host city. |
@@ -242,6 +248,7 @@ Europeans' Senior and Junior championships) are separate `Event`s.
 | ageCategory | AgeCategory | No | The age division competing in this round. |
 | apparatus | Apparatus, nullable | Yes | Which apparatus this session is for. Set when `round` is `EVENT` — an Apparatus Final is its own session per apparatus — and for `QUAL` at an apparatus-format event (a World Cup), where qualification on each apparatus is its own competition with its own day and judges. Null otherwise, since a championship's `QUAL`/`AA`/`TEAM` each cover all apparatus within one session (see `Score.apparatus` for the per-apparatus split of scores within those). |
 | part | Integer, nullable | Yes | Which occurrence of this round this session is, for a round split across more than one session — e.g. US Championships' two-day All-Around, where `round` is `AA` on both sessions and `part` is `1` and `2`, respectively. Null means the round as a whole: for the ordinary single-session round that's the only session, and for a split round it's an additional **whole-round session** holding the combined results (see below). |
+| scoresSessionId | Long, FK → `Session`, nullable | Yes | The session whose `Score`s this session's standings rank, when it has none of its own (see below). Null for every other session. |
 
 Unique key: `(event_id, round, discipline, ageCategory, apparatus, part)`,
 declared `NULLS NOT DISTINCT`. A standard SQL unique constraint treats two
@@ -259,6 +266,16 @@ combined standings: an `AllAroundResult` per athlete for the combined
 all-around and an `ApparatusResult` (§5.3) per athlete per apparatus for the
 combined apparatus standings. The whole-round session holds no `Score`s of its
 own. Its `date` is the first part's date, since it covers several days.
+
+**Standings ranking another session's routines.** When one competition is
+also the team and all-around finals, published as separate rankings of the
+same routines (2026 Asian Championships: the qualification's top eight teams
+and its 24 all-around qualifiers, two per country, re-ranked), the `TEAM` and
+`AA` sessions hold only those rankings (`TeamResult`, `AllAroundResult`), and
+`scoresSession` points at the `QUAL` session holding the `Score`s. The 2026 Asian
+Games do the same for the all-around final only; their team final has its own routines. Their `date`
+is that session's. `Session.sessionWithScores()` gives the session holding a
+session's routines: the one it ranks, or itself.
 
 ### `Judge`
 
@@ -327,7 +344,7 @@ the fields directly on `Score` describe the result and its rankings.
 | rank | Integer | Yes | Published placement on this apparatus within this `Session`, ranked on `routine.score` — for vault in qualification, the single-vault list ranking the whole field. In an apparatus final, the final's own placement. Where a session's only published vault ranking is a two-vault list (US Championships' Day 1 vault event; World Cup vault qualification, where every vaulter performs two vaults and there is no all-around), it's that ranking, on `totalScore`, and null for single-vault entrants. Null where the source publishes no per-session placement (US Championships Day 2; vault qualification at the 2026 Junior Pan American Championships, which prints no single-vault list). Copied as published, including tie-breaks, never recomputed. |
 | qualificationRank | Integer | Yes | Published placement in the ranking that decides qualification to the apparatus final. Set on every `QUAL` row: for vault it's the double-vault list rank (null for single-vault entrants); for every other apparatus — and for World Cup vault, which has only the two-vault ranking — it equals `rank`. Null outside `QUAL`. |
 | qualificationResult | QualificationResult | Yes | Outcome of qualifying to the apparatus final, read against `qualificationRank` (not `rank`). The two-per-country rule shows up here as `NR`, never as a changed rank. Only set on `QUAL` `Session`s. |
-| countsTowardTeamResult | Boolean | No | Whether this score counts toward its team's `TeamResult` total (§5.1). Only meaningful for a score earned in a `TEAM` (or team-qualification) `Session` — has no bearing on `AllAroundResult` (§5.2), which always uses every one of a participant's apparatus scores regardless of this flag. Defaults to `true`; set to `false` for the score(s) a drop-lowest rule excludes. The results files don't mark those, so the importer works them out from the published team apparatus totals ([import-process.md](import-process.md#checks)). |
+| teamScoreRole | [TeamScoreRole](../src/main/java/doubletuck/meet/domain/TeamScoreRole.java) | No | What this score does for its country's team (§5.1): `COUNTING` (one of the scores adding up to the team's apparatus total), `DROPPED` (a team member's score a drop-lowest rule left out) or `INDIVIDUAL` (an athlete competing as an individual on this apparatus: entered alongside the team, or a team's extra athlete competing only for another title, as at the 2026 Oceania Championships, where the fifth athlete on each apparatus competed for World Championships qualification). Only meaningful where a session ranks teams; has no bearing on `AllAroundResult` (§5.2), which always uses every one of a participant's apparatus scores. Defaults to `COUNTING`. Taken from the scores file where it states it (`Team Role`), else worked out from the published team apparatus totals, which can't tell an individual from a dropped team member and mark both `DROPPED` ([import-process.md](import-process.md#checks)). |
 
 Unique key: `(participant_id, session_id, apparatus)`.
 
@@ -437,7 +454,7 @@ own right: a team's total in a `TEAM` (or qualifying) session, an athlete's
 all-around total, and — for a round split into parts — an athlete's combined
 total on one apparatus across the parts. Both *could* be computed
 on read instead of stored — team totals from `Score.routine.score` where
-`countsTowardTeamResult` is true, all-around totals by summing a participant's
+`teamScoreRole` is `COUNTING`, all-around totals by summing a participant's
 apparatus `Score.routine.score` values for the session (no drop-lowest rule involved at
 all, unlike team scoring). Both use `routine.score`, not `totalScore`: for vault, team
 and all-around results count only the first vault, never the two-vault

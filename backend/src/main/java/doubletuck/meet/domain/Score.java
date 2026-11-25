@@ -88,7 +88,8 @@ public class Score extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private QualificationResult qualificationResult;
 
-    @NotNull(message = "Counts toward team result is required")
-    @Column(name = "counts_toward_team_result", nullable = false)
-    private Boolean countsTowardTeamResult = true;
+    @NotNull(message = "Team score role is required")
+    @Column(name = "team_score_role_code", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private TeamScoreRole teamScoreRole = TeamScoreRole.COUNTING;
 }

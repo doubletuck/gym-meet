@@ -85,7 +85,7 @@ Creates a new event. Requires a login.
 ### PUT /api/events/{id}
 
 Updates an existing event. Requires a login. Replaces `figEventNumber`,
-`slug`, `title`, `startDate`, `endDate`, `city`, `countryCode`, `venue`,
+`slug`, `title`, `shortName`, `startDate`, `endDate`, `city`, `countryCode`, `venue`,
 `apparatusSuppliers`, and `level`.
 
 **Path Parameters**
@@ -200,6 +200,7 @@ Returned by the `POST` and `PUT` endpoints.
 | figEventNumber | String | FIG-assigned event code, or `null` for non-FIG events |
 | slug | String | The event's name in addresses |
 | title | String | Event name |
+| shortName | String | A few words for where the title won't fit, e.g. `Euros 2026` |
 | startDate | LocalDate | First day of competition (ISO 8601, e.g. `2026-04-20`) |
 | endDate | LocalDate | Last day of competition (ISO 8601, e.g. `2026-04-26`) |
 | city | String | Host city |
@@ -219,6 +220,7 @@ Request body for `POST /api/events` and `PUT /api/events/{id}`.
 | figEventNumber | String | No | Max 20 characters | FIG-assigned event code, or no value for non-FIG events |
 | slug | String | Yes | Max 100 characters; lowercase words separated by hyphens | The event's name in addresses |
 | title | String | Yes | Max 200 characters | Event name |
+| shortName | String | Yes | Max 40 characters | For where the title won't fit: the name readers use, then the year, e.g. `Euros 2026`, `Worlds 2026`, `Baku WC 2026`. The events of one competition share it |
 | startDate | LocalDate | Yes | ISO 8601 | First day of competition |
 | endDate | LocalDate | Yes | ISO 8601 | Last day of competition |
 | city | String | Yes | Max 100 characters | Host city |
@@ -234,6 +236,7 @@ Request body for `POST /api/events` and `PUT /api/events/{id}`.
   "figEventNumber": "FIG-2026-EURO",
   "slug": "2026-european-championships",
   "title": "2026 European Championships",
+  "shortName": "Euros 2026",
   "startDate": "2026-04-20",
   "endDate": "2026-04-26",
   "city": "Stuttgart",

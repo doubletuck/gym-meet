@@ -69,4 +69,20 @@ public class Session extends BaseEntity {
      */
     @Column(name = "part")
     private Integer part;
+
+    /**
+     * The session whose routines this session's standings rank, when it has
+     * none of its own: at the 2026 Asian Championships one competition was the
+     * qualification and the team and all-around finals, published as separate
+     * rankings of the same routines. Null for a session with its own scores.
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "scores_session_id", foreignKey = @ForeignKey(name = "fk_session_scores_session"))
+    @ToString.Exclude
+    private Session scoresSession;
+
+    /** The session holding this session's routines: itself, or the one it ranks. */
+    public Session sessionWithScores() {
+        return scoresSession != null ? scoresSession : this;
+    }
 }

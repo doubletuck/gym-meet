@@ -1,0 +1,48 @@
+{
+    "event" : {
+        "slug" : "2026-central-american-caribbean-games-mag-sr",
+        "title" : "XXV Central American and Caribbean Games",
+        "shortName" : "CAC Games 2026",
+        "disciplines" : "MAG",
+        "ageCategory" : "SR",
+        "level" : "REGIONAL_COMPETITION",
+        "startDate" : "2026-08-02",
+        "endDate" : "2026-08-06",
+        "city" : "Santo Domingo Este",
+        "country" : "DOM",
+        "figEventNumber" : "18666",
+        "venue" : "Pabellon de Gimnasia - Parque del Este",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-AA-FX.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-AA-HB.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-AA-PB.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-AA-PH.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-AA-SR.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-AA-VT.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-EVENT-FX.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-EVENT-HB.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-EVENT-PB.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-EVENT-PH.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-EVENT-SR.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-EVENT-VT.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-QUAL-FX.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-QUAL-HB.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-QUAL-PB.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-QUAL-PH.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-QUAL-SR.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-CENTRAL-AMERICAN-CARIBBEAN-GAMES-MAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

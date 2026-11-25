@@ -67,13 +67,14 @@ PARTICIPANTS = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 
 JUDGES = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Apparatus', 'Function', 'Name',
           'Surname', 'Given Name', 'NOC Code']
 
-def score_header(vault, qual, combined_sj_penalty=False):
+def score_header(vault, qual, combined_sj_penalty=False, team_role=False):
     """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns.
-    The vault shape's optional `Combined SJ Penalty` follows `Combined Bonus`."""
+    The vault shape's optional `Combined SJ Penalty` follows `Combined Bonus`; the optional `Team Role`
+    comes last."""
     cols = VAULT if vault else ROUTINE
     if vault and combined_sj_penalty:
         cols = VAULT[:-1] + ['Combined SJ Penalty', 'Total']
-    return SCORE_META + cols + (QUALIFICATION if qual else [])
+    return SCORE_META + cols + (QUALIFICATION if qual else []) + (['Team Role'] if team_role else [])
 
 # ---------------------------------------------------------------- corrections
 CORRECTIONS = ['File', 'Key', 'Field', 'Printed', 'Corrected', 'Category', 'Source', 'Note']
@@ -163,7 +164,8 @@ class Output:
         # An optional Slug names the event's address, for a folder holding several events
         slug = {'slug': event['Slug']} if event.get('Slug') else {}
         manifest = {
-            'event': {**slug, 'title': event['Title'], 'disciplines': event['Disciplines'],
+            'event': {**slug, 'title': event['Title'], 'shortName': event['Short Name'],
+                      'disciplines': event['Disciplines'],
                       'ageCategory': event['Age Category'], 'level': event['Level'],
                       'startDate': event['Start Date'], 'endDate': event['End Date'], 'city': event['City'],
                       'country': event['Country'], 'figEventNumber': event['FIG Event Number'],

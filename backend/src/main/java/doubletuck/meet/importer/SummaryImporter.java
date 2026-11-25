@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
 /**
  * Imports {@code SUMMARY-*.csv} files: team standings (rows keyed by NOC),
  * all-around standings (rows keyed by bib), and a split round's combined
- * apparatus standings (rows keyed by bib and apparatus).
+ * apparatus standings (rows keyed by bib and apparatus). A {@code Scores Round}
+ * column marks standings that rank another round's routines.
  */
 @Component
 class SummaryImporter {
@@ -34,7 +35,8 @@ class SummaryImporter {
     void importFile(ImportContext context, String fileName) {
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
             Round round = row.requiredCode("Round", Round::find);
-            Session session = context.sessionForResults(round, null, row.integer("Part"), row);
+            Session session = context.sessionForResults(round, null, row.integer("Part"),
+                    row.code("Scores Round", Round::find), row);
             if (row.hasColumn("Apparatus")) {
                 importApparatusResult(context, row, session);
             } else if (row.hasColumn("Bib")) {

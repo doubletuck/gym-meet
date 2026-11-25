@@ -62,6 +62,10 @@ names the file and line.
    disciplines can run on different days under one title (the 2026 US
    Championships: MAG 6–8 August, WAG 7–9 August), so a manifest that matches
    on title and overlapping dates widens the event's dates to cover its own.
+   Every manifest needs a `shortName`; an existing event takes the
+   manifest's when it differs ("event short names updated"). Databases from
+   before short names start with each event's title cut to 40 characters,
+   until its manifests are imported again.
    More than one event matching is an error. A new event's slug is
    the manifest's `slug`, when it has one: the 2026 European Championships are
    four events (one per discipline and age category, each with its own FIG
@@ -99,7 +103,11 @@ held as one session per apparatus:
 
 The session's date is the `Session Start Date` of its scores. A split round's
 whole-round session (part blank), which holds only combined standings, is
-created from the summaries and dated on its first part.
+created from the summaries and dated on its first part. A summary with a
+`Scores Round` (2026 Asian Championships: the team and all-around finals,
+`QUAL`; 2026 Asian Games: the all-around final) creates its session too, linked to that round's session
+(`Session.scoresSession`) and dated on it; that round's scores must already be
+imported, and the session can have no scores of its own.
 
 A judge with no apparatus (Superior Jury) in a round held as one session per
 apparatus is attached to each of those sessions: the finals' Superior Jury
@@ -132,21 +140,32 @@ Totals are stored as published, never recomputed
 ([data-model.md](data-model.md) §5), so the importer checks them against the
 scores and reports any that don't agree as a warning:
 
-- **Team totals.** The results files don't mark which scores were dropped from
-  a team total, or which of a NOC's athletes were on the team — a NOC can enter
-  individual athletes alongside its team (the 2026 Europeans let teams add a
-  sixth). So the importer works it out from the published team apparatus
-  totals: it tries every group of the NOC's athletes, and a group is the team
-  if, on every apparatus, some number of its members' top scores adds up to the
-  published total. Those top scores counted; every other score of the NOC on
-  that apparatus gets `countsTowardTeamResult = false`, including the
-  individuals'. Groups that differ only by athletes whose scores never counted
-  agree on what counted. If no group fits, or groups that fit disagree, every
-  score is left as counting and a warning is reported. The team total is then
-  checked against the sum of its published apparatus totals plus any team
-  penalty (`SJ Penalty`).
+- **Team totals.** Where a scores file states each score's team role (the
+  optional `Team Role` column: `COUNTING`, `DROPPED`, `INDIVIDUAL`), it's
+  stored as given, and each published team apparatus total is checked against
+  the sum of the NOC's `COUNTING` scores; a NOC with roles stated for only some
+  of its scores is reported too. Otherwise the results files don't say which
+  scores were dropped from a team total, or which of a NOC's athletes were on
+  the team — a NOC can enter individual athletes alongside its team (the 2026
+  Europeans let teams add a sixth). So the importer works it out from the
+  published team apparatus totals: it tries every group of the NOC's athletes,
+  and a group is the team if, on every apparatus, some number of its members'
+  top scores adds up to the published total. Those top scores counted; every
+  other score of the NOC on that apparatus gets `teamScoreRole = DROPPED`,
+  including the individuals' (the totals can't tell them apart). Groups that
+  differ only by athletes whose scores never counted agree on what counted. If
+  no group fits, or groups that fit disagree, every score is left as counting
+  and a warning is reported. This assumes an athlete is on the team for every
+  apparatus or none; where the team's line-up changes by apparatus (the 2026
+  Oceania Championships' fifth athlete), only stated roles get it right. The
+  team total is then checked against the sum of its published apparatus totals
+  plus any team penalty (`SJ Penalty`). Team standings ranking another
+  session's routines are checked against that session's scores the same way,
+  and leave which scores counted to that session's own team standings where it
+  has any.
 - **All-around totals** against the sum of the athlete's scores in that
-  session, plus any penalty on the result (`SJ Penalty`); for a split round's
+  session (or the session it ranks), plus any penalty on the result
+  (`SJ Penalty`); for a split round's
   whole-round session, against the sum of the parts' totals. A published
   `0.000` for an athlete with no scores that day is not reported.
 - **Combined apparatus totals** (split rounds) against the sum of the parts'

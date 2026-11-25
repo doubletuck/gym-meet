@@ -30,6 +30,8 @@ class EnumLongNameTest {
         assertEquals(EventLevel.WORLD_CHAMPIONSHIPS, EventLevel.find("WORLD_CHAMPIONSHIPS"));
         assertEquals(EventLevel.WORLD_CHAMPIONSHIPS, EventLevel.find("World Championships"));
         assertEquals("International Tournament", EventLevel.INTERNATIONAL_TOURNAMENTS.getLongName());
+        assertEquals(EventLevel.REGIONAL_GAMES, EventLevel.find("Regional Games"));
+        assertEquals(EventLevel.REGIONAL_COMPETITION, EventLevel.find("REGIONAL_COMPETITION"));
     }
 
     @Test

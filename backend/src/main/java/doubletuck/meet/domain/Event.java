@@ -51,6 +51,12 @@ public class Event extends BaseEntity {
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
+    // A few words to name the event where the title won't fit, e.g. Euros 2026
+    @NotBlank(message = "Short name is required")
+    @Size(max = 40, message = "Short name must have 40 or fewer characters")
+    @Column(name = "short_name", nullable = false, length = 40)
+    private String shortName;
+
     @NotNull(message = "Start date is required")
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;

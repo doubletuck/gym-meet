@@ -1,9 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { data, Link, useSearchParams } from "react-router";
 
 import type { Route } from "./+types/session";
 import { eventQuery, queryClient, sessionResultsQuery } from "~/api/client";
-import type { Apparatus, SessionResults } from "~/api/types";
+import type { SessionResults } from "~/api/types";
 import {
   AllAroundTable,
   ScoreTable,
@@ -11,10 +12,12 @@ import {
   TeamTable,
   VaultTable,
   firstVaults,
+  standingsApparatus,
   vaultFinalQualifying,
 } from "~/components/results/tables";
 import { formatSessionDate } from "~/lib/format";
-import { APPARATUS_SHORT_LABELS, divisionLabel, sessionLabel } from "~/lib/labels";
+import { sessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
+import { Abbreviation, ApparatusCode, Division } from "~/components/Abbreviation";
 
 /** Finds the session the address names, then loads its results. */
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -37,9 +40,7 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
   return [{ title: `${loaderData.title}, ${loaderData.eventTitle}: Gym Meet` }];
 }
 
-type View = { key: string; label: string };
-
-const VAULT_FINAL_QUALIFYING = "VT-final";
+type View = { key: string; label: ReactNode };
 
 /**
  * The views a session's results offer, in the order a results book prints
@@ -49,17 +50,28 @@ const VAULT_FINAL_QUALIFYING = "VT-final";
  */
 function viewsOf(results: SessionResults, rankedOnFirstVault: boolean): View[] {
   return [
-    ...(results.teams.length ? [{ key: "teams", label: "Teams" }] : []),
-    ...(results.allAround.length ? [{ key: "all-around", label: "All-around" }] : []),
+    ...(results.teams.length ? [{ key: "teams", label: "Team" }] : []),
+    ...(results.allAround.length
+      ? [{ key: "all-around", label: <Abbreviation short="AA" label="All-Around" spoken /> }]
+      : []),
     ...results.apparatus.flatMap(({ apparatus, scores }) => [
-      { key: apparatus, label: APPARATUS_SHORT_LABELS[apparatus] },
+      { key: apparatus, label: <ApparatusCode apparatus={apparatus} /> },
       ...(apparatus === "VT" && rankedOnFirstVault && scores.some((row) => row.secondRoutine)
-        ? [{ key: VAULT_FINAL_QUALIFYING, label: "Vault Final Qual" }]
+        ? [
+            {
+              key: VAULT_FINAL_QUALIFYING,
+              label: (
+                <>
+                  <ApparatusCode apparatus="VT" /> Final Qual
+                </>
+              ),
+            },
+          ]
         : []),
     ]),
     ...results.apparatusStandings.map(({ apparatus }) => ({
       key: `combined-${apparatus}`,
-      label: APPARATUS_SHORT_LABELS[apparatus],
+      label: <ApparatusCode apparatus={apparatus} />,
     })),
   ];
 }
@@ -70,15 +82,16 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
   const { session } = results;
 
   const qualification = session.round === "QUAL";
-  const teamScoring = results.teams.length > 0;
   // A championship qualification ranks vault on the first vault; elsewhere vault is decided on two
   const rankedOnFirstVault = qualification && session.apparatus == null;
   const views = viewsOf(results, rankedOnFirstVault);
   const current = views.find((view) => view.key === searchParams.get("view")) ?? views[0];
-  const apparatusOrder: Apparatus[] = results.apparatus.map(({ apparatus }) => apparatus);
-  const allAroundApparatus: Apparatus[] = apparatusOrder.length
-    ? apparatusOrder
-    : results.apparatusStandings.map(({ apparatus }) => apparatus);
+  // A link from an athlete's page highlights their rows, kept as the views change
+  const athleteParam = Number(searchParams.get("athlete"));
+  const athleteId = Number.isInteger(athleteParam) && athleteParam > 0 ? athleteParam : undefined;
+  const viewPath = (key: string) =>
+    `?${new URLSearchParams({ view: key, ...(athleteId != null && { athlete: String(athleteId) }) })}`;
+  const columns = standingsApparatus(results);
 
   return (
     <>
@@ -89,7 +102,8 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
       </nav>
       <h1 className="mt-2 text-2xl font-semibold">{loaderData.title}</h1>
       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        {divisionLabel(session.discipline, session.ageCategory)} · {formatSessionDate(session.date, session.endDate)}
+        <Division discipline={session.discipline} ageCategory={session.ageCategory} /> ·{" "}
+        {formatSessionDate(session.date, session.endDate)}
       </p>
 
       {views.length > 1 && (
@@ -98,7 +112,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
             {views.map((view) => (
               <li key={view.key}>
                 <Link
-                  to={`?view=${view.key}`}
+                  to={viewPath(view.key)}
                   replace
                   preventScrollReset
                   aria-current={view.key === current?.key ? "page" : undefined}
@@ -121,10 +135,15 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
           <p className="text-gray-600 dark:text-gray-400">No results have been published for this session.</p>
         )}
         {current?.key === "teams" && (
-          <TeamTable rows={results.teams} apparatus={apparatusOrder} qualification={qualification} />
+          <TeamTable rows={results.teams} apparatus={columns} qualification={qualification} />
         )}
         {current?.key === "all-around" && (
-          <AllAroundTable rows={results.allAround} apparatus={allAroundApparatus} qualification={qualification} />
+          <AllAroundTable
+            rows={results.allAround}
+            apparatus={columns}
+            qualification={qualification}
+            athleteId={athleteId}
+          />
         )}
         {results.apparatus
           .filter(({ apparatus }) => apparatus === current?.key)
@@ -135,7 +154,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 apparatus={apparatus}
                 scores={scores}
                 qualification={qualification}
-                teamScoring={teamScoring}
+                athleteId={athleteId}
               />
             ) : rankedOnFirstVault ? (
               // The vault final's qualifiers are marked in its own view
@@ -144,10 +163,10 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 apparatus={apparatus}
                 scores={firstVaults(scores)}
                 qualification={false}
-                teamScoring={teamScoring}
+                athleteId={athleteId}
               />
             ) : (
-              <VaultTable key={apparatus} scores={scores} qualification={qualification} />
+              <VaultTable key={apparatus} scores={scores} qualification={qualification} athleteId={athleteId} />
             ),
           )}
         {current?.key === VAULT_FINAL_QUALIFYING &&
@@ -159,12 +178,13 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 scores={vaultFinalQualifying(scores)}
                 qualification
                 caption="Vault final qualification"
+                athleteId={athleteId}
               />
             ))}
         {results.apparatusStandings
           .filter(({ apparatus }) => `combined-${apparatus}` === current?.key)
           .map(({ apparatus, rows }) => (
-            <StandingsTable key={apparatus} apparatus={apparatus} rows={rows} />
+            <StandingsTable key={apparatus} apparatus={apparatus} rows={rows} athleteId={athleteId} />
           ))}
       </div>
 

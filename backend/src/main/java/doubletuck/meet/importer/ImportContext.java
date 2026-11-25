@@ -18,11 +18,14 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * State shared by the steps importing one manifest: the event and slice
@@ -56,6 +59,8 @@ class ImportContext {
     private final Map<String, Participant> participantsByBib = new HashMap<>();
     private final Map<SessionKey, Session> sessions = new LinkedHashMap<>();
     private final List<Score> scores = new ArrayList<>();
+    // Scores whose file states their team role (SCORES' Team Role column)
+    private final Set<Score> scoresWithTeamRole = Collections.newSetFromMap(new IdentityHashMap<>());
     private final List<TeamResult> teamResults = new ArrayList<>();
     private final List<AllAroundResult> allAroundResults = new ArrayList<>();
     private final List<ApparatusResult> apparatusResults = new ArrayList<>();
@@ -100,7 +105,10 @@ class ImportContext {
         SessionKey key = new SessionKey(round, sessionApparatus(round, apparatus), part);
         Session session = sessions.get(key);
         if (session == null) {
-            session = create(key, date);
+            session = create(key, date, null);
+        } else if (session.getScoresSession() != null) {
+            throw row.error("the " + describe(key) + " session ranks the " + session.getScoresSession().getRound()
+                    + " session's scores and can't have scores of its own");
         } else if (!session.getDate().equals(date)) {
             report.warn(row.location() + ": session date " + date + " differs from " + session.getDate()
                     + " already recorded for the " + describe(key) + " session");
@@ -112,12 +120,21 @@ class ImportContext {
      * The session a SUMMARY row belongs to. It must already exist from the
      * scores, except a split round's whole-round session (part null), which
      * holds only combined standings and is created here, dated on its first
-     * part.
+     * part, and a session ranking another round's routines ({@code scoresRound}),
+     * created here on that round's date.
      */
-    Session sessionForResults(Round round, Apparatus apparatus, Integer part, CsvRow row) {
+    Session sessionForResults(Round round, Apparatus apparatus, Integer part, Round scoresRound, CsvRow row) {
         SessionKey key = new SessionKey(round, sessionApparatus(round, apparatus), part);
         Session session = sessions.get(key);
+        if (scoresRound != null) {
+            return sessionRankingScoresOf(key, new SessionKey(scoresRound, sessionApparatus(scoresRound, apparatus),
+                    part), session, row);
+        }
         if (session != null) {
+            if (session.getScoresSession() != null) {
+                throw row.error("the " + describe(key) + " session ranks the " + session.getScoresSession().getRound()
+                        + " session's scores, so this row needs that Scores Round too");
+            }
             return session;
         }
         if (part == null) {
@@ -129,10 +146,25 @@ class ImportContext {
                     .min(Comparator.naturalOrder())
                     .orElse(null);
             if (firstPartDate != null) {
-                return create(key, firstPartDate);
+                return create(key, firstPartDate, null);
             }
         }
         throw row.error("no scores were imported for the " + describe(key) + " session this row belongs to");
+    }
+
+    private Session sessionRankingScoresOf(SessionKey key, SessionKey scoresKey, Session session, CsvRow row) {
+        Session scoresSession = sessions.get(scoresKey);
+        if (scoresSession == null || scoresSession.getScoresSession() != null) {
+            throw row.error("no scores were imported for the " + describe(scoresKey) + " session whose scores "
+                    + "the " + describe(key) + " session ranks");
+        }
+        if (session == null) {
+            return create(key, scoresSession.getDate(), scoresSession);
+        }
+        if (session.getScoresSession() != scoresSession) {
+            throw row.error("the " + describe(key) + " session has scores of its own or ranks another session's");
+        }
+        return session;
     }
 
     /**
@@ -160,7 +192,7 @@ class ImportContext {
         return isPerApparatus(round) ? apparatus : null;
     }
 
-    private Session create(SessionKey key, LocalDate date) {
+    private Session create(SessionKey key, LocalDate date, Session scoresSession) {
         Session session = new Session();
         session.setEvent(event);
         session.setDate(date);
@@ -169,6 +201,7 @@ class ImportContext {
         session.setAgeCategory(ageCategory);
         session.setApparatus(key.apparatus());
         session.setPart(key.part());
+        session.setScoresSession(scoresSession);
         session = sessionService.createSession(session);
         sessions.put(key, session);
         report.count("sessions");

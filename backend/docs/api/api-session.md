@@ -43,10 +43,15 @@ Which parts are filled depends on the round:
 |---|:-:|:-:|:-:|:-:|
 | Championship qualification | every apparatus | ✓ | ✓ | |
 | Team final | every apparatus | | ✓ | |
-| All-around final | every apparatus | ✓ | | |
+| All-Around final | every apparatus | ✓ | | |
 | Apparatus final, or apparatus-format qualification (World Cup) | one apparatus | | | |
 | A split round's part (US Championships' Day 1, Day 2) | every apparatus | ✓ | | |
 | A split round's combined session | | ✓ | | ✓ |
+| Team or All-Around final ranking another session's routines (2026 Asian Championships) | | ✓ (All-Around) | ✓ (Team) | |
+
+A final ranking another session's routines has no score tables of its own; its
+all-around rows' `apparatusScores` and team rows' `apparatusTotals` come from
+the routines it ranks (the qualification's), shown in that session's tables.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -88,7 +93,7 @@ One athlete's result on one apparatus.
 | total | Double, nullable | The result the apparatus is decided on: for two vaults, their published combination |
 | qualificationRank | Integer, nullable | Placement in the ranking that decides the apparatus final |
 | qualification | String, nullable | `Q`, `R1`–`R4` or `NR` |
-| countsTowardTeam | boolean | `false` for a score dropped from its team's total |
+| teamRole | String | What the score does for its team: `COUNTING`, `DROPPED` (a team member's score left out of the team total) or `INDIVIDUAL` (an athlete competing as an individual on the apparatus). `COUNTING` where no team is ranked |
 
 ### Routine Object
 

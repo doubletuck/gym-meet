@@ -1,0 +1,33 @@
+{
+    "event" : {
+        "slug" : "2026-oceania-championships-jr",
+        "title" : "Junior Oceania Championships",
+        "shortName" : "Oceania Champs 2026",
+        "disciplines" : "WAG",
+        "ageCategory" : "JR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-05-09",
+        "endDate" : "2026-05-09",
+        "city" : "Brisbane",
+        "country" : "AUS",
+        "figEventNumber" : "18531",
+        "venue" : "Sleeman Sports Complex",
+        "apparatusSuppliers" : "Spieth"
+    },
+    "participants" : [
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-SCORES-AA-BB.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-SCORES-AA-FX.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-SCORES-AA-UB.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-SCORES-AA-VT.csv"
+    ],
+    "summaries" : [
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-AA.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-TEAM.csv"
+    ]
+}

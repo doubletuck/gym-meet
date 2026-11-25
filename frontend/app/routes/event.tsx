@@ -3,9 +3,10 @@ import { Link } from "react-router";
 
 import type { Route } from "./+types/event";
 import { eventQuery, queryClient } from "~/api/client";
+import { Division } from "~/components/Abbreviation";
 import { countryName } from "~/lib/countries";
 import { formatDateRange, formatSessionDate } from "~/lib/format";
-import { divisionLabel, LEVEL_LABELS, sessionLabel, sessionPath } from "~/lib/labels";
+import { LEVEL_LABELS, sessionLabel, sessionPath } from "~/lib/labels";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   return queryClient.ensureQueryData(eventQuery(params.eventSlug));
@@ -30,7 +31,9 @@ export default function Event({ params }: Route.ComponentProps) {
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         {event.divisions.map((division) => (
           <section key={`${division.discipline}-${division.ageCategory}`}>
-            <h2 className="font-semibold">{divisionLabel(division.discipline, division.ageCategory)}</h2>
+            <h2 className="font-semibold">
+              <Division discipline={division.discipline} ageCategory={division.ageCategory} />
+            </h2>
             <ul className="mt-2 divide-y divide-gray-200 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
               {division.sessions.map((session) => (
                 <li key={session.id}>

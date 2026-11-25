@@ -3,9 +3,10 @@ import { Link } from "react-router";
 
 import type { Route } from "./+types/events";
 import { eventsQuery, queryClient } from "~/api/client";
+import { Division } from "~/components/Abbreviation";
 import { countryName } from "~/lib/countries";
 import { formatDateRange } from "~/lib/format";
-import { divisionLabel, LEVEL_LABELS } from "~/lib/labels";
+import { LEVEL_LABELS } from "~/lib/labels";
 
 export function meta(): Route.MetaDescriptors {
   return [
@@ -45,7 +46,7 @@ export default function Events() {
                       key={`${division.discipline}-${division.ageCategory}`}
                       className="rounded-full bg-gray-100 px-2 py-0.5 text-xs dark:bg-gray-800"
                     >
-                      {divisionLabel(division.discipline, division.ageCategory)}
+                      <Division discipline={division.discipline} ageCategory={division.ageCategory} />
                     </span>
                   ))}
                 </p>

@@ -1,0 +1,42 @@
+{
+    "event" : {
+        "slug" : "2026-commonwealth-games-wag-sr",
+        "title" : "XXIII Commonwealth Games 2026",
+        "shortName" : "CWG 2026",
+        "disciplines" : "WAG",
+        "ageCategory" : "SR",
+        "level" : "REGIONAL_GAMES",
+        "startDate" : "2026-07-24",
+        "endDate" : "2026-07-28",
+        "city" : "Glasgow",
+        "country" : "GBR",
+        "figEventNumber" : "18222",
+        "venue" : "Commonwealth Emirates Arena",
+        "apparatusSuppliers" : "Gymnova"
+    },
+    "participants" : [
+        "2026-COMMONWEALTH-GAMES-WAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-COMMONWEALTH-GAMES-WAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-AA-BB.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-AA-FX.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-AA-UB.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-AA-VT.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-EVENT-BB.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-EVENT-FX.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-EVENT-UB.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-EVENT-VT.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-QUAL-BB.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-QUAL-FX.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-QUAL-UB.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SUMMARY-QUAL-AA.csv",
+        "2026-COMMONWEALTH-GAMES-WAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

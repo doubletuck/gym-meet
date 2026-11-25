@@ -85,17 +85,17 @@ earlier.
 |-------|------|-------------|
 | apparatus | String | Apparatus code |
 | score | Double | The routine's score |
-| difficulty | Double, nullable | Its D score |
-| execution | Double, nullable | Its E score |
-| event | Object | `{slug, title, startDate, endDate}` of the meet |
+| routine | [Routine](api-session.md#routine-object) | Its breakdown: D, E, bonus and penalties, as on the session's results |
+| vault | Integer, nullable | Which of the session's two vaults it was, `1` or `2`; `null` on other apparatus, or where only one vault was expected |
+| event | Object | `{slug, title, shortName, startDate, endDate}` of the meet; `shortName` is a few words for it, e.g. `Euros 2026` |
 | session | [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) | Where it was scored, for a link to its results page |
 
 ### Entry Object
 
 | Field | Type | Description |
 |-------|------|-------------|
-| event | Object | `{slug, title, startDate, endDate}` |
+| event | Object | `{slug, title, shortName, startDate, endDate}`, as on [PersonalBest](#personalbest-object) |
 | noc | String | The country they competed for (IOC code) |
 | club | String, nullable | The club they entered for, where the entry list names one (national meets) |
 | entryStatus | String | `COMPETITOR`, `RESERVE`, `WITHDRAWN` or `HORS_CONCOURS`, as the entry list shows them; a reserve, withdrawn or hors concours athlete usually has no sessions |
-| sessions | List | The sessions they have results in, in competition order, each `{session, allAround, scores, apparatusStandings}`: `session` a [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object); `allAround` their `{rank, total, qualification}` in it, nullable; `scores` their scores in Olympic order, each a [ScoreRow](api-session.md#scorerow-object) without `bib`, `athlete`, `noc`, `club` and `countsTowardTeam` but with `apparatus`; `apparatusStandings` for a split round's combined session, their `{apparatus, rank, total}` on each apparatus |
+| sessions | List | The sessions they have results in, in competition order (including a team final ranking the routines of a session they competed in, where their country's team is ranked), each `{session, allAround, team, scores, apparatusStandings}`: `session` a [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object); `allAround` their `{rank, total, qualification}` in it, nullable; `team` the `{noc, rank, total, qualification}` of the team they competed for, where the session ranks teams (a team being their country's entry, as teams aren't rostered), nullable; `scores` their scores in Olympic order (empty in a final ranking another session's routines: they're listed under that session), each a [ScoreRow](api-session.md#scorerow-object) without `bib`, `athlete`, `noc`, `club` and `teamRole` but with `apparatus`; `apparatusStandings` for a split round's combined session, their `{apparatus, rank, total}` on each apparatus |

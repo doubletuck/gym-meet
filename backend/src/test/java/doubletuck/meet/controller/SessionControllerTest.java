@@ -80,8 +80,8 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].total").value(55.999))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].apparatusScores.UB")
                         .value(14.933))
-                .andExpect(jsonPath("$.apparatus[2].scores[?(@.athlete.givenName == 'Yihan')].countsTowardTeam")
-                        .value(false))
+                .andExpect(jsonPath("$.apparatus[2].scores[?(@.athlete.givenName == 'Yihan')].teamRole")
+                        .value("DROPPED"))
                 .andExpect(jsonPath("$.apparatus[2].scores[?(@.athlete.surname == 'Ke')].qualification")
                         .value("NR"));
     }
@@ -171,6 +171,28 @@ class SessionControllerTest {
                 .andExpect(jsonPath("$.allAround[0].parts", empty()))
                 .andExpect(jsonPath("$.apparatus[0].scores[?(@.athlete.surname == 'Moldauer')].club")
                         .value("U of Oklahoma"));
+    }
+
+    @Test
+    void testFindResults_FinalRankingTheQualificationsRoutines_ShowsThemWithoutScoreTables() throws Exception {
+        ApiTestFixtures.load(eventImporter, ApiTestFixtures.ASIAN_WAG);
+        Long allAroundFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.AA, null, null);
+        Long teamFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.TEAM, null, null);
+
+        mockMvc.perform(get("/api/sessions/{id}/results", allAroundFinal))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.session.slug").value("all-around-final"))
+                .andExpect(jsonPath("$.apparatus", empty()))
+                .andExpect(jsonPath("$.allAround", hasSize(6)))
+                .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Yeap')].rank").value(9))
+                .andExpect(jsonPath("$.allAround[0].athlete.surname").value("Ke"))
+                .andExpect(jsonPath("$.allAround[0].apparatusScores.BB").value(14.933))
+                .andExpect(jsonPath("$.allAround[0].qualification").value(nullValue()));
+        mockMvc.perform(get("/api/sessions/{id}/results", teamFinal))
+                .andExpect(jsonPath("$.apparatus", empty()))
+                .andExpect(jsonPath("$.teams[0].noc").value("CHN"))
+                .andExpect(jsonPath("$.teams[0].total").value(168.498))
+                .andExpect(jsonPath("$.teams[0].apparatusTotals.BB").value(44.899));
     }
 
     @Test

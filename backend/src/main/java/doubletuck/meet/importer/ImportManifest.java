@@ -22,6 +22,7 @@ public record ImportManifest(
     public record ManifestEvent(
             String slug,
             String title,
+            String shortName,
             String disciplines,
             String ageCategory,
             String level,

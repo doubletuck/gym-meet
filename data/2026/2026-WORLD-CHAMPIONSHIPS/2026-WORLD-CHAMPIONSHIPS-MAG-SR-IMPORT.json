@@ -1,6 +1,7 @@
 {
     "event" : {
         "title" : "54th Artistic Gymnastics World Championships",
+        "shortName" : "Worlds 2026",
         "disciplines" : "MAG",
         "ageCategory" : "SR",
         "level" : "WORLD_CHAMPIONSHIPS",

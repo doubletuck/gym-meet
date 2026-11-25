@@ -2,6 +2,7 @@
     "event" : {
         "slug" : "2026-european-championships-wag-jr",
         "title" : "36th Junior European Championships",
+        "shortName" : "Euros 2026",
         "disciplines" : "WAG",
         "ageCategory" : "JR",
         "level" : "CONTINENTAL_CHAMPIONSHIPS",

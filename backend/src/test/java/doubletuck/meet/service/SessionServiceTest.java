@@ -39,6 +39,7 @@ class SessionServiceTest {
 
         testEvent = new Event();
         testEvent.setTitle("2026 European Championships");
+        testEvent.setShortName("Test");
         testEvent.setSlug("2026-european-championships");
         testEvent.setStartDate(LocalDate.of(2026, 4, 20));
         testEvent.setEndDate(LocalDate.of(2026, 4, 26));

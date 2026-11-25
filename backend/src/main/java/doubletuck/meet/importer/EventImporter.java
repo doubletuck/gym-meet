@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -82,6 +83,9 @@ public class EventImporter {
                 manifest.event().disciplines(), manifestFile);
         AgeCategory ageCategory = required(AgeCategory.find(manifest.event().ageCategory()), "ageCategory",
                 manifest.event().ageCategory(), manifestFile);
+        if (manifest.event().shortName() == null || manifest.event().shortName().isBlank()) {
+            throw new ImportException(manifestFile.getFileName() + ": event shortName is required");
+        }
         Event event = resolveEvent(manifest.event(), manifestFile, discipline, ageCategory, report);
 
         List<Session> existing = sessionRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
@@ -119,7 +123,7 @@ public class EventImporter {
                             + event.getStartDate()
                             + ") matched by FIG event number has a different title or start date than the manifest");
                 }
-                return event;
+                return updateShortName(event, source, report);
             }
         } else {
             List<Event> overlapping = eventRepository
@@ -130,7 +134,7 @@ public class EventImporter {
                         + " events titled " + source.title() + " overlap the manifest's dates");
             }
             if (!overlapping.isEmpty()) {
-                return widenDates(overlapping.getFirst(), source, report);
+                return updateShortName(widenDates(overlapping.getFirst(), source, report), source, report);
             }
         }
 
@@ -138,6 +142,7 @@ public class EventImporter {
         event.setSlug(newSlug(source.slug(), manifestFile, discipline, ageCategory));
         event.setFigEventNumber(figEventNumber);
         event.setTitle(source.title());
+        event.setShortName(source.shortName().trim());
         event.setStartDate(source.startDate());
         event.setEndDate(source.endDate());
         event.setCity(source.city());
@@ -147,6 +152,15 @@ public class EventImporter {
         event.setLevel(required(EventLevel.find(source.level()), "level", source.level(), manifestFile));
         report.count("events created");
         return eventRepository.save(event);
+    }
+
+    private Event updateShortName(Event event, ImportManifest.ManifestEvent source, ImportReport report) {
+        String shortName = source.shortName().trim();
+        if (!shortName.equals(event.getShortName())) {
+            event.setShortName(shortName);
+            report.count("event short names updated");
+        }
+        return event;
     }
 
     /**
@@ -212,7 +226,10 @@ public class EventImporter {
             allAroundResultRepository.deleteBySession(session);
             apparatusResultRepository.deleteBySession(session);
         }
-        sessionRepository.deleteAll(sessions);
+        // A session ranking another's scores goes first, as it refers to that one
+        sessionRepository.deleteAll(sessions.stream()
+                .sorted(Comparator.comparing((Session session) -> session.getScoresSession() == null))
+                .toList());
         sessionRepository.flush();
         report.count("sessions replaced", sessions.size());
 

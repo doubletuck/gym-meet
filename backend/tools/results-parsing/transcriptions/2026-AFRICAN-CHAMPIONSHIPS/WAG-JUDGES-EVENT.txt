@@ -1,0 +1,45 @@
+# p56 Judges assignment, Apparatus Finals (a photograph). APP|function|SURNAME|Given|NOC as printed; each row
+# also prints a seat number and a judge number, not transcribed. Panels two to a row: VT UB / BB FX (named).
+# The Superior Jury prints a given name only. "SUPERIOR JURY 2  4646  Rawan  EGY" is transcribed with the
+# surname blank (supplied by a correction); "SUPERIOR JURY 1  2058  Debbie  RSA" is not transcribed, a judge
+# needing a surname. Reserve rows printed empty.
+|SUPERIOR JURY 2||Rawan|EGY
+VT|AS|SEBIHI|Ouahiba|ALG
+VT|D1|MONTREUIL|Andrée|CAN
+VT|D2|BEZUIDENHOUT|Leandri|RSA
+VT|E1|GEORGIOU|Marilena|CYP
+VT|E2|DELGADO MIRAND|Diana|PER
+VT|E3|FRAUENKNECHT|Christine|SUI
+VT|E4|MORENO GAMBOA|Mabel Nayibe|COL
+VT|E5|SAKR|Chahed|TUN
+VT|L|ELKHASHAB|Ingi|EGY
+UB|AS|LALIBERTE|Helene|CAN
+UB|D1|FRAUENKNECHT|Christine|SUI
+UB|D2|AHMED ELMERIDI|Mariam Samir|EGY
+UB|E1|SAKR|Chahed|TUN
+UB|E2|DELGADO MIRANDA|Diana|PER
+UB|E3|MORENO GAMBOA|Mabel Nayibe|COL
+UB|E4|GEORGIOU|Marilena|CYP
+UB|E5|SEBIHI|Ouahiba|ALG
+UB|T|SAHLAL|Karima|MAR
+BB|AS|SEBIHI|Ouahiba|ALG
+BB|D1|MONTREUIL|Andrée|CAN
+BB|D2|BEZUIDENHOUT|Leandri|RSA
+BB|E1|FRAUENKNECHT|Christine|SUI
+BB|E2|DELGADO MIRAND|Diana|PER
+BB|E3|SAKR|Chahed|TUN
+BB|E4|GEORGIOU|Marilena|CYP
+BB|E5|MORENO GAMBOA|Mabel Nayibe|COL
+BB|T1|FAHMY|Amira|EGY
+BB|T2|SAHLAL|Karima|MAR
+FX|AS|LALIBERTE|Helene|CAN
+FX|D1|FRAUENKNECHT|Christine|SUI
+FX|D2|AHMED ELMERIDI|Mariam Samir|EGY
+FX|E1|MORENO GAMBOA|Mabel Nayibe|COL
+FX|E2|GEORGIOU|Marilena|CYP
+FX|E3|SAKR|Chahed|TUN
+FX|E4|DELGADO MIRANDA|Diana|PER
+FX|E5|SAHLAL|Karima|MAR
+FX|L1|SEBIHI|Ouahiba|ALG
+FX|L2|HAUPTFLEISCH|Elizabeth|RSA
+FX|T|BAKKER|Mariolize|RSA

@@ -6,6 +6,8 @@ each kind of source document does. The *what* — every file, column and its
 database mapping — is [`import-file-model.md`](import-file-model.md); the
 entities are in [`data-model.md`](data-model.md).
 
+- Where the PDFs, the FIG records and the draft `EVENT.csv` in a meet folder come from, and
+  how meets are tracked, is [`results-sourcing.md`](results-sourcing.md).
 - The step-by-step procedure is the `parse-results` skill
   (`.claude/skills/parse-results/SKILL.md`), which refers back here.
 - Parsers live in [`tools/results-parsing/`](../tools/results-parsing/): one
@@ -54,7 +56,9 @@ gymnastics book from another competition.
 ### 2.3 Scanned pages
 
 A page with no text layer gives `pdftotext` nothing (`pdfimages -list` shows a
-full-page image). No OCR package is installed; read the pages as images instead:
+full-page image, or, for a page laid out in CorelDRAW with its text converted to
+outlines, only the logos: the 2026 African Championships). No OCR package is
+installed; read the pages as images instead:
 
 - **Map the book** with
   [`contact_sheet.py`](../tools/results-parsing/contact_sheet.py): it stacks
@@ -82,6 +86,14 @@ full-page image). No OCR package is installed; read the pages as images instead:
   look-alikes in names; arithmetic alone misses a dropped bare `0`, so compare
   with a text copy when there is one. Other layouts need a new `ocr_draft.py`
   mode.
+- **When OCR drops whole columns** of numbers (the African Championships'
+  outlined text: Vision's accurate recognizer skipped most D scores on a page),
+  run `ocr_pages.swift --fast` too, into a second folder: the fast recognizer
+  reads the numbers but drops lone characters (ranks, `Q`). `ocr_draft.py
+  <fast> merge <accurate> <out>` keeps every fast word plus the accurate words
+  that overlap none, and the drafting modes read the merged folder. A dense
+  multi-apparatus table reads better still cropped into one strip per
+  apparatus (`sips -c <h> <w> --cropOffset <y> <x>`) and OCR'd strip by strip.
 
 ### 2.4 Read the header row first, every time
 
@@ -181,7 +193,12 @@ decisions that come up while parsing.
   entry struck through on the list is `WITHDRAWN` (Senior Pan Americans WAG
   bib 127; the "Number of Entries" counts include it). An entry marked
   `(Hors Concours)` is `HORS_CONCOURS` (Varna: five BUL athletes, counted
-  `6 + 4 (HC)` on the entries by NOC page).
+  `6 + 4 (HC)` on the entries by NOC page), and so is an invited country that
+  "does not enter any ranking" (Asian Championships MAG: Australia, whose rows
+  print `*` for a rank and are kept with `Rank` blank).
+- **An entry list can cut a name short too**: the 2026 Central American and Caribbean Games print
+  `FERNANDEZ RODRIGUEZ Melissa Del Car` (WAG bib 131); the start lists and results have `Melissa
+  Del Carmen`, written in `PARTICIPANTS` as a `NAME` correction.
 - **Truncation happens anywhere a name is long** — narrow vault columns, but
   also normal tables (`BORDELAIS-MAISONNABLE` without his given name, initials
   like `KUBON CV` in all-around tables). Always diff against `PARTICIPANTS`.
@@ -215,8 +232,26 @@ decisions that come up while parsing.
   is shared. Varna's book does the same (MAG floor qualification: BOURDET and
   ZAVORY share 5th on equal E and D), and so does Koper's, which prints no
   shared rank at all. Szombathely's too (WAG beam qualification: MAYER and
-  ANDRADE share 1st on equal E and D; vault on the higher vault). Paris breaks every tie, vault
-  on the higher vault, then the higher E of either vault, then D.
+  ANDRADE share 1st on equal E and D; vault on the higher vault). Tashkent breaks every tie (E, then
+  D; vault the highest vault, then E, then D). Paris breaks every tie, vault
+  on the higher vault, then the higher E of either vault, then D. The African Championships break
+  every tie in qualification, even at `0.000`, on E (vault: the higher vault), and the finals on
+  E then D (WAG floor: DARIES 4th over MOALLIC, 12.100 and E 7.400 both).
+  The Asian Championships print a Tie Break Report per table (E, then D; vault: the higher vault,
+  then E, then D; all-around: the best five, four, … apparatus scores, then E, then D) whose ranks
+  match the tables, except where it shares a rank the table splits on equal E and D (MAG floor
+  DE LEON and TRINH `=45`, the table 45 and 46; parallel bars TIAN and ERGASHEV `=14`): the shared
+  rank is written, as the report's rule ("will share the same classification") says, and logged
+  as a `TIE_BREAK` correction.
+  The Central American and Caribbean Games break every tie the same way, and their Tie Break
+  Reports' ranks match the tables (all-around: the best three, two, one apparatus scores, then E,
+  then D); equal on E and D, the rank is shared (MAG floor final: NUÑEZ FARFAN and VELEZ BELENDEZ 4th).
+  The Asian Games book (§5.21) breaks ties the same way and shares a rank on equal E and D (MAG floor
+  qualification: OKA and KARIMI `=6`). Its all-around Tie Break Report ranks the whole field, counting
+  the athletes the final leaves unranked (MAG TRAN 14th, the final's 13th, behind an unranked third
+  Japanese); the final's ranks are written. Its all-around report's vault `Rk` shares a rank on an
+  equal first vault (MAG HASHIMOTO and IDRISSOV `13`) that the Results Vault 1 list breaks on E (13
+  and 14); the list's is written.
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -240,6 +275,12 @@ decisions that come up while parsing.
   301 on vault 1; Worlds MAG ZAPATA's vault 2, whose average was halved. Not
   `DNS` or `UNKNOWN`, even where the source prints no status. sporttech.io
   prints a bare `0` with no D or E (§5.4): D and E stay blank, `Total` is `0`.
+- **A blank cell for an athlete on the apparatus's start list** (Oceania WAG SR BAYLES's beam, between
+  bars and floor printed `Final DNS`; WAG JR ATKINSON's bars): a `DNS` row, logged as a `ROW`
+  correction (agreed with the user).
+- **`DNS` after placeholder zeros** (Asian Games: `0.0 0.000 DNS` in a table, `D 0.000 DNS` over
+  `E 0.000` in a team report) is `DNS`; the zeros aren't scores, and the parsers check they are zero.
+  A vaulter who did neither vault prints `DNS DNS` (`Status1` and `Status2` `DNS`, no result).
 - **A bare zero on another apparatus** (Junior Pan Americans MAG CERNA's rings:
   `0`, no D or E, counted in Ecuador's team total): `COMPLETED`, blank D/E,
   `Total` `0`, its printed rank.
@@ -252,13 +293,28 @@ decisions that come up while parsing.
 - **A team penalty** printed beside the apparatus totals (Senior Pan Americans
   MAG CUB: `-1.000`, team score 190.728 against apparatus totals of 191.728)
   goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
+  The Central American and Caribbean Games print `* Penalty -1.0` under the team (MAG VEN, WAG GUA:
+  a wrong start order on one apparatus), deducted from the team score but not from the apparatus
+  total; written as `SJ Penalty` `-1.0`.
   The Mediterranean Games print it unsigned in the team report's `SJ Pen`
   column (POR WAG: `0.3`); it is written negative (`-0.3`), as deducted.
+  The Asian Championships star the totals a penalty was taken from and note
+  `* Penalty -0.6` under the team (WAG juniors LBN: −0.3 off the beam total for
+  overrunning the warm-up, −0.3 off the team total for its flag). The whole
+  `-0.6` is written as `SJ Penalty` and the starred apparatus total as its best
+  three scores (a `SCORE` correction), so the counting scores can be worked out
+  and the apparatus totals plus the penalty make the team total.
 - **An SJ penalty on a two-vault result** (Baku WAG vault qualification,
   MAKOVICKOVA: `0.3` printed unsigned under `SJ Pen.` between vault 1's score
   and the vault score, which is the average + 0.2 − 0.3; neither vault's own
   score includes it) goes in `Combined SJ Penalty`, written negative (§6).
-- US all-around totals for partial all-arounders are printed and kept.
+- **A score never goes below zero.** Where D + E + bonus − penalty is negative,
+  the printed total is `0.000` and the components are kept as printed (African
+  Championships MAG pommel horse MGBAKOBO: 1.000 + 4.300 − 6.000; WAG bars
+  TENEKU, CISSE): `COMPLETED`, not `DNS`, and the arithmetic check allows it.
+- US all-around totals for partial all-arounders are printed and kept, and so are the Oceania
+  Championships' (no `DNF` printed), with the printed rank or none: that book ranks WAG GODWIN, with
+  no floor, 6th, and leaves the athletes with fewer apparatus unranked.
 
 ### 4.4 Session dates
 
@@ -279,6 +335,9 @@ decisions that come up while parsing.
 
 ### 4.5 Vault
 
+- **A single-vault list published apart from the book** (Asian Games MAG "Results Vault 1", §5.21)
+  is read like one: it gives every first vault and its `Rank`, and the book's reports are checked
+  against it.
 - **Two FIG listings in qualification**: a single-vault list (everyone, first
   vault, whole-field rank — the vault that counts for all-around and team) and
   a double-vault list (vault-final hopefuls: both vaults, average, its own
@@ -289,6 +348,16 @@ decisions that come up while parsing.
   comes from the all-around report, with `Rank` blank (no vault ranking of the
   field is published); the double list adds vault 2, `Total`, Q/R and
   `Qualification Rank`, and its vault 1 must match the all-around report's.
+- **One vault table, with an all-around report that ranks vault 1** (African
+  Championships): the table ranks the two-vault athletes (`Qualification Rank`,
+  Q/R) and lists the one-vault athletes after them, unranked; the all-around
+  report's vault `RK` column ranks the whole field on vault 1 (shared on equal
+  scores), and that is `Rank`, as a single-vault list's would be.
+- **A two-vault table only, with an all-around report that ranks vault 1**
+  (Commonwealth Games, Central American and Caribbean Games, Asian Games WAG): the one-vault athletes' first vaults come from the team
+  and all-around reports; the all-around report's vault `Rk` ranks each
+  all-arounder's first vault against the whole field and is their `Rank`; the
+  others' `Rank` is blank (§5.19).
 - **Per-attempt vs combined bonus**: MAG prints a per-vault bonus inside each
   vault score (`B1`/`B2`). WAG's +0.2 applies to the combined result
   (`Combined Bonus`) — printed as a `*` on the total (Europeans), its own
@@ -297,7 +366,7 @@ decisions that come up while parsing.
 - **Which shape a file uses** depends on the round and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
-  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper, Szombathely and Paris publish a single ranking,
+  does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper, Szombathely, Paris and Tashkent publish a single ranking,
   Baku a vault 1 list and a two-vault list over the same vaulters (§5.7).
 - **An invalid second vault** (Baku WAG vault final, HERON) prints `0.0` under
   `D` and `0.000`, with E blank: `Status2` `INVALID_VAULT`, and the vault
@@ -343,6 +412,19 @@ decisions that come up while parsing.
 - **Two per country, reopened**: when a qualifier withdraws, a compatriot
   marked `NR` can take the place ahead of the reserves (Mediterranean Games WAG
   floor: GAVA for TONELLI, both ITA). Their `Qualification` stays `NR`.
+  So in an all-around final (Commonwealth Games WAG: DARIES Zelme for
+  ROOSKRANTZ, both RSA). The
+  African Championships print no `NR`, so the compatriot's stays blank: nine
+  finals there changed after qualification, by a reserve or a compatriot
+  (§5.15). Asian Championships WAG bars: KE Qinqin (`Q`, on the start list) out for
+  QIU Qiyuan (`NR`), both CHN.
+- **A start list printed after a reserve came in renumbers the reserves left** (Central American
+  and Caribbean Games WAG floor: SWABY RANGER `Q` out, HERRERA POLANCO `R1` in; the start list's
+  reserves are the qualification's `R2` and `R3`, printed `R1` and `R2`). The table's markers are
+  written; the start list is checked against them renumbered. Its notes name each replacement.
+  The Asian Games' start lists likewise take one off each remaining reserve's number for every
+  reserve already in the final (MAG floor: KIM Jaeho, `R1`, in), and keep tied reserves' numbers
+  (MAG pommel horse `R1`, `R1`, `R3`).
 - **Replacements without reserve markers** (Senior Pan Americans all-around:
   `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
   `Qualification`; the parser reports absent qualifiers and their replacements
@@ -356,7 +438,12 @@ decisions that come up while parsing.
 | `Time Judge`, `Time Judge 1`, `Time 1` | `T`, `T1`, `T1` |
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
-| `AS` / `SA` (Pan American and Cairo WAG panel supervisor) | `SV`, with the panel's apparatus |
+| `AS` / `SA` (Pan American, Cairo, African, Asian and Oceania Championships, Central American and Caribbean Games panel supervisor) | `SV`, with the panel's apparatus |
+| `Superior Jury: <name>  UPAG  Technical Delegate` / `President` (Central American and Caribbean Games, one per discipline on every judges page) | `TD` / `President`, apparatus blank, NOC from other meets (§4.7 below) |
+| The Oceania Championships' single Superior Jury (`SJ Gareth Brettell (OGU)` in the MAG sheet's title, `SUPERIOR JURY Allana Slater OGU (AUS)` on WAG's) | `TD`, apparatus blank (agreed with the user) |
+| `Reserve` printed in each panel (Oceania WAG: the same judge in all four) | `R`, with that panel's apparatus |
+| `MAG AGU President` / `WAG AGU President:` heading the Asian Championships sheets | `President`, NOC blank |
+| `Superior Jury: <name>  AGU  President`, then `<name>  AGU  <Apparatus> Supervisor` per apparatus (Asian Games) | `President`, NOC blank; `SV` with that apparatus |
 | `S` (Osijek panel supervisor, printed after `E5`) | `SV`, with the panel's apparatus |
 | Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
 | Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
@@ -364,11 +451,12 @@ decisions that come up while parsing.
 | `pen5` (Cottbus beam panel) | `T2` — beam has two time judges |
 | `President`, `Vice-President`, `Member` | as printed, apparatus blank |
 | `TD` (Technical Delegate, the Superior Jury at Baku) | `TD`, apparatus blank |
-| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG), or `SJ: <name> FIG` (Szombathely) | `TD`, apparatus blank |
+| A World Cup's single Superior Jury / Competition Jury name, no function printed (Antalya, Koper MAG; Tashkent's `<name> WG` / `<name> Wgym`, NOC blank), or `SJ: <name> FIG` (Szombathely); the African Championships MAG `Competition Jury` (credited `UAG`: blank, like `UPAG`) | `TD`, apparatus blank |
 | `Technical Delegate`, `Technical Delegate Assistant` (Paris Superior Jury) | `TD`, `TDA`, apparatus blank |
 | `Supervisor`; `Time`, `Line` printed once or twice on a panel (Antalya WAG) | `SV`; `T`/`L`, or `T1 T2`/`L1 L2` |
 | `Time Judge` (printed twice on Varna's beam panels), `Line Judge`, `Line Judge 1` | `T` or `T1 T2`, `L`, `L1` |
-| Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one |
+| Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one (Commonwealth Games finals: a day's reserves, one row for each of that day's finals) |
+| `<Apparatus> & <Apparatus> Supervisor` (Commonwealth Games Superior Jury) | `SV`, one row per apparatus |
 | `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games, Baku) | `R` / `R1`…, with that panel's apparatus |
 
 **One spelling per judge.** The same judge is printed differently between
@@ -383,7 +471,17 @@ someone else).
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
 have no NOC (blank); a Superior Jury credited to `FIG` is written blank too. Judges credited to a continental union print it as their
-federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank. Men's
+federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank where nothing better is known (the
+Central American and Caribbean Games credit their Superior Juries and every apparatus supervisor to
+`UPAG`; each is written with the federation the same book or other 2026 meets give them, as `NOC`
+corrections: MACERONI Mauricio, an `ARG` E judge in the same book's finals, `ARG`; CABRERA DÁVILA
+Yazaira `PUR`, CAMACHO Esteban `CRC`, and so on), and so is the Asian
+Gymnastics Union's `AGU` and the Oceania Gymnastics Union's `OGU` where nothing better is known (the Asian Championships' Presidents;
+its apparatus supervisors' federations were looked up, §5.16; the Asian Games' supervisors are the same
+judges, given the same federations; its one `AGU` panel judge, D1 AMER Rima, is written `JOR`, as
+given by the user). A federation printed with the union
+(`AUS / OGU`, `OGU (AUS)`) is written as the federation; the Oceania MAG Superior Jury's plain `OGU`
+is written `NZL`, his federation at the 2026 World Championships (a `NOC` correction). Men's
 finals line judges lent by the women's panel print `WAG` as their federation
 (Senior Pan Americans); that is blank too.
 
@@ -399,22 +497,59 @@ finals line judges lent by the women's panel print `WAG` as their federation
   `AIN2`/`AIN1` for the same judge. Each code is its own group,
   entering its own team (Europeans' `WG1` and `WG2` teams), so never merge them.
 - Some entry lists print the NOC only on each country's first row.
+- **An ISO code where the IOC code differs** is corrected and logged (`NOC`):
+  the African Championships print Zimbabwe `ZWE` on the entry list and results,
+  `ZIM` on the entries by NOC page; written `ZIM`. The Asian Games credit two Singaporean judges to
+  `SIN` on the WAG qualification and team final sheets and to `SGP` on the finals sheets; written `SGP`.
 - The US Championships prints no NOC; participants are written as `USA`.
+- **Commonwealth Games Associations** are written as printed (agreed with the user): at the
+  Commonwealth Games England, Scotland, Wales, Northern Ireland, the Isle of Man and Jersey compete
+  apart (`ENG`, `SCO`, `WAL`, `NIR`, `IOM`, `JEY`), each with its own team, so they can't be folded
+  into `GBR` or `IRL`. Their athletes link to their GBR/IRL entries by FIG licence. The front end
+  names and flags them (`frontend/app/lib/countries.ts`).
 
 ### 4.9 Competition structures
 
-Map the meet onto `Session`s (`data-model.md` §3) before parsing:
+Map the meet onto `Session`s (`data-model.md` §3) before parsing.
+
+**Which round holds the routines.** A round is `QUAL` only if it qualifies athletes or teams to a
+later round of the same meet: a team, all-around or apparatus final, so `Q`/`R`/`NR` mean something
+on the site and the session is named "Qualification". A meet's only round, with nothing after it to
+qualify for, is the final it decides: its routines go in `AA` (vault single-attempt, as at any
+all-around final), and a team title decided by the same routines is a `TEAM` session ranking them
+(`Scores Round` `AA`), so the site shows an "All-Around Final" and a "Team Final". This holds
+however the book labels the round. Qualification to another event (the 2026 Oceania Championships'
+fifth athletes competing for World Championships places) doesn't make a round `QUAL`; nothing in the
+meet records it. So:
+
+- Followed by any final, the round is `QUAL`, and the titles it decides are summaries of it: the
+  African Championships (apparatus finals followed), the Asian Championships (published as team
+  and all-around finals too, which rank the `QUAL` routines).
+- Followed by nothing, the round is `AA` with a `TEAM` ranking of it: the Oceania Championships.
+  The US Championships are `AA` for the same reason, in two parts.
 
 | Structure | Sessions | Example |
 |---|---|---|
 | Championship | `QUAL`, `TEAM`, `AA`, `EVENT` per apparatus | Worlds, Europeans |
 | Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
 | All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
-| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games |
+| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games, Commonwealth Games ("Team Final and Individual Qualification"), Central American and Caribbean Games |
+| Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
+| Qualification that is also the team and all-around finals, published as separate final rankings of the same routines | `QUAL` (every routine, `SUMMARY-QUAL-TEAM`/`-AA` with Q/R/NR), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL`, `EVENT` per apparatus | Asian Championships |
+| Qualification that is also the all-around final, followed by a team final and apparatus finals | `QUAL` (every routine, `SUMMARY-QUAL-TEAM` with Q/R), `TEAM` (its own routines, `SUMMARY-FINAL-TEAM`), `AA` holding only `SUMMARY-FINAL-AA` with `Scores Round` `QUAL` (24 ranked, two per country; the others keep their totals unranked), `EVENT` per apparatus | Asian Games |
+| One competition deciding the team and all-around titles, called finals, with nothing to qualify for | `AA` (every routine, single-attempt vault, `SUMMARY-FINAL-AA`), `TEAM` holding only `SUMMARY-FINAL-TEAM` with `Scores Round` `AA` | Oceania Championships |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
 
 If a meet doesn't fit any of these, stop and discuss the model change first.
+
+**Team roles.** Where a source says who was up for each team on each apparatus, write every
+score's `Team Role` (`COUNTING`, `DROPPED`, `INDIVIDUAL`; import-file-model.md) and the team
+summary's apparatus totals as the sums of the `COUNTING` scores, checked against the printed team
+total. A team's line-up can change by apparatus (2026 Oceania Championships: five a team, four up on
+each apparatus, the fifth an individual competing for World Championships qualification), which the
+importer can't work out from totals alone. Without such a source, leave the column out and give
+the apparatus totals the source prints.
 
 ## 5. Source formats
 
@@ -1238,6 +1373,483 @@ Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/par
   MAG lists round reserves `R1`… below the panels (apparatus blank). Judge names are kept as
   printed, as a World Gymnastics book: `EECKHOUTTE Sebastien` (the Europeans' `Sébastien`).
 
+### 5.15 Organizer media book, CorelDRAW outlines (African Championships)
+
+The Union Africaine de Gymnastique's senior media book (`18377-ResultsbookMedia.pdf`, 60 pages, made
+in CorelDRAW). Pages 1-6 have text: the cover, the Competition Schedule (pp. 2-3), the Number of
+Entries by NOC (p. 4) and the Entries List by NOC (p. 5: `# NOC SURNAME Given Discipline FIG-ID BIB
+date of birth`). Every results page is text converted to outlines (no text layer, §2.3) and the
+judges' pages are photographs. Per discipline: qualification start lists, judges, the team report,
+the all-around report, a table per apparatus, Tie Break pages, the Apparatus Finals Start List, the
+finals judges and a table per final. Parser:
+[`parse_2026_african_championships.py`](../tools/results-parsing/parse_2026_african_championships.py),
+reading [`transcriptions/2026-AFRICAN-CHAMPIONSHIPS/`](../tools/results-parsing/transcriptions/2026-AFRICAN-CHAMPIONSHIPS/).
+
+**Structure.** Qualification on 23 April decides the team and all-around titles (no team or
+all-around final, §4.9); the top eight per apparatus (two per country, no `NR` printed) and two
+reserves (a plain `R`, written `R1`, `R2`, §4.6) go to the finals: 25 April MAG FX/PH/SR, WAG VT/UB;
+26 April MAG VT/PB/HB, WAG BB/FX (schedule; the footers agree). The book is the seniors' only; the
+juniors competed on 24 April.
+
+| Report | Gives |
+|---|---|
+| Entries List by NOC (p. 5, text) | bib, FIG licence, `SURNAME Given`, NOC, full date of birth (`dd/mm/yyyy`, Egypt `yyyy/mm/dd`): the participants |
+| Number of Entries by NOC (p. 4, text) | MAG and WAG per country, blank for none (cross-checked; WAG slips below) |
+| Team report (`<n> Country  total`) | each member's scores, the counting ones in bold, and the team total; no apparatus totals |
+| All-Around Results | every routine `D E P Total RK` (no bonus, `0.000` for no penalty) and the all-around total; incomplete all-arounds print `<partial> DNF` |
+| Apparatus tables (qualification and finals) | every SCORES file |
+| Tie Break pages | the tied athletes' rank and total and the deciding E (vault: the higher vault) (cross-checked) |
+| Apparatus Finals Start List | 1-8, `R1`, `R2` per final (cross-checked) |
+
+**Gotchas**
+
+- **No team apparatus totals.** `SUMMARY-QUAL-TEAM`'s `<APP> Total` is the sum of the member scores
+  printed in bold, which are checked to be each apparatus's best three and to add up to the printed
+  team total (agreed with the user). Namibia's fifth WAG entry, HANDURA (born 2010), is not on its
+  team page and competed as an individual.
+- **Vault** prints vault 1 on the athlete's line and vault 2 below, each `D E [PEN] Score`; the
+  athlete's line ends with the two-vault `Total`, and WAG's +0.2 sits in a `Bonus` column on the
+  vault 2 line (`Combined Bonus`). MAG's vault bonus column is always empty. Athletes with one vault
+  follow the ranking, unranked; `Rank` comes from the all-around report (§4.5). WAG ABDALLA: vault 2
+  `DNS`, total `DNF`.
+- **PEN is unsigned** (written negative), up to `10.000` (MAG high bar SAMB: D 0.000, E 6.500,
+  total 0.000). Scores floor at zero (§4.3). Pommel horse and every WAG table have no BONUS column.
+- **Finals that changed** (each printed marker kept; the parser reports them): MAG pommel horse
+  MOHAMED and HOSSAINI (`Q`) out for NGORBO (`R`) and AFIFY (EGY, unmarked); rings MCLEAN out for
+  SODEA (`R`); vault CHESTER out for NGORBO (`R`), after the start list was printed; high bar CHESTER
+  out for SODEA (`R`) on the start list, and AFIFY, on it, replaced by AHMED (EGY) at the final. WAG
+  bars and beam ABDALLA out, for SOLIMAN (EGY) and MUCHATUTA (`R`); floor ROOSKRANTZ and N. DARIES out
+  for Z. DARIES and NHLEKO (all RSA). The start list's reserves move up in turn. No reasons given.
+- **The WAG uneven bars final prints `Q`** beside all eight finalists, a leftover; ignored.
+- **Names as printed differ**: ALHAMIDI Yacer Nadir prints `ALHAMIDI Nadir` (tables) and `Nadir
+  HAMIDI` (team, start list); HANDURA Nagaititue prints `Ngaititue` everywhere after the entry
+  list. Results files take the entry list's name.
+- **Entries by NOC page slips** (WAG): it counts one Namibian (five entered and competed) and three
+  Senegalese (two), 26 in all (29), and prints Zimbabwe `ZIM` where everything else prints `ZWE`
+  (written `ZIM`, §4.8). The MAG counts agree.
+- Judges: MAG (photographed sheets) heads the page with `Competition Jury  ZAYED Yasser UAG`
+  (`TD`, §4.7); panels `SV D1 D2 E1-E5`, floor `T L1 L2`, vault `L`, laid out FX/PH, SR/VT, PB/HB
+  under icons; `R1`, `R2` printed empty. WAG prints `SUPERIOR JURY 1  2058  Debbie  RSA` and
+  `SUPERIOR JURY 2  4646  Rawan  EGY` with no surnames, written `Member`: Rawan as ABOUSHOUSHA
+  Rawan (EGY), a judge at the Cairo World Cup, logged as a `JUDGE_NAME` correction noting the book
+  gives no full name (agreed with the user); Debbie is not written (§6). WAG panels `AS D1 D2
+  E1-E5` (`AS` written `SV`) plus vault `L`, bars `T`, beam `T1 T2`, floor `L1 L2 T`, each row with
+  a seat number and a judge number (not written). The finals sheet cuts `DELGADO MIRANDA` to
+  `DELGADO MIRAND` on two panels (`JUDGE_NAME`).
+- A stale footer: the WAG bars tie-break page also prints `26 May 2023`.
+
+### 5.16 Media book in the FIG layout, Starting Future print (Asian Championships)
+
+The Asian Gymnastics Union's media books, one per discipline and age category
+(`18565-ResultsbookMedia.pdf` MAG seniors, 73 pages; `18566-…` MAG juniors, 49; `18567-…` WAG
+seniors, 66; `18568-…` WAG juniors, 59), every results page with text; each book is recognised by
+its title band (`19th JUNIOR MEN'S ARTISTIC GYMNASTICS ASIAN CHAMPIONSHIPS`). The
+layout and report suffixes are the FIG books' (§5.1); the footer code is `GA` + `M`/`W` + a unit
+(`x01` team, `x02` all-around, `x03`… apparatus in Olympic order, where `x` is 1 for seniors, 3 for
+MAG juniors and 2 for WAG juniors; `000` the whole meet) + a phase
+(`900` qualification, `100` finals, `000` the medal pages) + the suffix: `GAM103900_73I` is MAG floor
+qualification. The Team Final and Team Qualification pages share a code (`_73C`/`_73D`), as do the
+two all-around reports (`_73G`/`_73H`); the printed title tells them apart. Parser:
+[`parse_2026_asian_championships.py`](../tools/results-parsing/parse_2026_asian_championships.py)
+(all four books in one run).
+
+**Structure.** One competition (MAG 18 June, WAG 25 June, in subdivisions) is the qualification
+and the team and all-around finals (§4.9): the book prints the Team and All-Around Qualification
+rankings (every team and athlete, `Q`/`R1-R4`/`NR`) and, from the same routines, a Team Final (the
+top eight, same ranks and totals) and an All-Around Final (the 24 `Q`s, two per country, ranked 1-24:
+MAG HUNG 8th in qualification, 7th in the final). Seniors: MAG qualification 18 June, finals
+20 June FX/PH/SR and 21 June VT/PB/HB; WAG qualification 25 June, finals 27 June VT/UB and 28 June
+BB/FX. Juniors a day later: MAG qualification 19 June, finals 20 June PH/SR/FX and 21 June
+PB/HB/VT; WAG qualification 26 June, finals 27 June UB/VT and 28 June FX/BB (schedules; the MAG
+junior book's title band says 25-28 June, a leftover from the WAG book). The entry list is one
+report across the books: juniors on its pages 1-2 of 5, seniors on 3-5.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`) | NOC heading, `SURNAME Given`, licence, bib, date of birth: the participants |
+| Judges Assignments (`_57A`/`_57B`, qualification and finals) | President, panels in the icon grid (MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX), reserves |
+| Apparatus tables (`_73I`; vault `_73I` "Vault 1" and the two-vault `_73J`) | every SCORES file; finals add `Qualification Rank` and `Start Order` (not written) |
+| Team Qualification / Team Final (`_73C`/`_73D`) | `SUMMARY-QUAL-TEAM`, `SUMMARY-FINAL-TEAM`; each member's D and E lines (cross-checked) |
+| All-Around Qualification / Final (`_73G`/`_73H`) | `SUMMARY-QUAL-AA`, `SUMMARY-FINAL-AA`; every routine (cross-checked) |
+| Tie Break Reports (`_77A`-`_77C`) | the tied athletes' ranks (cross-checked, §4.2) |
+| List of Qualifiers (`_53B`/`_53C`), finals Start List (`_51G`) | Q/R/NR per final (cross-checked) |
+| Medallists by Event (`_93`) | the top three of every final (cross-checked) |
+
+**Gotchas**
+
+- **Apparatus tables print D to one decimal** (`6.0`), the team and all-around reports to three
+  (`6.000`); the files copy the tables, the cross-checks compare values. A bonus prints `+0.1`
+  (written `0.1`), a penalty `-0.3`, between E and the score. WAG vault's +0.2 sits between vault 1's
+  score and the result (`Combined Bonus`); MAG's per-vault bonus sits before each vault's score.
+- **Team report columns drift.** On a page, the team's header line (apparatus totals and ranks) can
+  sit a column away from its members' lines, so the apparatus columns are taken from where the
+  team's all-arounders' routines end (`DNS` is right-aligned under the score). The E line carries
+  each routine's E with its penalty and bonus after it, in column order. No BP line.
+- **Long names wrap** onto the E line in the all-around reports (`KAMILJANOV` / `Ravshan`);
+  names come from the entry list.
+- **Invited Australia** (MAG): `*` for a rank in every qualification table and report, including
+  the team row (apparatus totals without ranks); unranked, entered `HORS_CONCOURS` (§4.1).
+- **Finals that changed**: MAG high bar LI Hongyan (`Q`) prints `DNS` with his qualification rank
+  and start order; WAG bars KE Qinqin out for QIU Qiyuan (`NR`, §4.6).
+- **WAG KRASNOPEROVA** (KGZ): "withdrawn on Uneven Bars" on the start lists; no bars row.
+- **The MAG junior book** has no qualification judges sheet, no qualification start lists, no
+  tie-break pages and no team or all-around medal pages; its `JUDGES` holds the finals only.
+- **Team penalty** (WAG juniors LBN): a starred beam total and team total with `* Penalty -0.6`
+  (§4.3).
+- **Junior athletes with every apparatus `DNS`** (MAG BAK Junwoo) print an empty E line.
+- **Swapped birth dates**: the MAG senior entry list prints NAGHOUJ (JOR, licence 31183) born
+  10 NOV 2006 and AL-KHALIDI (54342) 24 DEC 2000; World Gymnastics has NAGHOUJ born 2000 and
+  AL-KHALIDI 2006, as the 2026 Tashkent book prints. The whole dates are written swapped
+  (`BIRTH_DATE`, agreed with the user). Found when Tashkent's import met the years already recorded.
+- **Names**: MAG AZIZOV prints `Llyas` (Ilyas elsewhere, same licence: a `NAME` correction). Judges
+  `CHENG Feng-Yi` and `CHEN Ming-Yao` are written as World Gymnastics' books print them (`JUDGE_NAME`).
+  MAG apparatus supervisors `LIPING Huang`, printed given name first, is written `HUANG Liping`,
+  and `KIM Alexander`, KAZ's `KIM Alexandr` at the World Championships, is written `KIM Alexandr`
+  (both confirmed by the user). The MAG apparatus supervisors are all credited to `AGU`; each is
+  written with their federation from World Gymnastics, given by the user (`NOC` corrections). The
+  WAG finals sheet credits its supervisors and reserves R2-R4 to `AGU` too; the qualification sheet
+  gives their federations, which are used. The two Presidents stay blank, as a Superior Jury does.
+  The junior books print the same officials and spellings, corrected the same way (the WAG junior
+  sheets credit the four supervisors to `AGU` on both rounds; the senior qualification sheet gives
+  their federations).
+  The WAG qualification judges sheet is marked REVISED (floor E5 renamed TSAI I-Hsien); the
+  revised sheet is the one printed.
+
+### 5.17 Organizer media book, scanned Elevien print (Oceania Championships)
+
+The Oceania Gymnastics Union's media books, one per age category and laid out the same: seniors
+`18530-ResultsbookMedia.pdf`, juniors `18531-ResultsbookMedia.pdf` (each 20 pages: MAG pp. 1-10,
+WAG pp. 11-20, each numbered "Media Book – Page 1-9"). The parser reads both in one run. Per discipline: a cover, then pages with text
+(Competition Schedule, Entries by NOC, Medallists by Event and Medal Standings on one page; the Entry
+List by NF and by Bib Number), then scans (Elevien start lists, the judges' sheet, Team Results, All
+Around), and a Medallists page with text. The scans are rotated a quarter turn. Parser:
+[`parse_2026_oceania_championships.py`](../tools/results-parsing/parse_2026_oceania_championships.py),
+reading [`transcriptions/2026-OCEANIA-CHAMPIONSHIPS/`](../tools/results-parsing/transcriptions/2026-OCEANIA-CHAMPIONSHIPS/)
+for the scans (typed by eye: two short tables a discipline).
+
+**Structure.** One competition on 9 May (8 May is podium training) decides the team and all-around
+titles, which the medallists pages call the "All around Final" and "Team Final"; no apparatus finals,
+nothing qualifies, so by §4.9's rule `AA` holds every routine and `TEAM` ranks them (agreed with the user). The
+juniors compete the same day in the same format (the MAG juniors' judges' sheet calls it the "Junior
+Invitational"). Seniors: two teams of five per discipline. Juniors: MAG an Australian team of four
+and two New Zealand individuals (New Zealand entered no team, so their scores are `INDIVIDUAL`);
+WAG Australia five, New Zealand three.
+
+| Report | Gives |
+|---|---|
+| Entry List (by NF, text) | country heading, `Given SURNAME`: the participants, in this order. No licence or birth year |
+| Entry List by Bib Number (text) | bib, country, name (cross-checked) |
+| Entries by NOC (text) | teams and athletes per country (cross-checked) |
+| All Around (scan) | every routine, `Final <score>` / `D <d> P <pen>` / `E <e> S <bonus>` under apparatus icons (MAG FX PH SR VT PB HB, WAG VT UB BB FX), and the total; no apparatus ranks |
+| Team Results 3 + 2 (scan) | rank, country, total; nothing else |
+| Elevien results site's team pages (not in the books; screenshots kept in the event folder) | each team's line-up per apparatus, its counting and dropped scores: every score's `Team Role` |
+| Start Lists (scan, Elevien) | per rotation, the athletes on each apparatus (cross-checked as sets) |
+| Judges' Assignments (scan) | MAG a grid of `Given Surname (NOC)`; WAG four panels of `SURNAME Given NOC` |
+| Medallists by Event, Medallists (text) | the top three all-arounders and both teams (cross-checked) |
+
+**Gotchas**
+
+- **`P` is unsigned** (written negative), `S` is the bonus; both print `0.0` for none (written blank).
+  Pommel horse and every WAG cell print no `S`. Penalties include 3.0 and 6.0 short-routine
+  deductions (MAG FU-ALLEN, STODDART).
+- **Team totals** don't name the members, and the line-up changed by apparatus (the competition
+  rules, from Gymnaverse's event page: five a team, up to four up on an apparatus, the best three
+  counting; the fifth competes only for World Championships all-around qualification). So MAG AUS's
+  234.294 is below the best three of its athletes: MALIK's floor (13.000) was an individual's. The
+  line-ups come from the Elevien results site's team pages (screenshots from the user, transcribed as
+  `<DISC>-TEAM-SCORES.txt`): MAG AUS individuals MALIK (FX), FOSTER (VT), HARDY (HB), NZL GREENE (HB),
+  a team member on floor; WAG AUS STEWART (VT) and BAYLES (BB, her `DNS` row), NZL none. Every score's
+  `Team Role` is written from them, and the counting scores add up to every printed total. A team
+  member who didn't start is `DROPPED`. WAG AUS bars lists five team members, BAYLES's `DNS` among
+  them, against the rule of four up; four performed, which is what the parser checks. Juniors: MAG
+  AUS, a team of four, has no individual; WAG AUS ATKINSON is the individual on bars and beam (both her
+  `DNS` rows). The site ranks the MAG juniors' New Zealand 2nd (115.063, every score of its two
+  athletes), but the book enters no New Zealand team and ranks Australia alone: the book is followed,
+  and DAVIES and VILJOEN are `INDIVIDUAL`.
+- **Ranks**: partial all-arounders print a total and no rank, except WAG GODWIN (no floor), ranked
+  6th (§4.3).
+- **Start lists vs results**: MAG SR HARDY has a high bar score but is on no high bar rotation; WAG
+  SR BAYLES is on the beam start list with a blank beam cell, and WAG JR ATKINSON likewise on bars
+  (both written `DNS`, §4.3). The MAG JR start list prints DAVIES (113) twice in five groups; the
+  sets still match the results.
+- **Names**: results print `Given Surname` in mixed case (`Jun McDonald`); the files take the entry
+  list's `Given SURNAME`. MAG FOSTER prints `Ben`, `Benjamin` (licence 45150) at Worlds: the licence
+  is added (`LICENCE`) so the import links him.
+- **Judges** (round `AA`): MAG prints `AS` (`SV`), `Line 1`/`Line 2`/`Time` on floor and `Line 1` on
+  vault; Puay Sng is `(SGP)` on floor and `(SIN)` on rings and parallel bars (written `SGP`, a `NOC`
+  correction); surnames are written in capitals. WAG prints `Supervisor`, vault `Line`, bars
+  `Time 1`, beam `Time 1`/`Time 2`, floor `Time`/`Line 1`/`Line 2`, and the same `Reserve` in every
+  panel. The panels are VT/UB over BB/FX by the icons and the time and line judges. Five WAG judges
+  are written with the full names World Gymnastics prints (`JUDGE_NAME`). The WAG sheet is headed
+  "7 - 10 May 2026".
+
+### 5.18 Organizer media book, own layout (Tashkent World Challenge Cup)
+
+The Uzbek Federation's media book (`18291-ResultsbookMedia.pdf`, 74 pages, made with PDF Candy):
+every page has text except the cover, with no report codes; pages are found by their heading lines.
+A schedule (pp. 2-4), Number of Entries by NOC (p. 5), Medallists By Event (p. 6), Medals Standing
+(p. 7), the entry list (`Number of Athletes`, pp. 8-10), then per discipline the qualification start
+lists, the qualification judges, per apparatus the results (`Apparatus Results` / `MAG
+Qualification` / apparatus) and any `Tie-Break Report` on the next page, the finals start lists (one
+page a day), the finals judges and the finals. Parser:
+[`parse_2026_world_challenge_cup_tashkent.py`](../tools/results-parsing/parse_2026_world_challenge_cup_tashkent.py).
+
+**Structure.** An apparatus competition (§4.9) on the Baku pattern: qualification on 21-22 May,
+finals on 23-24 May, MAG FX/PH/SR and WAG VT/UB first, MAG VT/PB/HB and WAG BB/FX second (schedule
+rotations; the start lists' dates agree). Top eight per apparatus, two per country (no `NR` printed),
+`R1`-`R3`.
+
+| Report | Gives |
+|---|---|
+| Number of Athletes (pp. 8-10) | under `NOC – Country`, `SURNAME Given  Bib  Licence  Year`: the participants. MAG bibs 1xx, WAG 2xx |
+| Number of Entries by NOC (p. 5) | men and women per country (cross-checked; see below) |
+| Apparatus Results | every SCORES file; `Q`/`R1`-`R3` after the total |
+| Tie-Break Report | the tied athletes' rank, total and E (vault: the highest vault) (cross-checked) |
+| Qualification start lists | MAG a page per apparatus and subdivision, WAG a page per apparatus in group columns; `(HC)` marks hors concours (cross-checked as sets) |
+| Finals start lists | each final's eight starters and `R1`-`R3`, vaulters `2VT` (cross-checked) |
+| Medallists By Event (p. 6) | a cross-check only |
+| Elevien app screenshot (in the event folder) | the MAG rings final's D, E and bonus |
+
+**Gotchas**
+
+- **The entry list's names drift**: a long name wraps, sometimes onto another athlete's line
+  (`GOBADZE Ani MOTTEN` / `Dorien`; `Arda DEMIR` / `Sercan KARTIN Emirhan` for HAMARAT Volkan Arda,
+  DEMIR Sercan, KARTIN Emirhan), and numbers sit a line from their names. Each country's names are
+  read in order, split where an upper-case word follows a given name, and paired with its numbers
+  in order; every results table then confirms the names. `AZAMOVAsadbek` prints without a space (a
+  `NAME` correction).
+- **Columns** `D score E score [B] Pen Total`: `B` (MAG, not pommel horse) prints `0.0` for none,
+  `Pen` unsigned with two decimals and `0.00` for none (written negative, or blank).
+- **The MAG rings final prints totals only** (no D or E) and ranks TEMIRKHONOV over NGUYEN Van Khanh
+  Phong on equal 13.850, with no tie-break page. D, E and bonus come from a screenshot of the Elevien
+  app the user supplied (`18291-2026-WCC-TASHKENT-MAG-SR-STILLRINGS-FINALS.png`), logged as `ROW`
+  corrections; they add up to every total and break the tie on E (8.950 / 8.550).
+- **Vault** prints `1` and vault 1, its score and the vault total on the athlete's line, then `2`
+  and vault 2; MAG's `B` is inside the attempt. WAG's +0.2 prints as `(+0.2)` after vault 2's score
+  and is in the total (`Combined Bonus` 0.2). The WAG qualification table prints each vaulter's birth
+  year under the name: NAYAK and SAMANTA print 1995 and 2003 against the entry list's 1997 and 1995,
+  and the table's are written (`BIRTH_DATE`, agreed with the user). AL-KHALIDI 2006 and NAGHOUJ 2000
+  are right (World Gymnastics); the Asian Championships' book had them swapped (§5.16). TELLO prints
+  `DNF` with vault 2
+  `DNS`.
+- **Ties are always broken** (E, then D; vault the highest vault, then E, then D). The MAG rings and
+  WAG vault finals have ties and no tie-break page.
+- **Hors concours**: MAG 135-138 and WAG 225-227, all UZB, print `(HC)` on the qualification start
+  lists only; they are not on the entry list and have no results, so are not written (§6 item 8).
+- **A start-list athlete left out of the table**: MAG SITCHINAVA is on the vault start list with no
+  row, not even `DNS`. Elevien has him `DNS`, so the parser adds a blank row and `ROW` corrections
+  set both vaults `DNS` (from the user). MAG floor subdivision IV prints its bibs against the wrong names
+  (`104 VU Tien Anh`; VU is 145).
+- **Number of Entries by NOC** swaps men and women for HUN, IND and ISL and counts 3 men for GEO and
+  VIE (4 each); its totals (42, 28, 70) agree with the entry list.
+- Judges: MAG `SUPERIOR JURY : Mr. HAN Yoon Soo WG` (`TD`, NOC blank), then panels `D1 D2 E1-E4` in
+  the grid FX/VT, PH/PB, SR/HB (icons; `T L1 L2` on floor, `L` on vault): the left column is day
+  one's apparatus, the right day two's. `R1` printed under each column (`R2` blank) is left out
+  (agreed with the user). WAG `Superior Jury: GRATT Johanna Wgym` (`TD`, NOC blank), panels VT/UB,
+  BB/FX (legend) with `Function Name NOC` and a category letter, `Time Judge 1`/`2` on beam, `Line
+  Judge 1`/`2` on floor, and reserves `R1`-`R4` (apparatus blank). Wrapped labels put their number
+  on the next line, beside the next judge's name; each judge is read at their NOC and category
+  letter.
+
+### 5.19 Games results book, ORIS-style print (Commonwealth Games)
+
+The Glasgow 2026 Games' media book (`18222-ResultsbookMedia.pdf`, 134 pages, Longines timing): every
+page has text and a footer code (`GARM1APFX-------------QUAL--------_73I`, the schedule `_08`, entry
+lists `_32A`, officials `_35`, start lists `_51x`, judges `_57x`, results `_73x`, tie-breaks `_77x`,
+medallists `_93`, medal standings `_95`); the parser finds pages by code, with the dashes removed.
+Parser: [`parse_2026_commonwealth_games.py`](../tools/results-parsing/parse_2026_commonwealth_games.py).
+
+**Structure.** "Team Final and Individual Qualification" (MAG 24 July, WAG 25 July) decides the team
+titles, so it is `QUAL` with a `SUMMARY-QUAL-TEAM` (§4.9, as at the Mediterranean Games); the
+all-around finals (26 July) and apparatus finals (27-28 July, by the schedule) follow. Teams of up
+to five, three scores counting. Athletes compete for Commonwealth Games Associations (§4.8).
+
+| Report | Gives |
+|---|---|
+| Entry List by CGA (`_32A`) | under `AUS - Australia`, `SURNAME Given  Licence  Bib  Date of birth`: the participants, in printed order |
+| Apparatus results (`_73I`, vault `_73J`) | every qualification and final SCORES file but the all-around final's; vault: the two-vault athletes only (below). Finals add the qualification rank and start order (cross-checked) |
+| Team results (`_73C`/`_73D`) | the team summary; each member's routines (cross-checked), and the first vaults of team members |
+| All-around results (`_73G`/`_73H`) | the all-around summaries; the all-around final's routines (it has no apparatus tables); the first vaults and their whole-field rank (below); qualification routines cross-checked |
+| Judges Assignments (`_57x`) | JUDGES. The Competition Officials list (`_35`) is a cross-check of each judge's CGA |
+| Start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
+
+**Gotchas**
+
+- **Vault qualification lists only the two-vault athletes.** The other first vaults come from the
+  team report (team members) and the all-around qualification report (all-arounders, individuals
+  included); they agree wherever both print one, and every vaulter is in one of the three. There is
+  no single-vault list: `Rank` is the all-around report's vault `Rk`, which ranks an all-arounder's
+  first vault against the whole field (checked against every first vault), and blank for everyone
+  else (agreed with the user). MAG NG Chun Chen (bib 132) vaulted `0.000` (D and E `0.000`), then
+  `DNF` with vault 2 `DNS`: `INVALID_VAULT`; CHAKMA's vault 2 `0.000` halves his average.
+- **The team and all-around reports have icon headings**, in the legend's order (MAG FX PH SR VT
+  PB HB, WAG VT UB BB FX), proven by matching every value with the apparatus tables. The team report
+  prints a member's `D score` per apparatus, then an `E` line and a `BP` line (WAG one `EP` line);
+  values are placed by position, a column starting at the team line's `(rank)` for that apparatus.
+  A signed 1-decimal value is a penalty, unsigned a bonus. The all-around report prints `D score (Rk)`
+  per apparatus in order, `DNS` for one not done.
+- `DNS` is printed for an entered routine not done (team report, tables). A team member with no
+  routine at all prints blank lines (WAG RSA NHLEKO Buhle). A team that didn't finish prints `DNF`
+  with blank apparatus totals (MAG MAS: no rings, no high bar), written unranked; the all-around
+  `DNF`/`DNS` rows likewise.
+- **The apparatus finals start lists and judges pages are printed twice**, in each discipline's
+  section (pp. 69-74 = 124-129); the parser reads the first copy and checks the second is identical.
+  Each lists the men's finals down the left and the women's down the right, in the schedule's order.
+- Markers: `Q`, `R1`-`R4` (all-around), `NR` on the tables. Replacements: MAG all-around SINGH
+  (`Q`) out for EYRES (`R1`); WAG all-around ROOSKRANTZ (`Q`) for her compatriot DARIES Zelme (`NR`),
+  ranked above the first reserve as the note allows; WAG bars EVANS (`Q`) for TAYLOR (`NR`), both
+  WAL. The all-around start list renumbers its reserves after the replacement, so it is only
+  checked for its finalists.
+- **Ties are broken** (apparatus: E, then D; vault: the higher vault, E, D; all-around: the best
+  five, four, … apparatus scores, then E, then D), and the Tie Break reports' ranks match the tables.
+- Finals E scores have three decimals (`8.466`, an average of three judges' marks).
+- Judges: per round a Superior Jury (`President`, and `Floor Exercise & Vault Supervisor` written as
+  an `SV` for each apparatus, NOC blank as printed), then panels `D1 D2 E1-E4` (finals `E1-E5`) with
+  `Time Judge [1|2]` and `Line Judge [1|2]`; the qualification and all-around final grids are the
+  legend's (MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX), confirmed by floor's time and line judges,
+  vault's line judge and beam's two time judges. Reserves `R1`-`R3`: a round's serve every panel
+  (apparatus blank); the finals' are listed per day, so each is written once for each of that day's
+  finals. The assignments spell some names otherwise than the officials list (`HANLEY Nicola` /
+  `Nikki`, `JANSE van VUUREN Jan Hendrik` / `Jannie`): the assignments are written. `ZUNICH Andreja`
+  is written `ZUNICH Butch`, as the officials list and the Worlds files have him (`JUDGE_NAME`).
+  PADDOCK Samantha is credited to ENG on every assignments page and to WAL on the officials list;
+  ENG is written.
+- The entry list's licences and birth dates agree with every earlier 2026 entry for the same
+  licence; NIR's athletes compete for IRL elsewhere and link by licence.
+
+### 5.20 Games results book, ORIS-style Bornan print (Central American and Caribbean Games)
+
+The Santo Domingo 2026 Games' media book (`18666-ResultsbookMedia.pdf`, 193 pages, Bornan timing):
+artistic is pp. 1-109, every page with text and a footer code (`GARM1APFX-------------QUAL--------_73I`;
+the judges pages have no `Report Created` stamp); the rhythmic (pp. 110-161) and trampoline
+(pp. 162-193) books follow without codes and are skipped. The layout and codes are the Commonwealth
+Games' (§5.19), so the parser
+([`parse_2026_central_american_caribbean_games.py`](../tools/results-parsing/parse_2026_central_american_caribbean_games.py))
+started from that one.
+
+**Structure.** "Individual Qualification & Team Final" (MAG 2 August, WAG 3 August) decides the team
+titles: `QUAL` with a `SUMMARY-QUAL-TEAM`, as at the Commonwealth Games (§4.9); the all-around finals
+(4 August) and apparatus finals (5-6 August, by the schedule) follow. Teams of five, four up per
+apparatus, three counting; individuals from countries without a team.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`, men and women under one code, told apart by the page heading) | `SURNAME Given  Licence  Bib  Date of birth` under `COL - Colombia`: the participants. Number of Entries by NOC (`_30`) counts them (cross-checked) |
+| Apparatus results (`_73I`, vault `_73J`) | every qualification and final SCORES file but the all-around final's; vault qualification lists only the two-vault athletes (below). Finals add the qualification rank and start order (cross-checked) |
+| Team results (`GARMTEAM…FNL_73C`/`_73D`, titled Final, printed on qualification day) | the team summary and penalty; each member's routines (cross-checked), and the first vaults of team members |
+| All-around results (`_73G`/`_73H`) | the all-around summaries; the all-around final's routines; the first vaults and their whole-field rank; qualification routines cross-checked |
+| Qualification results by team (`GARMQUAL_73A`/`GARWQUAL_73B`) | scores only, every team member and individual, vault `V1 V2 [Bonus] FS`, all-around total and rank (cross-checked) |
+| Judges Assignments (`_57A`/`_57B`, qualification, all-around final, apparatus finals) | JUDGES |
+| Lists of Qualifiers (`_53A` all-around, `_53B`/`_53C` apparatus), start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
+
+**Gotchas**
+
+- **D has one decimal in the apparatus tables (`5.5`) and three in the reports (`5.500`)**; each is
+  written as printed (the single vaults, from the reports, keep three) and compared as numbers.
+- **The reports' E lines drift against their D lines**, so values can't be placed by position: a
+  bonus can print nearer the next routine's E (`8.800 +0.1 9.100 -0.3`, MAG NUÑEZ FARFAN: the
+  `+0.1` is rings', the `-0.3` vault's). The E line lists the E scores of the routines done, in
+  order, each followed by its penalty or bonus; the arithmetic proves it. A routine's apparatus on
+  the team report's D line is the team column its score starts in.
+- **Long names wrap** in the all-around reports and the vault tables: the rest of the name prints
+  on the next line, alone or before the `E` or the vault 2 line. Team reports and start lists print
+  initials (`TAPERIO JAYES MRJ`, `SOTO J` for SOTO RODRIGUEZ Jensuel Jose), matched against the
+  entry list by surname and initials.
+- **Vault qualification lists only the two-vault athletes**, as at the Commonwealth Games: the
+  other first vaults come from the team and all-around reports, and `Rank` is the all-around
+  report's vault `Rk` (whole field), blank for the rest. WAG's `+0.2` prints between vault 1's
+  score and the result (`Combined Bonus`). The by-team report leaves one individual's bonus out
+  (WAG MANCIA POLANCO: `12.750 12.500 12.825`). MAG vault final NIN REYES: vault 1 `0.0 0.000 0.000`,
+  `DNF`, vault 2 `DNS`: `INVALID_VAULT` then `DNS`, unranked.
+- **The WAG judges pages' legend names the men's apparatus**; the icons (rendered) and the time and
+  line judges (vault's line judge, beam's two time judges, floor's time and line judges) give the
+  grid VT/UB, BB/FX. MAG is FX/PH, SR/VT, PB/HB. Panels are `AS D1 D2 E1-E4` in every round,
+  finals included; one judge can sit on several panels of a session. No reserves are listed.
+- **Apparatus finals start lists** (`GAR-1AP…FNL-PART<day>_51G`, revised) print men left and women
+  right in blocks headed `Start Time: hh:mm`, the first block of a day men only; a name can end one
+  space before its NOC. Replacements (MAG rings NUÑEZ FARFAN for PORRAS ESCATEL, parallel bars LOPEZ
+  MARTINEZ for SOTO RODRIGUEZ, both `NR` compatriots; WAG floor, §4.6) are noted at the foot.
+- MAG all-around: 15 `Q` (GUA's third, `NR`, is the only reserve); BELL Clayton (JAM) didn't start
+  the final, so 14 are ranked.
+- Judges credited to `UPAG` (both Superior Juries, every apparatus supervisor) are written with the
+  federation other 2026 meets give them, each a `NOC` correction keyed by the judge's name; every
+  one had a single federation across the Worlds, World Cup and Senior Pan American files.
+- Entry-list birth dates for ALVAREZ Jorman (MAG 202) and HERRERA POLANCO Brithany (WAG 110) differ
+  from the 2026 Worlds entry list by ten days; Worlds' are written (`BIRTH_DATE` corrections).
+
+### 5.21 Games results book, ORIS-style Bornan print (Asian Games)
+
+The Aichi-Nagoya 2026 Games' OCA results book (`18608-AG2026_GAR_RB_v1.pdf`, 136 pages, Bornan
+timing), and the MAG "Results Vault 1" report (`18608-AG2026-MAG-SR-VAULT-QUAL-C73I_Results.pdf`, one
+page, the same print and code `GARM1APVTQUAL_73I`), published apart from the book: artistic only, every page with text and a footer code but the cover, the copyright page and
+the back cover (p. 136, an image). The codes and layout are the Central American and Caribbean
+Games' (§5.20), so the parser
+([`parse_2026_asian_games.py`](../tools/results-parsing/parse_2026_asian_games.py)) started from that
+one. Headers are bilingual (English, then Japanese).
+
+**Structure.** "Qualification and All-Around Final" (MAG 21, WAG 22 September) ranks the all-around
+title (the best 24, two per NOC; the others print their totals unranked) and qualifies eight teams to
+the team final (23 September, three up, three counting, its own routines) and eight athletes to each
+apparatus final (24-25 September). So it is `QUAL`; the all-around final is a `SUMMARY-FINAL-AA` with
+`Scores Round` `QUAL` and the team final a normal `TEAM` session (§4.9). Qualification teams are five
+up to four, three counting; individuals from other NOCs.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`, men and women under one code) | the participants; Number of Entries by NOC (`_30`) counts them |
+| Apparatus results (`_73I`, vault `_73J`) | every qualification and apparatus final SCORES file; vault qualification lists only the two-vault athletes. Finals add the qualification rank and start order (cross-checked) |
+| Team results, qualification (`GARMTEAMQUAL_73C`/`GARWTEAMQUAL_73D`) | the team summary, markers (`Q`, WAG KAZ `R1`) and penalty; each member's routines (cross-checked) and the first vaults of team members |
+| Team results, final (`…TEAMFNL_73C`/`_73D`) | the team final's routines (SCORES-TEAM) and standings |
+| All-around results (`GARM1AAFNL_73G`/`GARW1AAFNL_73H`, titled Final, the qualification's routines) | SUMMARY-FINAL-AA; the first vaults of all-arounders and their whole-field rank; every routine cross-checked against the tables |
+| Qualification results by team (`_73A`/`_73B`) | scores only, every athlete, all-around rank (cross-checked) |
+| MAG Results Vault 1 (the separate file) | every first vault, with D, E and its whole-field `Rank`; the only source for KAMILJANOV's (below). The two-vault table and the team and all-around reports are checked against it |
+| Judges Assignments (qualification `_57A`/`_57B`, team final `…TEAMFNL_57x`, apparatus finals `GAR-FNL-000<day>00_57D`) | JUDGES |
+| Lists of Qualifiers (`_53B`/`_53C` apparatus, `_53D` team), start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
+
+**Gotchas**
+
+- **A vault in no report of the book but the results by team.** MAG KAMILJANOV Ravshan (UZB, 154),
+  an individual who did pommel horse and one vault, is in neither the team nor the all-around report
+  nor the two-vault table; the results by team print only his score (`12.433`). The Results Vault 1
+  report gives his D and E, and every vaulter's rank. WAG has no such list: its first vaults' `Rank`
+  is the all-around report's (all-arounders only), as at the CAC Games.
+- **Tied first vaults**: the Results Vault 1 list breaks them on E (MAG ZHANG and LAN 7 and 8 at
+  14.133; HASHIMOTO 14 behind IDRISSOV, PUA 26 behind RYU), where the all-around report's `Rk` shares
+  the rank (13, 25). The list's ranks are written.
+- **A two-vault result printed above the truncated average**: MAG qualification TRINH Hai Khang,
+  13.366 and 14.033, printed `13.700` (13.6995; the unrounded E scores average to 13.700, but other
+  results are truncated, KIM Jaeho's `14.149`). Written as printed; the parser allows this one.
+- **Placeholder zeros before `DNS`** (§4.3): MAG KANETA's floor (`0.0 0.000 DNS`, and `D 0.000 DNS`
+  over `E 0.000` in the team report). MIRVALIEV (UZB) prints `DNS DNS` in the two-vault table.
+- **The finals start lists and judges pages are printed twice** (pp. 52-55 = 113-116); the first copy
+  is read, the second checked identical. Each lists the men's finals down the left and the women's
+  down the right; a start list's block heading can share a line with the other side's last reserve.
+- **Names.** The entry list prints MAS `Muhammad Sharul Aimy` and MYA `PAN EI PHYU` with no
+  SURNAME Given split; their other 2026 entries (same licences) split them AIMY / Muhammad Sharul and
+  PHYU / Pan Ei, and so does the parser (agreed with the user). The results by team print initials
+  (`TAN A`, `CHEN HYJ`, `MSA`); the all-around report cuts long names, wrapping the rest under them.
+  Taiwanese given names print with lower-case second syllables (`TANG Chia-hung`), other 2026 books
+  `Chia-Hung`; they link by licence.
+- **Judges**: the Superior Jury (`President` and one `<Apparatus> Supervisor` per apparatus, all
+  `AGU`) heads each sheet; panels `D1 D2 E1-E5` with time and line judges, in the grid MAG FX/PH,
+  SR/VT, PB/HB and WAG VT/UB, BB/FX (floor's and vault's line judges, beam's two time judges). Reserves:
+  MAG `R1 R2` per round; WAG none in qualification, `R1` in the team final; the finals' per day and
+  discipline, written once for each of that day's finals. The supervisors' federations come from the
+  Asian Championships and D1 AMER Rima's (`JOR`) from the user (`NOC` corrections); `AL-BUAINAIN Abeer` and `ORTEGA Jasmin Amanda` are kept as
+  printed (the Asian Championships print `AL BOUAINAIN Abeer`, `ORTEGA Jasmin`).
+- **WAG KAZ**, ninth and first reserve team, has `* Penalty -1.0` (a wrong start order) under its total
+  (`130.796*`): `SJ Penalty` `-1.0`.
+- **Finals replacements**: MAG floor ZHANG (`Q`) out for KIM Jaeho (`R1`), OKA (`Q`) for HASHIMOTO
+  (`NR`); rings OKA for LEE Junghyo (`R1`); parallel bars ZHANG for LAN (`NR`); high bar ZHANG for
+  HAMIDI (`R1`). WAG bars KE for QIU (`NR`); floor ZHANG Qingying for ZHANG Yihan and AN Chang Ok for
+  HAN Yon Mi (both `NR`).
+- Birth dates for GHADIMI Mehrdad (QAT, 137: 16 Jun 2003) and ANDREW Chiara Dawn (PHI, 537: 30 May
+  2006) differ from the 2026 Asian Championships entry list (5 Oct 2003, 20 May 2006). This book's are
+  right (checked by the user; World Gymnastics for ANDREW): the Asian Championships files carry
+  `BIRTH_DATE` corrections, and the two athletes' stored birth dates were corrected by hand, since a
+  reimport keeps athlete records. KANETA Kiichi (JPN, 116) prints licence 49174; his licence is 49574,
+  as the Baku Apparatus World Cup has it (a `LICENCE` correction).
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1254,8 +1866,10 @@ Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/par
 5. **Penalties attributed to an apparatus.** sporttech.io's export records CUB's
    team penalty against one routine (bib 338's parallel bars) and has fields
    for per-apparatus team penalties and individual all-around penalties; only
-   the team-level total is modelled (`TeamResult.sjPenalty`). Revisit if a book
-   prints a penalty against a team's apparatus total.
+   the team-level total is modelled (`TeamResult.sjPenalty`). The 2026 Asian
+   Championships WAG juniors print one against LBN's beam total (§4.3); it is
+   folded into the team's `SJ Penalty`. Revisit if the site should show where a
+   team penalty was taken.
 6. **SJ penalties on vault.** Baku printed an SJ penalty on a combined
    two-vault result (§4.3), stored as `Score.combinedSjPenalty` beside the
    per-attempt `SJ Penalty1`/`SJ Penalty2`. Check the Code of Points: an SJ
@@ -1270,8 +1884,18 @@ Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/par
    so they are entries with no results. Szombathely's leaves its one (WAG KOVACS Regina, bib 224,
    on the beam start list only) off the entry list too, so she isn't written at all. Paris's six
    late French entries (§5.14) aren't marked hors concours, but their rows print no result either.
+   Tashkent's seven (§5.18) are on the start lists only, like Szombathely's, so aren't written.
    Their scores would need another source (the FIG results system) and a way to keep them out of the ranks.
+10. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury prints
+   `Debbie` (RSA, judge number 2058) and `Rawan` (EGY, 4646) only. Rawan is written as ABOUSHOUSHA
+   Rawan (EGY), the Cairo World Cup judge (a correction; the book gives no full name). Debbie isn't
+   written, a judge needing a surname; add her if her surname is found.
 9. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
    (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral
    group beside `AIN1`/`AIN2`. Revisit if the site groups results by country.
+11. **World Gymnastics judge IDs.** Every judge has an ID in the World Gymnastics database
+   (the African Championships WAG sheets print some as judge numbers). Backfill them, which would
+   link a judge across meets despite spelling and federation differences (item 7), and replace the
+   hand-checked federations of judges credited to a continental union (the 2026 Central American
+   and Caribbean Games' nine, filled from other 2026 meets).

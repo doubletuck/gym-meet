@@ -1,0 +1,104 @@
+{
+ "id": 18291,
+ "status": "approved",
+ "title": " FIG World Challenge Cup 2026",
+ "minisiteUrl": null,
+ "city": {
+  "name": "TASHKENT",
+  "country": {
+   "name": "Uzbekistan",
+   "code": "UZB"
+  }
+ },
+ "startEvent": "2026-05-21",
+ "endEvent": "2026-05-24",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 18,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  }
+ ],
+ "venue": "Gymnastics Sport Palace",
+ "capacity": null,
+ "locContact": "ABDUVALIEV Timur",
+ "locUrl": "http://www.gymnastics.sport",
+ "locEmails": [
+  "uzb.gym.fed@gmail.com"
+ ],
+ "figContact": [
+  {
+   "firstname": "Stéphane",
+   "lastname": "DETRAZ",
+   "email": "sdetraz@worldgymnastics.sport"
+  }
+ ],
+ "mediaEmails": [],
+ "level": {
+  "name": "World Challenge Cup",
+  "group": 3
+ },
+ "olympicCycle": {
+  "name": "16th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Spieth"
+  }
+ ],
+ "registrationStart": "2025-10-01",
+ "provisionalDeadline": "2026-01-29",
+ "definitiveDeadline": "2026-03-26",
+ "nominativeDeadline": "2026-04-23",
+ "nominativeModificationDeadline": "2026-05-17",
+ "content": null,
+ "files": [
+  {
+   "title": "1_Directives",
+   "filename": "ART_2026_UZB_World ChallengeCup_Directives_V2.pdf",
+   "url": "../../asset.php?id=fidb_21001"
+  },
+  {
+   "title": "2_Forms",
+   "filename": "ART_2026_World ChallengeCup_Tashkent_Forms.zip",
+   "url": "../../asset.php?id=fidb_21544"
+  },
+  {
+   "title": "3_Apparatus List",
+   "filename": "ART_2026_World_ChallengeCup_Tashkent_UZB_List_of_apparatus.pdf",
+   "url": "../../asset.php?id=fidb_22234"
+  },
+  {
+   "title": "4_Nominative Registration",
+   "filename": "gymnasts_FIG World Challenge Cup 2026 TASHKENT Nominative_18.05.2026.pdf",
+   "url": "../../asset.php?id=fidb_22421"
+  },
+  {
+   "title": "5_Work Plan and Appendices",
+   "filename": "TASHKENT ART WCHALLENGE CUP 2026 WORK PLAN AND APPENDICES.zip",
+   "url": "../../asset.php?id=fidb_22420"
+  },
+  {
+   "title": "Results book (Media)",
+   "filename": "18291 - Results book (Media).pdf",
+   "url": "../../asset.php?id=fidb_22487"
+  }
+ ]
+}

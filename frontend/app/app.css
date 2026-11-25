@@ -6,6 +6,23 @@
 @theme {
   /* The system's own font: no download before text shows, and familiar on every phone */
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Medal tags for a final's top three: fill and number, redefined for dark below */
+  --color-gold-fill: #fbe7a1;
+  --color-gold-text: #5c4300;
+  --color-silver-fill: #e5e7eb;
+  --color-silver-text: #374151;
+  --color-bronze-fill: #f3d2b5;
+  --color-bronze-text: #5b2f0c;
+}
+
+html.dark {
+  --color-gold-fill: #4a3a08;
+  --color-gold-text: #fde68a;
+  --color-silver-fill: #2b3038;
+  --color-silver-text: #e5e7eb;
+  --color-bronze-fill: #46280f;
+  --color-bronze-text: #f8cfa8;
 }
 
 html,

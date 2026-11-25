@@ -50,6 +50,7 @@ class ApparatusResultRepositoryTest {
     void setUp() {
         Event event = new Event();
         event.setTitle("2026 Xfinity U.S. Gymnastics Championships");
+        event.setShortName("Test");
         event.setSlug("2026-xfinity-u-s-gymnastics-championships");
         event.setStartDate(LocalDate.of(2026, 8, 6));
         event.setEndDate(LocalDate.of(2026, 8, 8));

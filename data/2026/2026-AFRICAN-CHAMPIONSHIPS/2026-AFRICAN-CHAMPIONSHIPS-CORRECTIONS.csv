@@ -1,0 +1,18 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+WAG-SR-PARTICIPANTS,105,Birth Date,2006-07-11,2005-01-15,BIRTH_DATE,World Championships,"LAROUI Djenna (licence 48297): the entry list prints 11/07/2006; the World Championships, Paris World Challenge Cup and Mediterranean Games entry lists all give 2005-01-15"
+WAG-SR-PARTICIPANTS,105,Birth Year,2006,2005,BIRTH_DATE,World Championships,As above
+WAG-SR-PARTICIPANTS,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,"MUCHATUTA Kylana: the entry list and results print ZWE (the ISO code); the entries by NOC page (p. 4) prints ZIM, the IOC code World Gymnastics uses"
+WAG-SR-SUMMARY-QUAL-AA,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-QUAL-VT,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-QUAL-UB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-QUAL-BB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-QUAL-FX,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-EVENT-BB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-JUDGES,EVENT VT E2,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The finals sheet (p. 56) cuts the surname to the column; the qualification sheet and the other finals panels print DELGADO MIRANDA
+WAG-SR-JUDGES,EVENT VT E2,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
+WAG-SR-JUDGES,EVENT BB E2,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The finals sheet (p. 56) cuts the surname to the column; the qualification sheet and the other finals panels print DELGADO MIRANDA
+WAG-SR-JUDGES,EVENT BB E2,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
+WAG-SR-JUDGES,QUAL - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646; the full name is not given); taken to be ABOUSHOUSHA Rawan (EGY), a WAG judge at the 2026 Cairo World Cup, as agreed with the user"
+WAG-SR-JUDGES,QUAL - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
+WAG-SR-JUDGES,EVENT - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,As above
+WAG-SR-JUDGES,EVENT - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above

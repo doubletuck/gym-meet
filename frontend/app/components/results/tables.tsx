@@ -1,20 +1,32 @@
 import type { ReactNode } from "react";
 
-import type { AllAroundRow, Apparatus, ApparatusStandingRow, Routine, ScoreRow, TeamRow } from "~/api/types";
+import type {
+  AllAroundRow,
+  Apparatus,
+  ApparatusStandingRow,
+  Routine,
+  ScoreRow,
+  SessionResults,
+  TeamRow,
+} from "~/api/types";
 import { formatScore, formatValue } from "~/lib/format";
-import { APPARATUS_LABELS } from "~/lib/labels";
+import { APPARATUS_LABELS, APPARATUS_ORDER } from "~/lib/labels";
+import { Abbreviation } from "../Abbreviation";
 import { ExpandableTable, type Column } from "./ExpandableTable";
-import { Country, DetailList, Gymnast, QualificationBadge, Rank, RoutineScore, statusLabel } from "./parts";
-
-/** A D score as published: a leading "!" marks one under inquiry. */
-function difficulty(routine: Routine): string {
-  const d = formatValue(routine.difficulty);
-  return d && routine.difficultyInquiry ? `!${d}` : d;
-}
+import {
+  Country,
+  DetailList,
+  difficultyText,
+  Gymnast,
+  QualificationBadge,
+  Rank,
+  RoutineScore,
+  statusLabel,
+} from "./parts";
 
 function routineDetails(routine: Routine): [string, string][] {
   return [
-    ["Difficulty", difficulty(routine)],
+    ["Difficulty", difficultyText(routine)],
     ["Execution", formatScore(routine.execution)],
     ["Bonus", formatValue(routine.bonus)],
     ...(routine.bonusDetail ?? []).map((item): [string, string] => [
@@ -33,10 +45,13 @@ function routineDetails(routine: Routine): [string, string][] {
  */
 function PhoneLine({
   items,
+  spoken = false,
   lead,
   children,
 }: {
   items: (readonly [short: string, label: string, value: string])[];
+  /** Reads the labels out in full, for codes like "PH" a screen reader would spell out. */
+  spoken?: boolean;
   /** Leads the line in bold, e.g. the vault number. */
   lead?: ReactNode;
   /** Follows the values, e.g. "Did not start". */
@@ -51,10 +66,7 @@ function PhoneLine({
       {lead != null && <span className="font-semibold">{lead}</span>}
       {shown.map(([short, label, value]) => (
         <span key={short} className="whitespace-nowrap">
-          <abbr title={label} className="no-underline">
-            {short}
-          </abbr>{" "}
-          {value}
+          <Abbreviation short={short} label={label} spoken={spoken} /> {value}
         </span>
       ))}
       {children}
@@ -78,8 +90,20 @@ function hasMoreDetail(row: ScoreRow): boolean {
   );
 }
 
+/** Why a score isn't one of its team's counting scores, or "" when it is (or there's no team). */
+function teamRoleNote(row: ScoreRow): string {
+  switch (row.teamRole) {
+    case "DROPPED":
+      return "Dropped from the team total";
+    case "INDIVIDUAL":
+      return "Competed as an individual, not for the team";
+    default:
+      return "";
+  }
+}
+
 /** A row's expanded panel: each routine in full, and what else the row carries. */
-function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean }) {
+function ScoreDetail({ row }: { row: ScoreRow }) {
   return (
     <div className="space-y-3">
       {row.secondRoutine ? (
@@ -101,7 +125,7 @@ function ScoreDetail({ row, teamScoring }: { row: ScoreRow; teamScoring: boolean
           ["Combined bonus", formatValue(row.combinedBonus)],
           ["Two-vault total", row.secondRoutine ? formatScore(row.total) : ""],
           ["Qualification rank", row.qualificationRank != null ? String(row.qualificationRank) : ""],
-          ["Team", teamScoring && !row.countsTowardTeam ? "Dropped from the team total" : ""],
+          ["Team", teamRoleNote(row)],
         ]}
       />
     </div>
@@ -130,12 +154,13 @@ export function ScoreTable({
   apparatus,
   scores,
   qualification,
-  teamScoring,
+  athleteId,
 }: {
   apparatus: Apparatus;
   scores: ScoreRow[];
   qualification: boolean;
-  teamScoring: boolean;
+  /** The athlete whose row to highlight. */
+  athleteId?: number;
 }) {
   const columns: Column<ScoreRow>[] = [
     {
@@ -151,7 +176,7 @@ export function ScoreTable({
         <Gymnast athlete={row.athlete} noc={row.noc} club={row.club}>
           <PhoneLine
             items={[
-              ["D", "Difficulty", difficulty(row.routine)],
+              ["D", "Difficulty", difficultyText(row.routine)],
               ["E", "Execution", formatScore(row.routine.execution)],
               ["B", "Bonus", formatValue(row.routine.bonus)],
               ["P", "Penalty", formatValue(row.routine.penalty)],
@@ -166,7 +191,7 @@ export function ScoreTable({
       align: "right",
       wide: true,
       sortValue: (row) => row.routine.difficulty,
-      cell: (row) => difficulty(row.routine),
+      cell: (row) => difficultyText(row.routine),
     },
     {
       header: "E",
@@ -203,8 +228,8 @@ export function ScoreTable({
       align: "right",
       sortValue: (row) => row.total,
       cell: (row) =>
-        teamScoring && !row.countsTowardTeam ? (
-          <span className="text-gray-400" title="Dropped from the team total">
+        teamRoleNote(row) ? (
+          <span className="text-gray-400" title={teamRoleNote(row)}>
             <RoutineScore routine={row.routine} score={row.total} />
           </span>
         ) : (
@@ -229,7 +254,8 @@ export function ScoreTable({
       defaultSort="#"
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
-      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} teamScoring={teamScoring} />}
+      highlight={athleteRow(athleteId)}
+      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} />}
     />
   );
 }
@@ -263,10 +289,13 @@ export function VaultTable({
   scores,
   qualification,
   caption = "Vault results",
+  athleteId,
 }: {
   scores: ScoreRow[];
   qualification: boolean;
   caption?: string;
+  /** The athlete whose row to highlight. */
+  athleteId?: number;
 }) {
   const columns: Column<ScoreRow>[] = [
     {
@@ -285,7 +314,7 @@ export function VaultTable({
               key={i}
               lead={i + 1}
               items={[
-                ["D", "Difficulty", difficulty(routine)],
+                ["D", "Difficulty", difficultyText(routine)],
                 ["E", "Execution", formatScore(routine.execution)],
                 ["B", "Bonus", formatValue(routine.bonus)],
                 ["P", "Penalty", formatValue(routine.penalty)],
@@ -316,7 +345,7 @@ export function VaultTable({
       align: "right",
       wide: true,
       sortValue: (row) => best(row, (routine) => routine.difficulty, Math.max),
-      cell: (row) => <PerVault row={row} value={difficulty} />,
+      cell: (row) => <PerVault row={row} value={difficultyText} />,
     },
     {
       header: "E",
@@ -390,7 +419,8 @@ export function VaultTable({
       defaultSort="#"
       rows={scores}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
-      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} teamScoring={false} />}
+      highlight={athleteRow(athleteId)}
+      detail={(row) => hasMoreDetail(row) && <ScoreDetail row={row} />}
     />
   );
 }
@@ -453,7 +483,7 @@ function apparatusItems(apparatus: Apparatus[], scores: Partial<Record<string, n
 }
 
 /**
- * All-around results; on a phone, each gymnast's apparatus scores are on a line
+ * All-Around results; on a phone, each gymnast's apparatus scores are on a line
  * under their name. A round held in parts lists each part's scores under the
  * combined ones.
  */
@@ -461,10 +491,13 @@ export function AllAroundTable({
   rows,
   apparatus,
   qualification,
+  athleteId,
 }: {
   rows: AllAroundRow[];
   apparatus: Apparatus[];
   qualification: boolean;
+  /** The athlete whose row to highlight. */
+  athleteId?: number;
 }) {
   const columns: Column<AllAroundRow>[] = [
     {
@@ -478,13 +511,14 @@ export function AllAroundTable({
       header: "Gymnast",
       cell: (row) => (
         <Gymnast athlete={row.athlete} noc={row.noc} club={row.club}>
-          <PhoneLine items={apparatusItems(apparatus, row.apparatusScores)} />
+          <PhoneLine spoken items={apparatusItems(apparatus, row.apparatusScores)} />
         </Gymnast>
       ),
     },
     ...apparatus.map((app): Column<AllAroundRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
+      spoken: true,
       align: "right",
       wide: true,
       sortValue: (row) => row.apparatusScores[app],
@@ -518,11 +552,12 @@ export function AllAroundTable({
 
   return (
     <ExpandableTable
-      caption="All-around results"
+      caption="All-Around results"
       columns={columns}
       defaultSort="#"
       rows={rows}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
+      highlight={athleteRow(athleteId)}
     />
   );
 }
@@ -572,13 +607,14 @@ export function TeamTable({
           <span className="font-medium">
             <Country noc={row.noc} />
           </span>
-          <PhoneLine items={apparatusItems(apparatus, row.apparatusTotals)} />
+          <PhoneLine spoken items={apparatusItems(apparatus, row.apparatusTotals)} />
         </>
       ),
     },
     ...apparatus.map((app): Column<TeamRow> => ({
       header: app,
       label: APPARATUS_LABELS[app],
+      spoken: true,
       align: "right",
       wide: true,
       sortValue: (row) => row.apparatusTotals[app],
@@ -606,7 +642,16 @@ export function TeamTable({
 }
 
 /** A split round's combined standings on one apparatus, each part's score under the total. */
-export function StandingsTable({ apparatus, rows }: { apparatus: Apparatus; rows: ApparatusStandingRow[] }) {
+export function StandingsTable({
+  apparatus,
+  rows,
+  athleteId,
+}: {
+  apparatus: Apparatus;
+  rows: ApparatusStandingRow[];
+  /** The athlete whose row to highlight. */
+  athleteId?: number;
+}) {
   return (
     <ExpandableTable
       caption={`${APPARATUS_LABELS[apparatus]} combined standings`}
@@ -623,6 +668,32 @@ export function StandingsTable({ apparatus, rows }: { apparatus: Apparatus; rows
       ]}
       rows={rows}
       rowKey={(row) => `${row.bib}-${row.athlete.id}`}
+      highlight={athleteRow(athleteId)}
     />
   );
+}
+
+/** Picks out an athlete's rows, when there's an athlete to highlight. */
+function athleteRow(athleteId: number | undefined) {
+  return athleteId == null ? undefined : (row: { athlete: { id: number } }) => row.athlete.id === athleteId;
+}
+
+/**
+ * The apparatus columns of a session's team and all-around standings: its
+ * score tables', else a split round's combined standings', else, for
+ * standings ranking another session's routines (which have no score tables of
+ * their own), those its rows have scores on, in Olympic order.
+ */
+export function standingsApparatus(results: SessionResults): Apparatus[] {
+  if (results.apparatus.length) {
+    return results.apparatus.map(({ apparatus }) => apparatus);
+  }
+  if (results.apparatusStandings.length) {
+    return results.apparatusStandings.map(({ apparatus }) => apparatus);
+  }
+  const scored = new Set([
+    ...results.allAround.flatMap((row) => Object.keys(row.apparatusScores)),
+    ...results.teams.flatMap((row) => Object.keys(row.apparatusTotals)),
+  ]);
+  return APPARATUS_ORDER[results.session.discipline].filter((apparatus) => scored.has(apparatus));
 }

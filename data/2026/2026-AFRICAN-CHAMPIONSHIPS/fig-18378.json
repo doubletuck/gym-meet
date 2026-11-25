@@ -1,0 +1,94 @@
+{
+ "id": 18378,
+ "status": "approved",
+ "title": "19th Junior African Artistic Championships",
+ "minisiteUrl": null,
+ "city": {
+  "name": "YAOUNDE",
+  "country": {
+   "name": "Cameroon",
+   "code": "CMR"
+  }
+ },
+ "startEvent": "2026-04-23",
+ "endEvent": "2026-04-26",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Junior",
+     "minAge": 14,
+     "maxAge": 18
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  }
+ ],
+ "venue": "PALAIS POLYVALENT DES SPORTS DE YAOUNDE (PAPOSY)",
+ "capacity": 0,
+ "locContact": "YOTENJE Samuel Léopold L.S.",
+ "locUrl": "http://camergym.com",
+ "locEmails": [
+  "camergym23@gmail.com"
+ ],
+ "figContact": [
+  {
+   "firstname": "Sports",
+   "lastname": "WGYM",
+   "email": "sports@worldgymnastics.sport"
+  }
+ ],
+ "mediaEmails": [],
+ "level": {
+  "name": "Junior Continental Championships",
+  "group": 3
+ },
+ "olympicCycle": {
+  "name": "16th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Taishan Sports Equipment"
+  }
+ ],
+ "registrationStart": null,
+ "provisionalDeadline": null,
+ "definitiveDeadline": null,
+ "nominativeDeadline": null,
+ "nominativeModificationDeadline": null,
+ "content": null,
+ "files": [
+  {
+   "title": "1_Directives-en (update 17 March)",
+   "filename": "ART_2026_Senior+Junior Cont Champs_Yaounde_Directives-en.pdf",
+   "url": "../../asset.php?id=fidb_21765"
+  },
+  {
+   "title": "2_Apparatus list",
+   "filename": "ART_2026_Senior+Junior Cont Champs_Yaounde_All forms.zip",
+   "url": "../../asset.php?id=fidb_20624"
+  },
+  {
+   "title": "3_Apparatus list",
+   "filename": "ART_2026_Senior+Junior Cont Champs_Yaounde_List of Apparatus.pdf",
+   "url": "../../asset.php?id=fidb_20625"
+  },
+  {
+   "title": "Results book (Media)",
+   "filename": "18378 - Results book (Media).pdf",
+   "url": "../../asset.php?id=fidb_22913"
+  }
+ ]
+}

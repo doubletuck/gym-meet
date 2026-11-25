@@ -1,0 +1,55 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+MAG-SR-SCORES-QUAL-FX,206,Rank,46,45,TIE_BREAK,tie-break report,"DE LEON Justine Ace and TRINH Hai Khang, 11.800 with E 6.800 and D 5.0 both: the tie-break report (p49) ranks them =45 under its rule that gymnasts still tied share the classification; the results table prints 45 and 46"
+MAG-SR-SCORES-QUAL-FX,206,Qualification Rank,46,45,TIE_BREAK,tie-break report,As above
+MAG-SR-SCORES-QUAL-PB,119,Rank,15,14,TIE_BREAK,tie-break report,"TIAN Hao and ERGASHEV Khabibullo, 13.300 with E 8.600 and D 4.7 both: the tie-break report (p53) ranks them =14; the results table prints 14 and 15"
+MAG-SR-SCORES-QUAL-PB,119,Qualification Rank,15,14,TIE_BREAK,tie-break report,As above
+MAG-SR-PARTICIPANTS,165,Name,AZIZOV Llyas,AZIZOV Ilyas,NAME,World Championships,"Licence 31800: the World Championships, Cairo and Osijek World Cup entry lists print Ilyas; Llyas is a misprint of the capital I"
+MAG-SR-PARTICIPANTS,165,Given Name,Llyas,Ilyas,NAME,World Championships,As above
+MAG-SR-JUDGES,CHENG Feng-Yi,Name,CHENG Feng-Yi,CHENG Feng Yi,JUDGE_NAME,World Championships,As the World Championships judges list prints it
+MAG-SR-JUDGES,CHENG Feng-Yi,Given Name,Feng-Yi,Feng Yi,JUDGE_NAME,World Championships,As above
+MAG-SR-JUDGES,CHEN Ming-Yao,Name,CHEN Ming-Yao,CHEN Ming Yao,JUDGE_NAME,Antalya World Cup,As the 2026 Antalya Apparatus World Cup judges list prints it
+MAG-SR-JUDGES,CHEN Ming-Yao,Given Name,Ming-Yao,Ming Yao,JUDGE_NAME,Antalya World Cup,As above
+MAG-SR-JUDGES,LIPING Huang,Name,LIPING Huang,HUANG Liping,JUDGE_NAME,user,"Printed given name first; HUANG is the surname, as confirmed by the user"
+MAG-SR-JUDGES,LIPING Huang,Surname,LIPING,HUANG,JUDGE_NAME,user,As above
+MAG-SR-JUDGES,LIPING Huang,Given Name,Huang,Liping,JUDGE_NAME,user,As above
+MAG-SR-JUDGES,KIM Alexander,Name,KIM Alexander,KIM Alexandr,JUDGE_NAME,World Championships,"KAZ's KIM Alexandr, as the World Championships judges list prints him (confirmed by the user); the book prints the English spelling"
+MAG-SR-JUDGES,KIM Alexander,Given Name,Alexander,Alexandr,JUDGE_NAME,World Championships,As above
+MAG-SR-JUDGES,HASHEMI Seyed Hamid Reza,NOC Code,,IRI,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
+MAG-SR-JUDGES,MIRZAEV Ravshanbek,NOC Code,,UZB,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
+MAG-SR-JUDGES,SNG Puay Liang,NOC Code,,SGP,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
+MAG-SR-JUDGES,KASAMATSU Akihiro,NOC Code,,JPN,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
+MAG-SR-JUDGES,LIPING Huang,NOC Code,,CHN,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
+MAG-SR-JUDGES,KIM Alexander,NOC Code,,KAZ,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
+WAG-SR-JUDGES,EVENT VT SV,NOC Code,,QAT,NOC,other panels,"AL BOUAINAIN Abeer: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to QAT"
+WAG-SR-JUDGES,EVENT UB SV,NOC Code,,JPN,NOC,other panels,"SHIRAKAWA Chihiro: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to JPN"
+WAG-SR-JUDGES,EVENT BB SV,NOC Code,,UZB,NOC,other panels,"KOSHECHKINA Stella: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to UZB"
+WAG-SR-JUDGES,EVENT FX SV,NOC Code,,PHI,NOC,other panels,"ORTEGA Jasmin: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to PHI"
+WAG-SR-JUDGES,EVENT - R2,NOC Code,,PHI,NOC,other panels,"ORTEGA Jasmin: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to PHI"
+WAG-SR-JUDGES,EVENT - R3,NOC Code,,QAT,NOC,other panels,"AL BOUAINAIN Abeer: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to QAT"
+WAG-SR-JUDGES,EVENT - R4,NOC Code,,JPN,NOC,other panels,"SHIRAKAWA Chihiro: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to JPN"
+WAG-JR-SUMMARY-QUAL-TEAM,LBN,BB Total,22.665,22.965,SCORE,team report,"Two team penalties, -0.6 in all, written as the SJ Penalty: the beam warm-up overrun (-0.3) is taken off the printed beam total (starred), the flag (-0.3) off the team total. The beam total is written as its best three scores, 6.666 + 8.833 + 7.466, so the counting scores can be worked out"
+MAG-JR-JUDGES,CHENG Feng-Yi,Name,CHENG Feng-Yi,CHENG Feng Yi,JUDGE_NAME,World Championships,As the World Championships judges list prints it (as in the senior book)
+MAG-JR-JUDGES,CHENG Feng-Yi,Given Name,Feng-Yi,Feng Yi,JUDGE_NAME,World Championships,As above
+MAG-JR-JUDGES,CHEN Ming-Yao,Name,CHEN Ming-Yao,CHEN Ming Yao,JUDGE_NAME,Antalya World Cup,As the 2026 Antalya Apparatus World Cup judges list prints it (as in the senior book)
+MAG-JR-JUDGES,CHEN Ming-Yao,Given Name,Ming-Yao,Ming Yao,JUDGE_NAME,Antalya World Cup,As above
+MAG-JR-JUDGES,LIPING Huang,Name,LIPING Huang,HUANG Liping,JUDGE_NAME,user,"Printed given name first; HUANG is the surname, as confirmed by the user (as in the senior book)"
+MAG-JR-JUDGES,LIPING Huang,Surname,LIPING,HUANG,JUDGE_NAME,user,As above
+MAG-JR-JUDGES,LIPING Huang,Given Name,Huang,Liping,JUDGE_NAME,user,As above
+MAG-JR-JUDGES,KIM Alexander,Name,KIM Alexander,KIM Alexandr,JUDGE_NAME,World Championships,"KAZ's KIM Alexandr, as the World Championships judges list prints him (confirmed by the user); the book prints the English spelling (as in the senior book)"
+MAG-JR-JUDGES,KIM Alexander,Given Name,Alexander,Alexandr,JUDGE_NAME,World Championships,As above
+MAG-JR-JUDGES,HASHEMI Seyed Hamid Reza,NOC Code,,IRI,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user (as in the senior book)"
+MAG-JR-JUDGES,MIRZAEV Ravshanbek,NOC Code,,UZB,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user (as in the senior book)"
+MAG-JR-JUDGES,SNG Puay Liang,NOC Code,,SGP,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user (as in the senior book)"
+MAG-JR-JUDGES,KASAMATSU Akihiro,NOC Code,,JPN,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user (as in the senior book)"
+MAG-JR-JUDGES,LIPING Huang,NOC Code,,CHN,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user (as in the senior book)"
+MAG-JR-JUDGES,KIM Alexander,NOC Code,,KAZ,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user (as in the senior book)"
+WAG-JR-JUDGES,AL BOUAINAIN Abeer,NOC Code,,QAT,NOC,other panels,AL BOUAINAIN Abeer: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to QAT
+WAG-JR-JUDGES,SHIRAKAWA Chihiro,NOC Code,,JPN,NOC,other panels,SHIRAKAWA Chihiro: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to JPN
+WAG-JR-JUDGES,KOSHECHKINA Stella,NOC Code,,UZB,NOC,other panels,KOSHECHKINA Stella: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to UZB
+WAG-JR-JUDGES,ORTEGA Jasmin,NOC Code,,PHI,NOC,other panels,ORTEGA Jasmin: both junior sheets print AGU (Asian Gymnastics Union); the senior qualification sheet credits her to PHI
+MAG-SR-PARTICIPANTS,152,Birth Year,2000,2006,BIRTH_DATE,World Gymnastics athlete database,"The entry list swaps AL-KHALIDI's (licence 54342) and NAGHOUJ's (31183) birth dates; World Gymnastics has AL-KHALIDI born 2006 and NAGHOUJ 2000 (checked by the user), as the 2026 Tashkent World Challenge Cup prints"
+MAG-SR-PARTICIPANTS,152,Birth Date,2000-12-24,2006-11-10,BIRTH_DATE,World Gymnastics athlete database,"As above; NAGHOUJ's printed date, taken as swapped whole (agreed with the user)"
+MAG-SR-PARTICIPANTS,150,Birth Year,2006,2000,BIRTH_DATE,World Gymnastics athlete database,As above
+MAG-SR-PARTICIPANTS,150,Birth Date,2006-11-10,2000-12-24,BIRTH_DATE,World Gymnastics athlete database,"As above; AL-KHALIDI's printed date, taken as swapped whole (agreed with the user)"
+WAG-SR-PARTICIPANTS,578,Birth Date,2006-05-20,2006-05-30,BIRTH_DATE,World Gymnastics athlete database,"ANDREW Chiara (licence 55676): the entry list prints 20 May 2006; World Gymnastics has 30 May 2006 (checked by the user), as the 2026 Asian Games entry list prints"
+MAG-SR-PARTICIPANTS,220,Birth Date,2003-10-05,2003-06-16,BIRTH_DATE,user,"GHADIMI Mehrdad (licence 70193): the entry list prints 5 Oct 2003; his birth date is 16 Jun 2003 (checked by the user), as the 2026 Asian Games entry list prints"

@@ -52,6 +52,7 @@ class EventServiceTest {
         testEvent = new Event();
         testEvent.setFigEventNumber("FIG-2026-EURO");
         testEvent.setTitle("2026 European Championships");
+        testEvent.setShortName("Test");
         testEvent.setSlug("2026-european-championships");
         testEvent.setStartDate(LocalDate.of(2026, 4, 20));
         testEvent.setEndDate(LocalDate.of(2026, 4, 26));
@@ -63,7 +64,7 @@ class EventServiceTest {
 
     @Test
     void testCreate_FailsOnDuplicateSlug() {
-        EventRequest request = new EventRequest(null, "2026-european-championships", "A Different Title",
+        EventRequest request = new EventRequest(null, "2026-european-championships", "A Different Title", "Different",
                 LocalDate.of(2027, 1, 1), LocalDate.of(2027, 1, 5), "Stuttgart", "GER", null, null,
                 EventLevel.CONTINENTAL_CHAMPIONSHIPS);
 
@@ -80,6 +81,7 @@ class EventServiceTest {
 
         assertNotNull(created.id());
         assertEquals("2026 World Championships", created.title());
+        assertEquals("Short 2026", created.shortName());
         assertTrue(eventRepository.findById(created.id()).isPresent());
     }
 
@@ -93,7 +95,7 @@ class EventServiceTest {
 
     @Test
     void testCreate_FailsOnDuplicateTitleAndStartDate_WhenFigEventNumberAbsent() {
-        EventRequest request = new EventRequest(null, "2026-european-championships-copy", "2026 European Championships", testEvent.getStartDate(),
+        EventRequest request = new EventRequest(null, "2026-european-championships-copy", "2026 European Championships", "Euros 2026", testEvent.getStartDate(),
                 LocalDate.of(2026, 4, 27), "Different City", "FRA", null, null,
                 EventLevel.DOMESTIC_COMPETITION);
 
@@ -110,7 +112,7 @@ class EventServiceTest {
 
     @Test
     void testCreate_SucceedsWithoutFigEventNumber_WhenTitleAndStartDateAreUnique() {
-        EventRequest request = new EventRequest(null, "2026-us-championships", "2026 US Championships", LocalDate.of(2026, 8, 15),
+        EventRequest request = new EventRequest(null, "2026-us-championships", "2026 US Championships", "US Champs 2026", LocalDate.of(2026, 8, 15),
                 LocalDate.of(2026, 8, 18), "Fort Worth", "USA", null, null,
                 EventLevel.NATIONAL_CHAMPIONSHIPS);
 
@@ -129,6 +131,7 @@ class EventServiceTest {
 
         assertTrue(updated.isPresent());
         assertEquals("2026 European Championships (Updated)", updated.get().title());
+        assertEquals("Short 2026", eventRepository.findById(testEvent.getId()).orElseThrow().getShortName());
     }
 
     @Test
@@ -156,6 +159,7 @@ class EventServiceTest {
         Event otherEvent = new Event();
         otherEvent.setFigEventNumber("FIG-2026-WORLDS");
         otherEvent.setTitle("2026 World Championships");
+        otherEvent.setShortName("Test");
         otherEvent.setSlug("2026-world-championships");
         otherEvent.setStartDate(LocalDate.of(2026, 10, 1));
         otherEvent.setEndDate(LocalDate.of(2026, 10, 10));
@@ -219,7 +223,7 @@ class EventServiceTest {
     }
 
     private EventRequest requestFor(String figEventNumber, String title, LocalDate startDate, LocalDate endDate) {
-        return new EventRequest(figEventNumber, title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("-$", ""), title, startDate, endDate, "Stuttgart", "GER", null, null,
+        return new EventRequest(figEventNumber, title.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("-$", ""), title, "Short " + title.substring(0, 4), startDate, endDate, "Stuttgart", "GER", null, null,
                 EventLevel.CONTINENTAL_CHAMPIONSHIPS);
     }
 }

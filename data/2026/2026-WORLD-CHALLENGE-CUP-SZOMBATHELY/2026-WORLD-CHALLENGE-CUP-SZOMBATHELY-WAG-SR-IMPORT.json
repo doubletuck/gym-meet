@@ -1,6 +1,7 @@
 {
     "event" : {
         "title" : "World Challenge Cup 2026 Szombathely",
+        "shortName" : "Szombathely WCC 2026",
         "disciplines" : "WAG",
         "ageCategory" : "SR",
         "level" : "WORLD_CHALLENGE_CUP",

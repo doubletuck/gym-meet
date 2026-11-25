@@ -1,0 +1,32 @@
+# 18531 pp15-16 (Media Book pp. 4-5) Start Lists "WAG - 09.05.2026. - 09:30 - Junior - Women's" (pages 2/3, 3/3).
+# Format as WAG-SR-START.txt.
+1|VT|217|Georgia Harvey
+1|VT|218|Savanna Campen
+1|VT|216|Ella Thomas
+1|UB|211|Zara Andrews
+1|UB|215|Olivia Meaney
+1|UB|214|Alice Johnson
+1|UB|213|Madelyn Fazio
+1|UB|212|Shaydon Atkinson
+2|UB|217|Georgia Harvey
+2|UB|216|Ella Thomas
+2|UB|218|Savanna Campen
+2|BB|211|Zara Andrews
+2|BB|215|Olivia Meaney
+2|BB|214|Alice Johnson
+2|BB|213|Madelyn Fazio
+2|BB|212|Shaydon Atkinson
+3|BB|218|Savanna Campen
+3|BB|217|Georgia Harvey
+3|BB|216|Ella Thomas
+3|FX|212|Shaydon Atkinson
+3|FX|214|Alice Johnson
+3|FX|215|Olivia Meaney
+3|FX|213|Madelyn Fazio
+4|VT|214|Alice Johnson
+4|VT|212|Shaydon Atkinson
+4|VT|213|Madelyn Fazio
+4|VT|215|Olivia Meaney
+4|FX|218|Savanna Campen
+4|FX|217|Georgia Harvey
+4|FX|216|Ella Thomas

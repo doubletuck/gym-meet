@@ -1,0 +1,13 @@
+# Not in the book: the Elevien results site's "Teams (3+2) · WOMEN'S · Junior (Team)" page, from a
+# screenshot the user supplied (23 Nov 2026), kept as data/2026/2026-OCEANIA-CHAMPIONSHIPS/18531-2026-Oceania-Champs-WAG-JR-Teams.png.
+# Columns VT UB BB FX; format as MAG-SR-TEAM-SCORES.txt.
+T|1|Australia|147.463
+M|214|Alice Johnson|12.100|12.600|12.566|12.133
+M|213|Madelyn Fazio|~11.966|11.333|13.000|12.233
+M|215|Olivia Meaney|13.166|~10.433|11.666|12.500
+M|212|Shaydon Atkinson|12.600|||~11.200
+M|211|Zara Andrews||11.566|~11.433|
+T|2|New Zealand|123.862
+M|216|Ella Thomas|12.666|9.866|10.433|11.066
+M|217|Georgia Harvey|12.133|9.700|10.300|10.233
+M|218|Savanna Campen|11.900|6.266|9.133|10.166

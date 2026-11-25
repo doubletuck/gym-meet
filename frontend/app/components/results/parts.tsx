@@ -3,7 +3,7 @@ import { Link } from "react-router";
 
 import type { Athlete, QualificationResult, Routine } from "~/api/types";
 import { countryName, flagUrl } from "~/lib/countries";
-import { athleteName, formatScore } from "~/lib/format";
+import { athleteName, formatScore, formatValue } from "~/lib/format";
 
 const QUALIFICATION_LABELS: Record<QualificationResult, string> = {
   Q: "Qualified",
@@ -92,6 +92,12 @@ export function Country({ noc, club }: { noc: string; club?: string | null }) {
   );
 }
 
+/** A D score as published: a leading "!" marks one under inquiry. */
+export function difficultyText(routine: Routine): string {
+  const d = formatValue(routine.difficulty);
+  return d && routine.difficultyInquiry ? `!${d}` : d;
+}
+
 export function statusLabel(routine: Routine): string {
   return { COMPLETED: "", DNS: "Did not start", INVALID_VAULT: "Invalid vault", UNKNOWN: "Unknown" }[routine.status];
 }
@@ -114,6 +120,37 @@ export function RoutineScore({ routine, score = routine.score }: { routine: Rout
 
 export function Rank({ rank }: { rank: number | null }) {
   return <span className="text-gray-500">{rank ?? "–"}</span>;
+}
+
+const MEDALS: Record<number, [name: string, colors: string]> = {
+  1: ["Gold", "bg-gold-fill text-gold-text"],
+  2: ["Silver", "bg-silver-fill text-silver-text"],
+  3: ["Bronze", "bg-bronze-fill text-bronze-text"],
+};
+
+/**
+ * A placing, on a disc in its medal's colour for the top three where `medal`
+ * says the result wins one. Other placings are padded so a one-digit number
+ * lines up with the one centred on a disc.
+ */
+export function Placing({ rank, medal: awarded }: { rank: number | null | undefined; medal: boolean }) {
+  if (rank == null) {
+    return null;
+  }
+  const medal = awarded ? MEDALS[rank] : undefined;
+  if (!medal) {
+    return <span className="px-1.5">{rank}</span>;
+  }
+  const [name, colors] = medal;
+  return (
+    <span
+      title={`${name} medal`}
+      className={`inline-flex size-5 items-center justify-center rounded-full font-semibold ${colors}`}
+    >
+      {rank}
+      <span className="sr-only">, {name.toLowerCase()} medal</span>
+    </span>
+  );
 }
 
 /** A label-value list for an expanded row. */

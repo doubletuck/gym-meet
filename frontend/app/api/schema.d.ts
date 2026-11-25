@@ -108,6 +108,7 @@ export interface components {
       figEventNumber?: string;
       slug: string;
       title: string;
+      shortName: string;
       /** Format: date */
       startDate: string;
       /** Format: date */
@@ -123,6 +124,8 @@ export interface components {
         | "YOUTH_OLYMPIC_GAMES"
         | "CONTINENTAL_GAMES"
         | "CONTINENTAL_CHAMPIONSHIPS"
+        | "REGIONAL_GAMES"
+        | "REGIONAL_COMPETITION"
         | "WORLD_CUP"
         | "WORLD_CHALLENGE_CUP"
         | "INTERNATIONAL_TOURNAMENTS"
@@ -136,6 +139,7 @@ export interface components {
       figEventNumber?: string;
       slug?: string;
       title?: string;
+      shortName?: string;
       /** Format: date */
       startDate?: string;
       /** Format: date */
@@ -151,6 +155,8 @@ export interface components {
         | "YOUTH_OLYMPIC_GAMES"
         | "CONTINENTAL_GAMES"
         | "CONTINENTAL_CHAMPIONSHIPS"
+        | "REGIONAL_GAMES"
+        | "REGIONAL_COMPETITION"
         | "WORLD_CUP"
         | "WORLD_CHALLENGE_CUP"
         | "INTERNATIONAL_TOURNAMENTS"
@@ -266,7 +272,8 @@ export interface components {
       qualificationRank: number | null;
       /** @enum {string|null} */
       qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
-      countsTowardTeam: boolean;
+      /** @enum {string} */
+      teamRole: "COUNTING" | "DROPPED" | "INDIVIDUAL";
     };
     SessionResultsResponse: {
       event: components["schemas"]["EventRef"];
@@ -331,6 +338,8 @@ export interface components {
         | "YOUTH_OLYMPIC_GAMES"
         | "CONTINENTAL_GAMES"
         | "CONTINENTAL_CHAMPIONSHIPS"
+        | "REGIONAL_GAMES"
+        | "REGIONAL_COMPETITION"
         | "WORLD_CUP"
         | "WORLD_CHALLENGE_CUP"
         | "INTERNATIONAL_TOURNAMENTS"
@@ -363,6 +372,8 @@ export interface components {
         | "YOUTH_OLYMPIC_GAMES"
         | "CONTINENTAL_GAMES"
         | "CONTINENTAL_CHAMPIONSHIPS"
+        | "REGIONAL_GAMES"
+        | "REGIONAL_COMPETITION"
         | "WORLD_CUP"
         | "WORLD_CHALLENGE_CUP"
         | "INTERNATIONAL_TOURNAMENTS"
@@ -445,6 +456,7 @@ export interface components {
     EntryEvent: {
       slug: string;
       title: string;
+      shortName: string;
       /** Format: date */
       startDate: string;
       /** Format: date */
@@ -453,18 +465,27 @@ export interface components {
     EntrySession: {
       session: components["schemas"]["SessionSummaryResponse"];
       allAround: components["schemas"]["AllAroundResult"] | null;
+      team: components["schemas"]["EntryTeam"] | null;
       scores: components["schemas"]["ApparatusScore"][];
       apparatusStandings: components["schemas"]["ApparatusStanding"][];
+    };
+    EntryTeam: {
+      noc: string;
+      /** Format: int32 */
+      rank: number | null;
+      /** Format: double */
+      total: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
     };
     PersonalBest: {
       /** @enum {string} */
       apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
       /** Format: double */
       score: number;
-      /** Format: double */
-      difficulty: number | null;
-      /** Format: double */
-      execution: number | null;
+      routine: components["schemas"]["Routine"];
+      /** Format: int32 */
+      vault: number | null;
       event: components["schemas"]["EntryEvent"];
       session: components["schemas"]["SessionSummaryResponse"];
     };
@@ -533,6 +554,8 @@ export interface operations {
           | "YOUTH_OLYMPIC_GAMES"
           | "CONTINENTAL_GAMES"
           | "CONTINENTAL_CHAMPIONSHIPS"
+          | "REGIONAL_GAMES"
+          | "REGIONAL_COMPETITION"
           | "WORLD_CUP"
           | "WORLD_CHALLENGE_CUP"
           | "INTERNATIONAL_TOURNAMENTS"

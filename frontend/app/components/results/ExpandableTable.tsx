@@ -1,4 +1,6 @@
-import { Fragment, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+
+import { Abbreviation } from "../Abbreviation";
 
 type SortDirection = "ascending" | "descending";
 
@@ -6,6 +8,8 @@ export type Column<T> = {
   header: string;
   /** Screen-reader name when the header is abbreviated, e.g. "Difficulty" for "D". */
   label?: string;
+  /** Reads the label out in place of the header, for codes like "PH" a screen reader would spell out. */
+  spoken?: boolean;
   cell: (row: T) => ReactNode;
   align?: "left" | "right";
   /** Shown only from the small breakpoint up; on a phone it's in the expanded row. */
@@ -38,6 +42,8 @@ function sortRows<T>(rows: T[], column: Column<T>, direction: SortDirection): T[
  *
  * @param defaultSort the header of the sortable column the rows arrive in
  *   order of, e.g. "#" for rows ranked as published
+ * @param highlight picks out rows to mark, such as the athlete a link came
+ *   from; the first is scrolled into view and its detail panel opened
  */
 export function ExpandableTable<T>({
   columns,
@@ -46,6 +52,7 @@ export function ExpandableTable<T>({
   detail,
   caption,
   defaultSort,
+  highlight,
 }: {
   columns: Column<T>[];
   rows: T[];
@@ -53,6 +60,7 @@ export function ExpandableTable<T>({
   detail?: (row: T) => ReactNode;
   caption: string;
   defaultSort?: string;
+  highlight?: (row: T) => boolean;
 }) {
   const [sort, setSort] = useState<{ header: string; direction: SortDirection } | null>(() => {
     const column = columns.find((c) => c.header === defaultSort);
@@ -73,7 +81,15 @@ export function ExpandableTable<T>({
   };
   const expandable = rows.some((row) => panel(row) != null);
 
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const highlighted = highlight ? rows.find(highlight) : undefined;
+  const [expanded, setExpanded] = useState<Set<string>>(() =>
+    highlighted && panel(highlighted) != null ? new Set([rowKey(highlighted)]) : new Set(),
+  );
+  const highlightedRow = useRef<HTMLTableRowElement>(null);
+  const highlightedKey = highlighted ? rowKey(highlighted) : undefined;
+  useEffect(() => {
+    highlightedRow.current?.scrollIntoView?.({ block: "center" });
+  }, [highlightedKey]);
   const toggle = (key: string) =>
     setExpanded((current) => {
       const next = new Set(current);
@@ -90,9 +106,7 @@ export function ExpandableTable<T>({
         <tr className="border-b border-gray-300 text-xs text-gray-500 dark:border-gray-700">
           {columns.map((column) => {
             const name = column.label ? (
-              <abbr title={column.label} className="no-underline">
-                {column.header}
-              </abbr>
+              <Abbreviation short={column.header} label={column.label} spoken={column.spoken} />
             ) : (
               column.header
             );
@@ -131,11 +145,14 @@ export function ExpandableTable<T>({
           const key = rowKey(row);
           const content = panel(row);
           const open = content != null && expanded.has(key);
+          const marked = highlight?.(row) ?? false;
           return (
             <Fragment key={key}>
               <tr
+                ref={key === highlightedKey ? highlightedRow : undefined}
+                data-highlighted={marked || undefined}
                 onClick={content != null ? () => toggle(key) : undefined}
-                className={`border-b border-gray-200 dark:border-gray-800 ${content != null ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900" : ""}`}
+                className={`border-b border-gray-200 dark:border-gray-800 ${marked ? HIGHLIGHT : content != null ? "hover:bg-gray-50 dark:hover:bg-gray-900" : ""} ${content != null ? "cursor-pointer" : ""}`}
               >
                 {columns.map((column) => (
                   <td
@@ -178,7 +195,9 @@ export function ExpandableTable<T>({
                 )}
               </tr>
               {open && (
-                <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+                <tr
+                  className={`border-b border-gray-200 dark:border-gray-800 ${marked ? HIGHLIGHT : "bg-gray-50 dark:bg-gray-900"}`}
+                >
                   <td colSpan={columns.length + 1} className="px-2 py-3">
                     {content}
                   </td>
@@ -191,6 +210,9 @@ export function ExpandableTable<T>({
     </table>
   );
 }
+
+// A highlighted row: tinted, with a bar down its leading edge
+const HIGHLIGHT = "bg-amber-50 shadow-[inset_3px_0_0_var(--color-amber-400)] dark:bg-amber-950/40";
 
 /** Space is kept for the arrow on unsorted columns so headers don't shift when sorted. */
 function SortArrow({ direction }: { direction?: SortDirection }) {

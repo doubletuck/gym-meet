@@ -12,6 +12,7 @@ import doubletuck.meet.domain.QualificationResult;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
+import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.Session;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,7 +106,7 @@ class ScoreRepositoryTest {
         assertEquals(14.033, found.get().getTotalScore());
         assertFalse(found.get().getRoutine().getDifficultyInquiry());
         assertNull(found.get().getSecondRoutine());
-        assertTrue(found.get().getCountsTowardTeamResult());
+        assertEquals(TeamScoreRole.COUNTING, found.get().getTeamScoreRole());
     }
 
     @Test
@@ -294,6 +295,7 @@ class ScoreRepositoryTest {
     private Event savedEvent() {
         Event event = new Event();
         event.setTitle("2026 European Championships");
+        event.setShortName("Test");
         event.setSlug("2026-european-championships");
         event.setStartDate(LocalDate.of(2026, 4, 20));
         event.setEndDate(LocalDate.of(2026, 4, 26));

@@ -1,0 +1,128 @@
+{
+ "id": 18666,
+ "status": "approved",
+ "title": "2026 XXV Central American and Caribbean Games Santo Domingo",
+ "minisiteUrl": null,
+ "city": {
+  "name": "SANTO DOMINGO ESTE",
+  "country": {
+   "name": "Dominican Rep.",
+   "code": "DOM"
+  }
+ },
+ "startEvent": "2026-07-26",
+ "endEvent": "2026-08-06",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 18,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "RGI",
+   "name": "Rhythmic Individual",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "RGG",
+   "name": "Rhythmic Group",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "TRA",
+   "name": "Trampoline",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 17,
+     "maxAge": 99
+    }
+   ]
+  }
+ ],
+ "venue": "Pabellon de Gimnasia - Parque del Este",
+ "capacity": 3000,
+ "locContact": "Edwin Rodriguez",
+ "locUrl": "https://cms.jcc2026.org/",
+ "locEmails": [
+  "fedogim@hotmail.com",
+  "litelantes1727@gmail.com",
+  "meryluz_infante@hotmail.com"
+ ],
+ "figContact": [],
+ "mediaEmails": [],
+ "level": {
+  "name": "Other Regional Championships / Games",
+  "group": null
+ },
+ "olympicCycle": {
+  "name": "17th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Taishan Sports Equipment"
+  }
+ ],
+ "registrationStart": null,
+ "provisionalDeadline": null,
+ "definitiveDeadline": null,
+ "nominativeDeadline": null,
+ "nominativeModificationDeadline": null,
+ "content": null,
+ "files": [
+  {
+   "title": "1_Directives_ART",
+   "filename": "ART_2026_Regional Games_Santo Domingo_Directives-en.pdf",
+   "url": "../../asset.php?id=fidb_23204"
+  },
+  {
+   "title": "1_directives_RG",
+   "filename": "RG_2026_Regional Games_Santo Domingo_Directives-en.pdf",
+   "url": "../../asset.php?id=fidb_23205"
+  },
+  {
+   "title": "1_directives_TRA",
+   "filename": "TRA_2026_Regional Games_Santo Domingo_Directives-en.pdf",
+   "url": "../../asset.php?id=fidb_23206"
+  },
+  {
+   "title": "2_Apparatus list",
+   "filename": "ART-RG-TRA_2026_Regional Games_Santo Domingo_list of Apparatus.pdf",
+   "url": "../../asset.php?id=fidb_23207"
+  },
+  {
+   "title": "Results book (Media)",
+   "filename": "18666 - Results book (Media).pdf",
+   "url": "../../asset.php?id=fidb_24402"
+  }
+ ]
+}

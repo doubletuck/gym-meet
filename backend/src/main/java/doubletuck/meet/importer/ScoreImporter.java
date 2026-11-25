@@ -8,6 +8,7 @@ import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.repository.ScoreRepository;
 import org.springframework.stereotype.Component;
 
@@ -63,8 +64,17 @@ class ScoreImporter {
             score.setRank(row.integer("Rank"));
             score.setQualificationRank(row.integer("Qualification Rank"));
             score.setQualificationResult(row.code("Qualification", QualificationResult::find));
+            // Optional: where the file states each score's team role, it isn't worked out from the totals
+            TeamScoreRole teamRole = row.code("Team Role", TeamScoreRole::find);
+            if (teamRole != null) {
+                score.setTeamScoreRole(teamRole);
+            }
 
-            context.getScores().add(scoreRepository.save(score));
+            score = scoreRepository.save(score);
+            context.getScores().add(score);
+            if (teamRole != null) {
+                context.getScoresWithTeamRole().add(score);
+            }
             context.getReport().count("scores");
         }
     }

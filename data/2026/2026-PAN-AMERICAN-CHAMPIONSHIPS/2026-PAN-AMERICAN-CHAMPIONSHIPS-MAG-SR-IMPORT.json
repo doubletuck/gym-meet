@@ -2,6 +2,7 @@
     "event" : {
         "slug" : "2026-pan-american-championships-sr",
         "title" : "2026 Senior Pan American Championships",
+        "shortName" : "Pan Ams 2026",
         "disciplines" : "MAG",
         "ageCategory" : "SR",
         "level" : "CONTINENTAL_CHAMPIONSHIPS",
@@ -10,7 +11,7 @@
         "city" : "Rio de Janeiro",
         "country" : "BRA",
         "figEventNumber" : "18533",
-        "venue" : "Parque Ol\u00edmpico - Arena Carioca 01",
+        "venue" : "Parque Olímpico - Arena Carioca 01",
         "apparatusSuppliers" : "Spieth"
     },
     "participants" : [

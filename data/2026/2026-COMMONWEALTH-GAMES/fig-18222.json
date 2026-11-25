@@ -1,0 +1,94 @@
+{
+ "id": 18222,
+ "status": "approved",
+ "title": "XXIII Commonwealth Games 2026",
+ "minisiteUrl": null,
+ "city": {
+  "name": "GLASGOW",
+  "country": {
+   "name": "Great Britain",
+   "code": "GBR"
+  }
+ },
+ "startEvent": "2026-07-23",
+ "endEvent": "2026-07-29",
+ "disciplines": [
+  {
+   "code": "MAG",
+   "name": "Men's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 18,
+     "maxAge": 99
+    }
+   ]
+  },
+  {
+   "code": "WAG",
+   "name": "Women's Artistic Gymnastics",
+   "agecategories": [
+    {
+     "name": "Senior",
+     "minAge": 16,
+     "maxAge": 99
+    }
+   ]
+  }
+ ],
+ "venue": "Commonwealth Emirates Arena",
+ "capacity": null,
+ "locContact": ".",
+ "locUrl": "http://www.com",
+ "locEmails": [
+  "xxx@xxx"
+ ],
+ "figContact": [
+  {
+   "firstname": "Céline",
+   "lastname": "CACHEMAILLE",
+   "email": "ccachemaille@worldgymnastics.sport"
+  }
+ ],
+ "mediaEmails": [],
+ "level": {
+  "name": "Commonwealth Games",
+  "group": 3
+ },
+ "olympicCycle": {
+  "name": "16th cycle"
+ },
+ "apparatusSuppliers": [
+  {
+   "name": "Not Known at the moment"
+  }
+ ],
+ "registrationStart": null,
+ "provisionalDeadline": null,
+ "definitiveDeadline": null,
+ "nominativeDeadline": null,
+ "nominativeModificationDeadline": null,
+ "content": null,
+ "files": [
+  {
+   "title": "1_ITO Selection Criteria",
+   "filename": "ITO_2026_Commonwealth_Criteria_FINAL.pdf",
+   "url": "../../asset.php?id=fidb_22202"
+  },
+  {
+   "title": "2_List of Apparatus",
+   "filename": "G2026 Apparatus IDs - Gymnova.pdf",
+   "url": "../../asset.php?id=fidb_22782"
+  },
+  {
+   "title": "3_Gymnasts Draw Results",
+   "filename": "FINAL - Artistic-Gymnastics 300626.pdf",
+   "url": "../../asset.php?id=fidb_23035"
+  },
+  {
+   "title": "Results book (Media)",
+   "filename": "Media Book.pdf",
+   "url": "../../asset.php?id=fidb_23310"
+  }
+ ]
+}

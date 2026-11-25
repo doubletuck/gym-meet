@@ -6,6 +6,7 @@ import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.TeamScoreRole;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -24,8 +25,8 @@ import java.util.stream.Collectors;
 /**
  * Checks the imported scores against the published totals, which are stored as
  * published rather than recomputed. Along the way it works out which scores
- * counted toward each team total, since the results files don't mark the
- * dropped ones.
+ * counted toward each team total, where the results files don't state each
+ * score's team role.
  */
 @Component
 class ResultReconciler {
@@ -63,15 +64,26 @@ class ResultReconciler {
      * the published total. Groups differing only by athletes whose scores never
      * counted agree on what counted; if the groups that fit disagree, or none fits,
      * every score is left as counting and a warning is reported.
+     *
+     * <p>Standings ranking another session's routines are checked the same way,
+     * but which scores counted is that session's own team standings to decide,
+     * where it has any.
+     *
+     * <p>Where the scores file states the team roles, nothing is worked out: the
+     * counting scores are only checked against the published totals.
      */
     private void resolveTeamCount(ImportContext context, Team team, List<ImportContext.PublishedTeamTotal> totals) {
         List<Score> scores = context.getScores().stream()
-                .filter(score -> score.getSession().equals(team.session())
+                .filter(score -> score.getSession().equals(team.session().sessionWithScores())
                         && score.getParticipant().getNoc().equals(team.noc())
                         && score.getRoutine().getScore() != null)
                 .toList();
         List<Participant> athletes = scores.stream().map(Score::getParticipant).distinct().toList();
         String location = totals.get(0).location() + ": " + team.noc() + " team";
+        if (scores.stream().anyMatch(context.getScoresWithTeamRole()::contains)) {
+            checkStatedRoles(context, scores, totals, location);
+            return;
+        }
         if (athletes.size() > MAX_ATHLETES_PER_NOC) {
             context.getReport().warn(location + " has " + athletes.size() + " athletes, too many to work out "
                     + "which scores counted; all are left as counting");
@@ -106,11 +118,17 @@ class ResultReconciler {
             return;
         }
 
+        Session scoresSession = team.session().getScoresSession();
+        if (scoresSession != null && context.getTeamResults().stream()
+                .anyMatch(result -> result.getSession().equals(scoresSession))) {
+            return;
+        }
         Set<Apparatus> apparatusWithTotals = totals.stream().map(ImportContext.PublishedTeamTotal::apparatus)
                 .collect(Collectors.toSet());
         for (Score score : scores) {
             if (apparatusWithTotals.contains(score.getApparatus()) && !counted.contains(score)) {
-                score.setCountsTowardTeamResult(false);
+                // Whether a member's score was dropped or an individual's isn't known from the totals
+                score.setTeamScoreRole(TeamScoreRole.DROPPED);
                 context.getReport().count("scores not counting toward team");
             }
         }
@@ -141,6 +159,25 @@ class ResultReconciler {
             counted.addAll(ranked.subList(0, needed));
         }
         return counted;
+    }
+
+    /** Each published apparatus total must be the sum of the scores the file says counted. */
+    private static void checkStatedRoles(ImportContext context, List<Score> scores,
+            List<ImportContext.PublishedTeamTotal> totals, String location) {
+        if (!context.getScoresWithTeamRole().containsAll(scores)) {
+            context.getReport().warn(location + ": the team role is given for some of its scores but not all");
+        }
+        for (ImportContext.PublishedTeamTotal total : totals) {
+            double counted = scores.stream()
+                    .filter(score -> score.getApparatus() == total.apparatus()
+                            && score.getTeamScoreRole() == TeamScoreRole.COUNTING)
+                    .mapToDouble(score -> score.getRoutine().getScore())
+                    .sum();
+            if (Math.abs(counted - total.total()) >= TOLERANCE) {
+                context.getReport().warn(location + ": its counting " + total.apparatus() + " scores add up to "
+                        + String.format("%.3f", counted) + ", not the published " + total.total());
+            }
+        }
     }
 
     // Tied scores make it arbitrary which athlete's counted, so groups are compared on values
@@ -188,7 +225,7 @@ class ResultReconciler {
                     .mapToDouble(Double::doubleValue).sum();
         } else {
             List<Score> scores = scoresOf(context, result.getParticipant(),
-                    score -> score.getSession().equals(session));
+                    score -> score.getSession().equals(session.sessionWithScores()));
             // Some results print 0.000 for an athlete who didn't compete that day
             if (scores.isEmpty() && result.getTotalScore() == 0) {
                 return;
