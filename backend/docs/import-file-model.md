@@ -114,7 +114,7 @@ One row per athlete entry.
 |---|---|---|
 | Order | Entry-list position, as printed | |
 | NOC Code | Country code the participant is competing under, as printed — 3 characters, or 4 for FIG's numbered neutral-athlete codes (`AIN1`, `AIN2`). Some entry lists print it only on each country's first row; it applies to the rows below until the next one | `Participant.noc` |
-| Bib Number | Assigned bib number to uniquely identify the participant in the competition | `Participant.bibNumber` |
+| Bib Number | Assigned bib number to uniquely identify the participant in the competition: the one the results print, where an entry list prints other numbers (2026 South American Games) | `Participant.bibNumber` |
 | FIG License | FIG license number assigned to the gymnast | `Athlete.licenseNumber` |
 | Name | Combined name exactly as printed — `SURNAME Given Name` in FIG sources, `Given Surname` in US Championships | |
 | Surname | Participant's surname | `Athlete.surname` |
@@ -183,7 +183,7 @@ result, which decides the Vault final.
 |---|:-:|:-:|---|---|
 | Round | ✓ | ✓ | | `Session.round` |
 | Apparatus | ✓ | ✓ | | `Score.apparatus` |
-| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1), or the all-around report's vault rank column where that is the only such ranking (2026 African Championships; at the 2026 Commonwealth Games it ranks only the all-arounders' first vaults against the field, and the other rows are blank); blank where the source has neither (2026 Junior Pan Americans, whose first vaults come from the all-around report). `EVENT`: the final's placement | `Score.rank` |
+| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1), or the all-around report's vault rank column where that is the only such ranking (2026 African Championships; at the 2026 Commonwealth Games it ranks only the all-arounders' first vaults against the field, and the other rows are blank); blank where the source has neither (2026 Junior Pan Americans, whose first vaults come from the all-around report; 2026 South American Games MAG, from the team and all-around reports). `EVENT`: the final's placement | `Score.rank` |
 | Bib | ✓ | ✓ | | *(join key)* |
 | Name | ✓ | ✓ | | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | | *(not stored)* |
@@ -266,7 +266,7 @@ publishes no per-part placement.
 | SJ Penalty | Penalty on the row as a whole, distinct from an individual routine's `Penalty`, as printed (negative) and already deducted from `Total` — e.g. a team penalty (2026 Senior Pan Americans MAG CUB, `-1.000`). Where a book takes part of a team penalty off an apparatus total (2026 Asian Championships WAG juniors LBN, beam), the whole penalty is written here and the apparatus total as the sum of its counting scores | `TeamResult.sjPenalty` / `AllAroundResult.sjPenalty` |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |
-| Scores Round | **Optional.** The round whose routines these standings rank, when the round has no `SCORES` files of its own: the 2026 Asian Championships' team and all-around finals rank the qualification's routines (`QUAL`), re-ranked among the qualifiers, and the 2026 Asian Games' all-around final ranks its qualification's routines too; the 2026 Oceania Championships' team final ranks the all-around final's routines (`AA`), the one competition deciding both titles. A missing column or blank cell means the standings rank their own round's scores | `Session.scoresSession` |
+| Scores Round | **Optional.** The round whose routines these standings rank, when the round has no `SCORES` files of its own: the 2026 Asian Championships' team and all-around finals rank the qualification's routines (`QUAL`), re-ranked among the qualifiers, and the 2026 Asian Games' all-around final ranks its qualification's routines too, as do the 2026 South American Games' team and all-around finals; the 2026 Oceania Championships' team final ranks the all-around final's routines (`AA`), the one competition deciding both titles. A missing column or blank cell means the standings rank their own round's scores | `Session.scoresSession` |
 
 ## `SUMMARY-FINAL-<APP>.csv`
 

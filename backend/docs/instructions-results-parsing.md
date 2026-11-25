@@ -158,7 +158,7 @@ A parser that silently drops or misplaces values is worse than one that stops.
    printed score, for every routine.
 2. **Aggregates** — all-around totals = sum of apparatus scores; team
    apparatus totals = best counting scores; a two-vault result = the average
-   truncated to 3 decimals + any combined bonus; multi-part totals = the sum of
+   truncated to 3 decimals (rounded in some books, §5.22) + any combined bonus; multi-part totals = the sum of
    the parts.
 3. **Ranks** — never decrease down a table, totals never increase, tied ranks
    have equal totals.
@@ -195,6 +195,10 @@ decisions that come up while parsing.
 - **`PARTICIPANTS` is the master name record.** Surname/Given Name are derived
   there once; results files carry `Bib` + `Name` only, and every results row's
   name is replaced by the participant's full name by bib.
+- **An entry list can print other bibs than the results** (2026 South American Games: every
+  results table and start list one numbering, the Entry List by NOC another). The results' bibs are
+  written, each entry matched to the one bib the results print its name and NOC with (agreed with
+  the user); the entry list's numbers aren't kept.
 - **Entry list annotations** go in PARTICIPANTS' `Entry Status`: a
   `(reserve)` suffix on the name is dropped and the entry is `RESERVE`; an
   entry struck through on the list is `WITHDRAWN` (Senior Pan Americans WAG
@@ -261,6 +265,10 @@ decisions that come up while parsing.
   Japanese); the final's ranks are written. Its all-around report's vault `Rk` shares a rank on an
   equal first vault (MAG HASHIMOTO and IDRISSOV `13`) that the Results Vault 1 list breaks on E (13
   and 14); the list's is written.
+  The South American Games book (§5.22) breaks ties on E, then D, and shares the rank on equal E and
+  D (MAG floor qualification: SAMPAIO and BRAJAO 13th; WAG floor RODRIGUES Gabriela and ESTOCO 9th;
+  WAG First Vault list RODRIGUES Gabriela and FERNANDEZ 17th); vault on the higher vault (MAG
+  qualification VILLAFAÑE 2nd over ARMIJO at 13.275). Its Tie-Break Output pages match the tables.
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -297,6 +305,13 @@ decisions that come up while parsing.
   non-competing member, an apparatus a team didn't use them on) and gets no row;
   `… … DNS` is an entered routine not performed and gets a `DNS` row.
 - **Vault DNF** (vault 1 done, vault 2 not): `Status2=DNS`, blank `Total`.
+- **A blank vault 2 line with a result of half vault 1** (2026 South American Games MAG vault final
+  ROSTAGNO: vault 1 12.075, vault 2 printed empty, result `6.037`, ranked 8th): the book counted
+  vault 2 as zero, so it is `INVALID_VAULT` with `Total2` `0.000`, as `STATUS` and `ROW`
+  corrections, and the printed result and rank stand (agreed with the user).
+- **A `DNS` only the team report prints** (2026 South American Games MAG: AGÜERO and CHIAPPONI on
+  rings, absent from the rings table; LEON's vault, which the two-vault table wouldn't list): a
+  `DNS` row, rank blank.
 - **All-around/team DNF** rows are kept with blank `Rank`/`Total`; a team
   missing a whole apparatus prints a blank column and `DNF` total.
 - **A team penalty** printed beside the apparatus totals (Senior Pan Americans
@@ -357,6 +372,11 @@ decisions that come up while parsing.
   comes from the all-around report, with `Rank` blank (no vault ranking of the
   field is published); the double list adds vault 2, `Total`, Q/R and
   `Qualification Rank`, and its vault 1 must match the all-around report's.
+- **A two-vault table only, whose all-around report ranks the two-vault athletes** (2026 South
+  American Games MAG): the other first vaults come from the team report (team members) and the
+  all-around report (individuals), with `Rank` blank, as at the Junior Pan Americans. The reports'
+  vault `(Rk)` is the two-vault table's rank, printed for the two-vault athletes only, so it isn't a
+  ranking of first vaults. WAG prints a First Vault list, read as a single-vault list.
 - **One vault table, with an all-around report that ranks vault 1** (African
   Championships): the table ranks the two-vault athletes (`Qualification Rank`,
   Q/R) and lists the one-vault athletes after them, unranked; the all-around
@@ -426,7 +446,9 @@ decisions that come up while parsing.
   African Championships print no `NR`, so the compatriot's stays blank: nine
   finals there changed after qualification, by a reserve or a compatriot
   (§5.15). Asian Championships WAG bars: KE Qinqin (`Q`, on the start list) out for
-  QIU Qiyuan (`NR`), both CHN.
+  QIU Qiyuan (`NR`), both CHN. The South American Games print no `NR` either: MAG parallel bars
+  ZABALA (`Q`, 1st) out for BARAJAS (3rd, COL's third), who won; WAG floor LIDE (`Q`) out for
+  GUTIERREZ (12th, PAN's third). Both finals' start lists already name the replacement.
 - **A start list printed after a reserve came in renumbers the reserves left** (Central American
   and Caribbean Games WAG floor: SWABY RANGER `Q` out, HERRERA POLANCO `R1` in; the start list's
   reserves are the qualification's `R2` and `R3`, printed `R1` and `R2`). The table's markers are
@@ -467,6 +489,9 @@ decisions that come up while parsing.
 | Reserves `R1`… / one unnumbered reserve | `R1`… / `R`, apparatus blank unless the source assigns one (Commonwealth Games finals: a day's reserves, one row for each of that day's finals) |
 | `<Apparatus> & <Apparatus> Supervisor` (Commonwealth Games Superior Jury) | `SV`, one row per apparatus |
 | `RES` / `RES 1`… printed inside a panel's column (Mediterranean Games, Baku) | `R` / `R1`…, with that panel's apparatus |
+| `PR` (South American Games Superior Jury, legend "President") | `President`, apparatus blank |
+| `Superior Jury - Vault & Uneven Bars`, `- Balance Beam & Floor Exercise`, each with its own `PR` (South American Games WAG finals) | `President`, one row per apparatus it names |
+| `L` beside an `L2` on one panel (South American Games WAG floor final) | `L1`, `L2` |
 
 **One spelling per judge.** The same judge is printed differently between
 meets (`GOULET` / `GOULET JR`, `LIN WAY, Jim` / `LI LIN WAY, Jim Anthony`)
@@ -488,7 +513,9 @@ Yazaira `PUR`, CAMACHO Esteban `CRC`, and so on), and so is the Asian
 Gymnastics Union's `AGU` and the Oceania Gymnastics Union's `OGU` where nothing better is known (the Asian Championships' Presidents;
 its apparatus supervisors' federations were looked up, §5.16; the Asian Games' supervisors are the same
 judges, given the same federations; its one `AGU` panel judge, D1 AMER Rima, is written `JOR`, as
-given by the user). A federation printed with the union
+given by the user). A federation printed with a suffix (South American Games WAG qualification,
+LOPEZ Silvina `ARG-B`; `ARG` on the finals sheet) is written as the federation, a `NOC` correction.
+A federation printed with the union
 (`AUS / OGU`, `OGU (AUS)`) is written as the federation; the Oceania MAG Superior Jury's plain `OGU`
 is written `NZL`, his federation at the 2026 World Championships (a `NOC` correction). Men's
 finals line judges lent by the women's panel print `WAG` as their federation
@@ -534,7 +561,8 @@ meet records it. So:
 
 - Followed by any final, the round is `QUAL`, and the titles it decides are summaries of it: the
   African Championships (apparatus finals followed), the Asian Championships (published as team
-  and all-around finals too, which rank the `QUAL` routines).
+  and all-around finals too, which rank the `QUAL` routines), the South American Games (published
+  only as those finals).
 - Followed by nothing, the round is `AA` with a `TEAM` ranking of it: the Oceania Championships.
   The US Championships are `AA` for the same reason, in two parts.
 
@@ -546,6 +574,7 @@ meet records it. So:
 | Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games, Commonwealth Games ("Team Final and Individual Qualification"), Central American and Caribbean Games |
 | Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
 | Qualification that is also the team and all-around finals, published as separate final rankings of the same routines | `QUAL` (every routine, `SUMMARY-QUAL-TEAM`/`-AA` with Q/R/NR), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL`, `EVENT` per apparatus | Asian Championships |
+| Qualification that is also the team and all-around finals, published only as those finals (the schedule's "Final" shares qualification's time block) | `QUAL` (every routine, no qualification summaries), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL` (all-around: two per country ranked, the others unranked), `EVENT` per apparatus | South American Games |
 | Qualification that is also the all-around final, followed by a team final and apparatus finals | `QUAL` (every routine, `SUMMARY-QUAL-TEAM` with Q/R), `TEAM` (its own routines, `SUMMARY-FINAL-TEAM`), `AA` holding only `SUMMARY-FINAL-AA` with `Scores Round` `QUAL` (24 ranked, two per country; the others keep their totals unranked), `EVENT` per apparatus | Asian Games |
 | One competition deciding the team and all-around titles, called finals, with nothing to qualify for | `AA` (every routine, single-attempt vault, `SUMMARY-FINAL-AA`), `TEAM` holding only `SUMMARY-FINAL-TEAM` with `Scores Round` `AA` | Oceania Championships |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
@@ -1901,6 +1930,83 @@ up to four, three counting; individuals from other NOCs.
   reimport keeps athlete records. KANETA Kiichi (JPN, 116) prints licence 49174; his licence is 49574,
   as the Baku Apparatus World Cup has it (a `LICENCE` correction).
 
+### 5.22 Games media book, bilingual Bornan print (South American Games)
+
+The Santa Fe 2026 Games' media book (`18708-ResultsbookMedia.pdf`, 250 pages): rhythmic (pp. 2-77)
+and trampoline (pp. 79-133) first, then artistic (pp. 136-249), the only part read, every page with
+text. Headers are Spanish over English (`Suelo Masculino` / `Men's Floor Exercise`), and the footer
+code puts the report family first: `C73A.GARM1APFX-------------QUAL--------.ENG` (the CAC and Asian
+Games' `_73I` reports). Families: schedule `C08`, entries by NOC `C30`, entry list `C32A`, start lists
+`C51x`, lists of qualifiers `C53x`, judges `C57x`, results `C73x`, tie-breaks `C77x`, medallists
+`C92x`/`C93`, medal standings `C95`. The results letter varies (`C73A`/`C73B` qualification, `C73I`
+finals, `C73J` vault finals, but `C73A` for the MAG high bar final), so the parser
+([`parse_2026_south_american_games.py`](../tools/results-parsing/parse_2026_south_american_games.py))
+matches on the event part.
+
+**Structure.** "Competition I: Qualification" (MAG 13, WAG 14 September, two subdivisions) is
+followed by apparatus finals (15-16 September), so it is `QUAL`. "Competition II: Final" (team and
+all-around) shares subdivision 2's time block; its reports, titled Final, rank the qualification's
+routines: `TEAM` and `AA` hold only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL` (§4.9).
+Teams of up to six, five up per apparatus, four counting (MAG BRA, COL, ARG, CHI, PER; WAG ARG, BRA,
+PAN, PER, BOL; BOL's four all count). The all-around final ranks two per NOC and prints the others
+unranked.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`C32A`, printed twice: front matter and section) | under `ARG - Argentina (6)`, `SURNAME Given  Licence  Bib  Year`: the participants, with the results' bibs (below). Entries by NOC (`C30`) counts them |
+| Apparatus results (`C73x`) | every qualification and final routine but the first vaults of one-vault athletes. Vault qualification: the two-vault athletes only; WAG adds a First Vault list (every first vault, ranked) on the report's second page |
+| Team results (`C73C`/`C73D`, Final) | SUMMARY-FINAL-TEAM; MAG team members' first vaults; every other routine cross-checked |
+| All-around results (`C73G`/`C73H`, Final) | SUMMARY-FINAL-AA; MAG individuals' first vaults; every other routine cross-checked |
+| Judges Assignments (`C57x`, qualification and finals) | JUDGES |
+| Lists of Qualifiers (`C53x`), start lists (`C51x`), Tie-Break Output (`C77x`), Medallists by Event (`C93`) | cross-checks only |
+
+**Gotchas**
+
+- **The results' bibs aren't the entry list's** (MAG 40-78 against 1-74, WAG 1-35 against 6-75):
+  every results table and start list uses one numbering. It is written; each entry is matched to it
+  by name and NOC (§4.1).
+- **Columns are placed by position** (§2.6): `D E B Pen. Total` right-aligned under their labels, the
+  total not under its label (a row's last three-decimal value). `Pen.` is unsigned and `0.0` for none
+  (written negative, or blank). A D or E can be blank: WAG ORTIZ's bars (`0.000` E, no D, ranked
+  31st; `COMPLETED`, §4.3) and CARVAJAL's first vault (no D, E `0.000`, `0.3` penalty, `0.000`:
+  `INVALID_VAULT`). The two-vault table prints CARVAJAL's vault 1 as its penalty alone; the First
+  Vault list gives the rest.
+- **Vault**: line 1 `D E [Pen.] Score Total [Q|R]`, line 2 `D E Pen. Score [B]`. MAG's `B` is that
+  vault's bonus (inside its score: final ROMERO 4.8 + 9.15 + 0.1 = 14.05); WAG's is the combined
+  bonus. **Two-vault results are rounded, not truncated**: CHICA's 13.375 and 13.350 print `13.363`,
+  ACOSTA's 13.367 and 12.934 `13.351` (with the bonus), but AGÜERO's 13.675 and 13.400 `13.537`. The
+  parser allows 0.0005 either way. MAG has no First Vault list (§4.5). ROSTAGNO's blank vault 2 in
+  the final: §4.3.
+- **The team and all-around reports** print per athlete a line of `D Score` pairs (icon columns in
+  the legend's order: MAG FX PH SR VT PB HB, WAG VT UB BB FX), an E line (each routine's E, then its
+  penalty, three decimals) and a rank line (each routine's bonus, printed under the next column's D,
+  then its `(rank)`). The team report's line A is placed by the header's `Score` columns (members
+  skip apparatus). The all-around report's long names push the values right and wrap the rest of
+  the name, and the `NOC - Country`, onto the lines below, so its values are read in order. Both
+  are checked against the tables, and the vault `(rank)` against the two-vault table. The team
+  report prints a bare `0` in BRAJAO's bonus line (no bonus), and no E for ORTIZ's 0.000 bars.
+- **The WAG all-around final's ranks**: SAUCEDO (ARG), RODRIGUES Gabriela (BRA) and LIDE (PAN),
+  each her NOC's third, print their whole-field rank (6, 7, 9; 6 and 9 also held by the final's
+  GUTIERREZ and WORRING), where the other non-counting athletes print none. Written blank, as `RANK`
+  corrections (agreed with the user); the MAG final is consistent.
+- **No `NR`**: the third athlete of a NOC gets no marker; reserves are `R1`, `R2`. Replacements:
+  §4.6. The floor finals' start lists add the two reserves after the eight.
+- **Judges**: the Superior Jury is one `PR` (President) per sheet, but the WAG finals have two, one
+  per pair of apparatus. Panels `D1 D2 E1-E4` (MAG) or `E1-E3` (WAG) in qualification, `E1-E6` (MAG)
+  or `E1-E5` (WAG) in the finals, with line and time judges; the MAG parallel bars panels have a
+  `T` (checked on the rendered page). Judges whose World Gymnastics books (Worlds, Osijek World Cup)
+  give a fuller name are written so (`LI LIN WAY Jim Anthony`, `ALVARADO CLEMENTE Lisseth Amelia`,
+  `STAMATTI Fabian Audite`; `JUDGE_NAME` corrections). Those known only from the Pan American and CAC
+  books (`ABAD Juan José`, `ANTEQUERA ECHEVERRIA Walter`, `PEREZ CABALLERO Raul Antonio`) keep this
+  book's spelling.
+- **Names** are printed short (`MEJIA Thomas`, other 2026 books `MEJIA Thomas Eden`;
+  Brazilians by another surname: `BRAJAO Diogo` is the Worlds' `SOARES Diogo`, `ANDRADE Bernardo`
+  `MIRANDA Bernardo`). They link by licence. Two licences carry another given name elsewhere:
+  GARVIZU Jose (BOL, 66689; `Mateo` at the Pan Americans) and RODRIGUES Chloe (PER, 59772; `Soleil`
+  at Paris).
+- **MAG TORRES Sebastian (VEN, 77)** is on the vault start list (rotation 3) and in no vault report;
+  his vault isn't written (§6).
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1954,3 +2060,7 @@ up to four, three counting; individuals from other NOCs.
    E1–E5 marks and its penalty parts (ND, line, time, …) (§5.15). Nothing in the model holds them, so
    they are transcribed and checked but not written. Storing them would need columns on `SCORES`
    (or a file of their own) and fields on `Score`, joined to the panel's judges by function.
+13. **A routine on a start list that no report prints.** 2026 South American Games MAG TORRES
+   Sebastian (VEN, 77) is on the qualification vault start list and in no vault report (the book has
+   no first-vault list for MAG, and he is in neither the team nor the all-around report). No row is
+   written. The FIG results system may have his vault (or a DNS).
