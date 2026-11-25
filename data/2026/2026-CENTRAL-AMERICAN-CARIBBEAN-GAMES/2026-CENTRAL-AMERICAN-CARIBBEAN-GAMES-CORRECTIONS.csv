@@ -1,0 +1,11 @@
+File,Key,Field,Printed,Corrected,Category,Source,Note
+MAG-SR-PARTICIPANTS,202,Birth Date,2007-02-06,2007-02-16,BIRTH_DATE,World Championships,"ALVAREZ Jorman (licence 62060): the entry list prints 6 Feb 2007; the 2026 Worlds entry list has 16 Feb 2007 (agreed with the user)"
+WAG-SR-PARTICIPANTS,110,Birth Date,2008-05-09,2008-05-19,BIRTH_DATE,World Championships,"HERRERA POLANCO Brithany (licence 55573): the entry list prints 9 May 2008; the 2026 Worlds entry list has 19 May 2008 (agreed with the user)"
+WAG-SR-PARTICIPANTS,131,Name,FERNANDEZ RODRIGUEZ Melissa Del Car,FERNANDEZ RODRIGUEZ Melissa Del Carmen,NAME,start lists; results,The entry list cuts the name short; the start lists and results print it in full
+WAG-SR-PARTICIPANTS,131,Given Name,Melissa Del Car,Melissa Del Carmen,NAME,start lists; results,As above
+MAG-SR-JUDGES,QUAL SR SV,NOC Code,,ARG,NOC,apparatus finals judges,"MACERONI Mauricio, Apparatus Supervisor credited to UPAG; the apparatus finals page credits him to ARG as an E judge (agreed with the user)"
+MAG-SR-JUDGES,QUAL HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,AA SR SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,AA HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,EVENT SR SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,EVENT HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above

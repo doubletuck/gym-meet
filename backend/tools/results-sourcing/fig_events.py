@@ -317,7 +317,10 @@ def add_link(row, column, url):
         row[column] = ', '.join(links + [url])
 
 # ---------------------------------------------------------------- commands
-def fig_events_rows(year, calendar, index, meets):
+def fig_events_rows(year, calendar, index, meets, groups=None):
+    """`groups` maps a FIG id to the FIG Group already in the list: a group set by hand where FIG
+    gives none (the 2026 Central American and Caribbean Games, Group 4) is kept."""
+    groups = groups or {}
     rows = []
     for fig_id, (d, result) in calendar.items():
         book = media_book(d, result)
@@ -328,7 +331,7 @@ def fig_events_rows(year, calendar, index, meets):
             'FIG Event': fig_id, 'Title': d['title'].strip(), 'Start Date': d['startEvent'],
             'End Date': d['endEvent'], 'City': city_name(d['city']['name']),
             'Country': d['city']['country']['code'], 'Venue': (d.get('venue') or '').strip(),
-            'Level': level_name(d), 'FIG Group': level_group(d), 'Categories': ', '.join(f'{a} {b}' for a, b in categories(d)),
+            'Level': level_name(d), 'FIG Group': level_group(d) or groups.get(fig_id, ''), 'Categories': ', '.join(f'{a} {b}' for a, b in categories(d)),
             'Apparatus Suppliers': suppliers(d), 'FIG Status': d.get('status', ''),
             'Results Book': asset_url(book) if book else '',
             'Digital Results': digital_results_url(fig_id) if (result or {}).get('digitalresult') else '',
@@ -404,8 +407,9 @@ def cmd_sync(args):
     header, meets = read_meets(args.year)
     changes = update_meets(meets, index, args.year, calendar)
     write_csv(meets_path(args.year), header, meets)
-    rows = fig_events_rows(args.year, calendar, index, meets)
     out = os.path.join(year_dir(args.year), f'{args.year}-FIG-EVENTS.csv')
+    groups = {int(r['FIG Event']): r['FIG Group'] for r in read_csv(out)[1]} if os.path.exists(out) else {}
+    rows = fig_events_rows(args.year, calendar, index, meets, groups)
     write_csv(out, FIG_EVENTS_COLUMNS, rows)
     print(f'{len(rows)} FIG events -> {os.path.relpath(out, REPO)}')
     print(f'\nMeets list changes ({len(changes)}):')

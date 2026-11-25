@@ -196,6 +196,9 @@ decisions that come up while parsing.
   `6 + 4 (HC)` on the entries by NOC page), and so is an invited country that
   "does not enter any ranking" (Asian Championships MAG: Australia, whose rows
   print `*` for a rank and are kept with `Rank` blank).
+- **An entry list can cut a name short too**: the 2026 Central American and Caribbean Games print
+  `FERNANDEZ RODRIGUEZ Melissa Del Car` (WAG bib 131); the start lists and results have `Melissa
+  Del Carmen`, written in `PARTICIPANTS` as a `NAME` correction.
 - **Truncation happens anywhere a name is long** — narrow vault columns, but
   also normal tables (`BORDELAIS-MAISONNABLE` without his given name, initials
   like `KUBON CV` in all-around tables). Always diff against `PARTICIPANTS`.
@@ -240,6 +243,9 @@ decisions that come up while parsing.
   DE LEON and TRINH `=45`, the table 45 and 46; parallel bars TIAN and ERGASHEV `=14`): the shared
   rank is written, as the report's rule ("will share the same classification") says, and logged
   as a `TIE_BREAK` correction.
+  The Central American and Caribbean Games break every tie the same way, and their Tie Break
+  Reports' ranks match the tables (all-around: the best three, two, one apparatus scores, then E,
+  then D); equal on E and D, the rank is shared (MAG floor final: NUÑEZ FARFAN and VELEZ BELENDEZ 4th).
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -278,6 +284,9 @@ decisions that come up while parsing.
 - **A team penalty** printed beside the apparatus totals (Senior Pan Americans
   MAG CUB: `-1.000`, team score 190.728 against apparatus totals of 191.728)
   goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
+  The Central American and Caribbean Games print `* Penalty -1.0` under the team (MAG VEN, WAG GUA:
+  a wrong start order on one apparatus), deducted from the team score but not from the apparatus
+  total; written as `SJ Penalty` `-1.0`.
   The Mediterranean Games print it unsigned in the team report's `SJ Pen`
   column (POR WAG: `0.3`); it is written negative (`-0.3`), as deducted.
   The Asian Championships star the totals a penalty was taken from and note
@@ -333,7 +342,7 @@ decisions that come up while parsing.
   report's vault `RK` column ranks the whole field on vault 1 (shared on equal
   scores), and that is `Rank`, as a single-vault list's would be.
 - **A two-vault table only, with an all-around report that ranks vault 1**
-  (Commonwealth Games): the one-vault athletes' first vaults come from the team
+  (Commonwealth Games, Central American and Caribbean Games): the one-vault athletes' first vaults come from the team
   and all-around reports; the all-around report's vault `Rk` ranks each
   all-arounder's first vault against the whole field and is their `Rank`; the
   others' `Rank` is blank (§5.19).
@@ -397,6 +406,10 @@ decisions that come up while parsing.
   finals there changed after qualification, by a reserve or a compatriot
   (§5.15). Asian Championships WAG bars: KE Qinqin (`Q`, on the start list) out for
   QIU Qiyuan (`NR`), both CHN.
+- **A start list printed after a reserve came in renumbers the reserves left** (Central American
+  and Caribbean Games WAG floor: SWABY RANGER `Q` out, HERRERA POLANCO `R1` in; the start list's
+  reserves are the qualification's `R2` and `R3`, printed `R1` and `R2`). The table's markers are
+  written; the start list is checked against them renumbered. Its notes name each replacement.
 - **Replacements without reserve markers** (Senior Pan Americans all-around:
   `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
   `Qualification`; the parser reports absent qualifiers and their replacements
@@ -410,7 +423,8 @@ decisions that come up while parsing.
 | `Time Judge`, `Time Judge 1`, `Time 1` | `T`, `T1`, `T1` |
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
-| `AS` / `SA` (Pan American, Cairo, African, Asian and Oceania Championships panel supervisor) | `SV`, with the panel's apparatus |
+| `AS` / `SA` (Pan American, Cairo, African, Asian and Oceania Championships, Central American and Caribbean Games panel supervisor) | `SV`, with the panel's apparatus |
+| `Superior Jury: <name>  UPAG  Technical Delegate` / `President` (Central American and Caribbean Games, one per discipline on every judges page) | `TD` / `President`, apparatus and NOC blank |
 | The Oceania Championships' single Superior Jury (`SJ Gareth Brettell (OGU)` in the MAG sheet's title, `SUPERIOR JURY Allana Slater OGU (AUS)` on WAG's) | `TD`, apparatus blank (agreed with the user) |
 | `Reserve` printed in each panel (Oceania WAG: the same judge in all four) | `R`, with that panel's apparatus |
 | `MAG AGU President` / `WAG AGU President:` heading the Asian Championships sheets | `President`, NOC blank |
@@ -441,7 +455,10 @@ someone else).
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
 have no NOC (blank); a Superior Jury credited to `FIG` is written blank too. Judges credited to a continental union print it as their
-federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank, and so is the Asian
+federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank (except where the same book credits
+the judge to a federation elsewhere: the Central American and Caribbean Games' MACERONI Mauricio,
+an `UPAG` supervisor on MAG rings and high bar and an `ARG` E judge in the finals, is written `ARG`
+throughout, a `NOC` correction), and so is the Asian
 Gymnastics Union's `AGU` and the Oceania Gymnastics Union's `OGU` where nothing better is known (the Asian Championships' Presidents;
 its apparatus supervisors' federations were looked up, §5.16). A federation printed with the union
 (`AUS / OGU`, `OGU (AUS)`) is written as the federation; the Oceania MAG Superior Jury's plain `OGU`
@@ -496,7 +513,7 @@ meet records it. So:
 | Championship | `QUAL`, `TEAM`, `AA`, `EVENT` per apparatus | Worlds, Europeans |
 | Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
 | All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
-| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games, Commonwealth Games ("Team Final and Individual Qualification") |
+| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games, Commonwealth Games ("Team Final and Individual Qualification"), Central American and Caribbean Games |
 | Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
 | Qualification that is also the team and all-around finals, published as separate final rankings of the same routines | `QUAL` (every routine, `SUMMARY-QUAL-TEAM`/`-AA` with Q/R/NR), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL`, `EVENT` per apparatus | Asian Championships |
 | One competition deciding the team and all-around titles, called finals, with nothing to qualify for | `AA` (every routine, single-attempt vault, `SUMMARY-FINAL-AA`), `TEAM` holding only `SUMMARY-FINAL-TEAM` with `Scores Round` `AA` | Oceania Championships |
@@ -1679,6 +1696,63 @@ to five, three scores counting. Athletes compete for Commonwealth Games Associat
 - The entry list's licences and birth dates agree with every earlier 2026 entry for the same
   licence; NIR's athletes compete for IRL elsewhere and link by licence.
 
+### 5.20 Games results book, ORIS-style Bornan print (Central American and Caribbean Games)
+
+The Santo Domingo 2026 Games' media book (`18666-ResultsbookMedia.pdf`, 193 pages, Bornan timing):
+artistic is pp. 1-109, every page with text and a footer code (`GARM1APFX-------------QUAL--------_73I`;
+the judges pages have no `Report Created` stamp); the rhythmic (pp. 110-161) and trampoline
+(pp. 162-193) books follow without codes and are skipped. The layout and codes are the Commonwealth
+Games' (§5.19), so the parser
+([`parse_2026_central_american_caribbean_games.py`](../tools/results-parsing/parse_2026_central_american_caribbean_games.py))
+started from that one.
+
+**Structure.** "Individual Qualification & Team Final" (MAG 2 August, WAG 3 August) decides the team
+titles: `QUAL` with a `SUMMARY-QUAL-TEAM`, as at the Commonwealth Games (§4.9); the all-around finals
+(4 August) and apparatus finals (5-6 August, by the schedule) follow. Teams of five, four up per
+apparatus, three counting; individuals from countries without a team.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`, men and women under one code, told apart by the page heading) | `SURNAME Given  Licence  Bib  Date of birth` under `COL - Colombia`: the participants. Number of Entries by NOC (`_30`) counts them (cross-checked) |
+| Apparatus results (`_73I`, vault `_73J`) | every qualification and final SCORES file but the all-around final's; vault qualification lists only the two-vault athletes (below). Finals add the qualification rank and start order (cross-checked) |
+| Team results (`GARMTEAM…FNL_73C`/`_73D`, titled Final, printed on qualification day) | the team summary and penalty; each member's routines (cross-checked), and the first vaults of team members |
+| All-around results (`_73G`/`_73H`) | the all-around summaries; the all-around final's routines; the first vaults and their whole-field rank; qualification routines cross-checked |
+| Qualification results by team (`GARMQUAL_73A`/`GARWQUAL_73B`) | scores only, every team member and individual, vault `V1 V2 [Bonus] FS`, all-around total and rank (cross-checked) |
+| Judges Assignments (`_57A`/`_57B`, qualification, all-around final, apparatus finals) | JUDGES |
+| Lists of Qualifiers (`_53A` all-around, `_53B`/`_53C` apparatus), start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
+
+**Gotchas**
+
+- **D has one decimal in the apparatus tables (`5.5`) and three in the reports (`5.500`)**; each is
+  written as printed (the single vaults, from the reports, keep three) and compared as numbers.
+- **The reports' E lines drift against their D lines**, so values can't be placed by position: a
+  bonus can print nearer the next routine's E (`8.800 +0.1 9.100 -0.3`, MAG NUÑEZ FARFAN: the
+  `+0.1` is rings', the `-0.3` vault's). The E line lists the E scores of the routines done, in
+  order, each followed by its penalty or bonus; the arithmetic proves it. A routine's apparatus on
+  the team report's D line is the team column its score starts in.
+- **Long names wrap** in the all-around reports and the vault tables: the rest of the name prints
+  on the next line, alone or before the `E` or the vault 2 line. Team reports and start lists print
+  initials (`TAPERIO JAYES MRJ`, `SOTO J` for SOTO RODRIGUEZ Jensuel Jose), matched against the
+  entry list by surname and initials.
+- **Vault qualification lists only the two-vault athletes**, as at the Commonwealth Games: the
+  other first vaults come from the team and all-around reports, and `Rank` is the all-around
+  report's vault `Rk` (whole field), blank for the rest. WAG's `+0.2` prints between vault 1's
+  score and the result (`Combined Bonus`). The by-team report leaves one individual's bonus out
+  (WAG MANCIA POLANCO: `12.750 12.500 12.825`). MAG vault final NIN REYES: vault 1 `0.0 0.000 0.000`,
+  `DNF`, vault 2 `DNS`: `INVALID_VAULT` then `DNS`, unranked.
+- **The WAG judges pages' legend names the men's apparatus**; the icons (rendered) and the time and
+  line judges (vault's line judge, beam's two time judges, floor's time and line judges) give the
+  grid VT/UB, BB/FX. MAG is FX/PH, SR/VT, PB/HB. Panels are `AS D1 D2 E1-E4` in every round,
+  finals included; one judge can sit on several panels of a session. No reserves are listed.
+- **Apparatus finals start lists** (`GAR-1AP…FNL-PART<day>_51G`, revised) print men left and women
+  right in blocks headed `Start Time: hh:mm`, the first block of a day men only; a name can end one
+  space before its NOC. Replacements (MAG rings NUÑEZ FARFAN for PORRAS ESCATEL, parallel bars LOPEZ
+  MARTINEZ for SOTO RODRIGUEZ, both `NR` compatriots; WAG floor, §4.6) are noted at the foot.
+- MAG all-around: 15 `Q` (GUA's third, `NR`, is the only reserve); BELL Clayton (JAM) didn't start
+  the final, so 14 are ranked.
+- Entry-list birth dates for ALVAREZ Jorman (MAG 202) and HERRERA POLANCO Brithany (WAG 110) differ
+  from the 2026 Worlds entry list by ten days; Worlds' are written (`BIRTH_DATE` corrections).
+
 ## 6. Open items
 
 1. **Invalid vault appearance.** FIG books print a plain `0.000` with D and E
@@ -1726,4 +1800,8 @@ to five, three scores counting. Athletes compete for Commonwealth Games Associat
 11. **World Gymnastics judge IDs.** Every judge has an ID in the World Gymnastics database
    (the African Championships WAG sheets print some as judge numbers). Backfill them, which would
    link a judge across meets despite spelling and federation differences (item 7), and replace the
-   hand-checked federations of judges credited to a continental union.
+   hand-checked federations of judges credited to a continental union. The 2026 Central American
+   and Caribbean Games credit their Superior Juries and every apparatus supervisor to `UPAG`,
+   written blank; other 2026 meets give most of them a federation (CABRERA DÁVILA Yazaira PUR,
+   CALABRÓ Mónica ARG, VALENZUELA GOMEZ César MEX, SANCHEZ VILLALOBOS Carlos VEN, VELÁSQUEZ
+   ALVARADO Juan Carlos COL, CAMACHO Esteban CRC).

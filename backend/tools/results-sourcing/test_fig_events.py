@@ -190,6 +190,13 @@ class MeetsListTest(unittest.TestCase):
         self.assertEqual(fe.fig_event_status({'Status': 'Cancelled'}, ''), 'Cancelled')
         self.assertEqual(fe.fig_event_status({'Status': 'Downloaded'}, 'Parsed'), 'Parsed')
 
+    def test_hand_set_group_kept_where_fig_gives_none(self):
+        calendar = {18666: (detail(18666, level='Other Regional Championships / Games'), None),
+                    18222: (detail(18222), None)}
+        calendar[18222][0]['level'] = {'name': 'Commonwealth Games', 'group': 3}
+        rows = fe.fig_events_rows(2026, calendar, {}, [], {18666: 'Group 4', 18222: 'Group 1'})
+        self.assertEqual({r['FIG Event']: r['FIG Group'] for r in rows}, {18666: 'Group 4', 18222: 'Group 3'})
+
     def test_sibling_folders(self):
         def row(i, start, end, folder='', city='Yaounde'):
             return {'FIG Event': i, 'Start Date': start, 'End Date': end, 'City': city, 'Folder': folder}
