@@ -10,8 +10,8 @@ const PATHS: Record<Apparatus, string> = {
   UB: "M6.5 20.5V4.5h11v16M3 20.5V12h18v8.5",
   // The beam on two legs that splay outward
   BB: "M3 8.5h18v2.5H3Zm4 2.5-2.5 8.5m12.5-8.5 2.5 8.5",
-  // The horse's body, its two pommels, and legs
-  PH: "M5 11h14a2 2 0 0 1 0 4H5a2 2 0 0 1 0-4Zm3.5 0V9.5a1.25 1.25 0 0 1 2.5 0V11m2 0V9.5a1.25 1.25 0 0 1 2.5 0V11M6.5 15v5.5m11-5.5v5.5",
+  // A body that narrows toward its base, two straight pommels, legs that splay outward
+  PH: "M3 10h18l-2 4H5ZM9.75 10V7.25m4.5 2.75V7.25M7.5 14 5 20.5m11.5-6.5 2.5 6.5",
   // Two straps hanging from a frame, each with its ring
   SR: "M3.5 3h17M7.5 3v11m9-11v11M7.5 14a2.75 2.75 0 1 0 0 5.5 2.75 2.75 0 0 0 0-5.5Zm9 0a2.75 2.75 0 1 0 0 5.5 2.75 2.75 0 0 0 0-5.5Z",
   // Two bars, the far one set back and higher, each on its own uprights
