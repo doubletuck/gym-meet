@@ -1,0 +1,9 @@
+# p20 Floor Exercise: APP|rank|bib|name|NOC|Total|E|D
+FX|14|226|MKANDAWIRE Tapiwa|RSA|09.400|07.100|
+FX|15|207|LAKEHAL Llies Hichem|ALG|09.400|06.700|
+# p21 Pommel Horse: equal E and D, the rank shared
+PH|4|225|DAVIES VANEETVELDE Frederik|RSA|11.466|08.066|03.400
+PH|4|228|LECHHEB Zakaria|MAR|11.466|08.066|03.400
+# p22 High Bar
+HB|4|228|LECHHEB Zakaria|MAR|11.100|08.300|
+HB|5|216|ABOUWARD Moaz|EGY|11.100|08.000|

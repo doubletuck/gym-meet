@@ -94,6 +94,13 @@ installed; read the pages as images instead:
   that overlap none, and the drafting modes read the merged folder. A dense
   multi-apparatus table reads better still cropped into one strip per
   apparatus (`sips -c <h> <w> --cropOffset <y> <x>`) and OCR'd strip by strip.
+- **A layout no drafting mode covers** (the African Championships junior book): a throwaway drafter
+  that places each word in the column whose left edge (measured once per page layout) is nearest
+  works well. Two traps: OCR drops lone ranks, and filling them in sequence hides a shared rank, so
+  check every rank by eye; and a row whose bib OCR missed gets taken for the line below the previous
+  athlete (vault 2), so look for stray continuation lines on non-vault pages. Telling bold scores
+  from regular by ink density was unreliable; check them by eye (the team totals then confirm them).
+  A sideways page (a finals start list) OCRs after `sips -r 90`.
 
 ### 2.4 Read the header row first, every time
 
@@ -236,7 +243,9 @@ decisions that come up while parsing.
   D; vault the highest vault, then E, then D). Paris breaks every tie, vault
   on the higher vault, then the higher E of either vault, then D. The African Championships break
   every tie in qualification, even at `0.000`, on E (vault: the higher vault), and the finals on
-  E then D (WAG floor: DARIES 4th over MOALLIC, 12.100 and E 7.400 both).
+  E then D (WAG floor: DARIES 4th over MOALLIC, 12.100 and E 7.400 both). Their junior book shares
+  the rank in qualification only on equal E and D (MAG pommel horse 4th), and in the finals on any
+  equal total (MAG rings 2nd, WAG bars 3rd, E differing) except vault (higher vault) (§5.15).
   The Asian Championships print a Tie Break Report per table (E, then D; vault: the higher vault,
   then E, then D; all-around: the best five, four, … apparatus scores, then E, then D) whose ranks
   match the tables, except where it shares a rank the table splits on equal E and D (MAG floor
@@ -499,7 +508,8 @@ finals line judges lent by the women's panel print `WAG` as their federation
 - Some entry lists print the NOC only on each country's first row.
 - **An ISO code where the IOC code differs** is corrected and logged (`NOC`):
   the African Championships print Zimbabwe `ZWE` on the entry list and results,
-  `ZIM` on the entries by NOC page; written `ZIM`. The Asian Games credit two Singaporean judges to
+  `ZIM` on the entries by NOC page; written `ZIM`. Their junior book prints DR Congo as `RDC` (the
+  French abbreviation, neither IOC nor ISO); written `COD`, agreed with the user. The Asian Games credit two Singaporean judges to
   `SIN` on the WAG qualification and team final sheets and to `SGP` on the finals sheets; written `SGP`.
 - The US Championships prints no NOC; participants are written as `USA`.
 - **Commonwealth Games Associations** are written as printed (agreed with the user): at the
@@ -1389,7 +1399,7 @@ reading [`transcriptions/2026-AFRICAN-CHAMPIONSHIPS/`](../tools/results-parsing/
 all-around final, §4.9); the top eight per apparatus (two per country, no `NR` printed) and two
 reserves (a plain `R`, written `R1`, `R2`, §4.6) go to the finals: 25 April MAG FX/PH/SR, WAG VT/UB;
 26 April MAG VT/PB/HB, WAG BB/FX (schedule; the footers agree). The book is the seniors' only; the
-juniors competed on 24 April.
+juniors' book is a separate scan (below).
 
 | Report | Gives |
 |---|---|
@@ -1437,6 +1447,47 @@ juniors competed on 24 April.
   a seat number and a judge number (not written). The finals sheet cuts `DELGADO MIRANDA` to
   `DELGADO MIRAND` on two panels (`JUDGE_NAME`).
 - A stale footer: the WAG bars tie-break page also prints `26 May 2023`.
+
+**Junior book.** `18378-ResultsbookMedia.pdf` (78 pages, printed through "Microsoft: Print To PDF")
+is a scan with no text layer anywhere, the schedule (the same pages as the seniors') and entry list
+included, so everything is transcribed, into
+[`transcriptions/2026-AFRICAN-CHAMPIONSHIPS/JR/`](../tools/results-parsing/transcriptions/2026-AFRICAN-CHAMPIONSHIPS/JR/).
+The same parser reads it, choosing the book by the FIG event number the file name starts with. The
+same structure and reports as the seniors, laid out by a scoring program rather than CorelDRAW, plus
+an **Individual Judges Scores** page per table (D, E1–E5, the E total, the penalty parts and total,
+the bonus, the score). The data model has no place for the judges' marks (§6), so those pages are a
+cross-check only, agreed with the user: E must be the mean of the middle three marks, truncated; the
+parts add up to the penalty total; the score adds up; and each value and rank agrees with the table.
+The E check caught OCR slips arithmetic alone would not (a 6 read as 8 in a judge's mark).
+Qualification on 24 April; the finals on the seniors' two days, after them.
+
+- **Vault bonus**: a bonus is printed on the line of the vault it belongs to and included in that
+  vault's score (MAG ABOUWARD, vault 2: 3.600 + 9.266 − 0.100 + 0.100 = 12.866); the two-vault
+  total is the plain average. Written as that vault's `B`; no combined bonus (no WAG +0.2).
+- **DNS in finals**: MAG floor DAVIES VANEETVELDE and high bar MKANDAWIRE print `DNS` and no values,
+  unranked (§4.3).
+- **Shared ranks in finals** (§4.2): equal totals share the rank (MAG rings SHAARAWY and MKANDAWIRE
+  2nd; WAG bars FEKI and DU PLESSIS 3rd), though E differs; vault finals rank KIMITI 5th and EDINE
+  MEZIANE 6th on 10.849, on the higher vault. Qualification breaks ties on E as the seniors' does,
+  and shares the rank when D is equal too (MAG pommel horse DAVIES VANEETVELDE and LECHHEB 4th, the
+  tie-break page printing both E and D).
+- **Entries by NOC page slips**: it counts five South African men (the list has three, all of whom
+  competed) and three Senegalese women (two), leaves out DR Congo's one woman, and prints Mali's code
+  in the Country cell with no Total. Zimbabwe is `ZIM` there and `ZWE` elsewhere (written `ZIM`).
+- **Countries**: YAELLE (bib 166) prints `RDC`, the French abbreviation; written `COD` (§4.8).
+  NOGUER MUNOZ prints `MLI` (Mali) throughout.
+- **Judges' scores page slips**: five WAG vault 2 lines print an ND that disagrees with the penalty
+  total beside it (ELGARHI, SAFADI: ND 0.000, total 0.100; FEKI, STRAUSS: 0.000 and 0.300;
+  BADENHORST: 0.300 and 0.100). The total agrees with the score and the vault table; the parser
+  lists the five.
+- **Finals that changed**: MAG pommel horse MKANDAWIRE (`Q`) out for KIMITI (`R`) on the start list;
+  vault AMOURA (`Q`, on the start list) out for YIMGA, the start list's second reserve (LAKEHAL, the
+  first, did not compete). No reasons given.
+- Judges: no `SV`/`AS` on any panel; the qualification sheet cuts `DELGADO MIRANDA` to `DELGADO
+  MIRAND` on the vault and beam panels (`JUDGE_NAME`). The WAG Superior Jury prints `Debbie` and
+  `Rawan` only, handled as for the seniors.
+- Names: MEZIANE Zine Edine (entry list) prints `EDINE MEZIANE Zine` in results; the identity check
+  accepts it, and files take the entry list's name.
 
 ### 5.16 Media book in the FIG layout, Starting Future print (Asian Championships)
 
@@ -1886,8 +1937,8 @@ up to four, three counting; individuals from other NOCs.
    late French entries (§5.14) aren't marked hors concours, but their rows print no result either.
    Tashkent's seven (§5.18) are on the start lists only, like Szombathely's, so aren't written.
    Their scores would need another source (the FIG results system) and a way to keep them out of the ranks.
-10. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury prints
-   `Debbie` (RSA, judge number 2058) and `Rawan` (EGY, 4646) only. Rawan is written as ABOUSHOUSHA
+10. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury (senior
+   and junior books) prints `Debbie` (RSA, judge number 2058) and `Rawan` (EGY, 4646) only. Rawan is written as ABOUSHOUSHA
    Rawan (EGY), the Cairo World Cup judge (a correction; the book gives no full name). Debbie isn't
    written, a judge needing a surname; add her if her surname is found.
 9. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
@@ -1899,3 +1950,7 @@ up to four, three counting; individuals from other NOCs.
    link a judge across meets despite spelling and federation differences (item 7), and replace the
    hand-checked federations of judges credited to a continental union (the 2026 Central American
    and Caribbean Games' nine, filled from other 2026 meets).
+12. **Individual judges' marks.** The 2026 African Championships junior book prints every routine's
+   E1–E5 marks and its penalty parts (ND, line, time, …) (§5.15). Nothing in the model holds them, so
+   they are transcribed and checked but not written. Storing them would need columns on `SCORES`
+   (or a file of their own) and fields on `Score`, joined to the panel's judges by function.

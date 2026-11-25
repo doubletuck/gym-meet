@@ -1,0 +1,42 @@
+# p50 Judges assignment, Juniors QUALIFICATIONS. APP|function|SURNAME|Given|NOC as printed; each row also prints
+# a seat number and a judge number, not transcribed. Panels two to a row: VT UB / BB FX (named); no AS row.
+# The Superior Jury prints a given name only, as in the senior book: "SUPERIOR JURY 2  4646  Rawan  EGY" is
+# transcribed with the surname blank (supplied by a correction); "SUPERIOR JURY 1  2058  Debbie  RSA" is not
+# transcribed, a judge needing a surname. Reserve rows printed empty. The sheet cuts DELGADO MIRANDA to
+# DELGADO MIRAND on the vault and beam panels (corrected).
+|SUPERIOR JURY 2||Rawan|EGY
+VT|D1|LALIBERTE|Helene|CAN
+VT|D2|AHMED ELMERIDI|Mariam Samir|EGY
+VT|E1|DELGADO MIRAND|Diana|PER
+VT|E2|MORENO GAMBOA|Mabel Nayibe|COL
+VT|E3|SAKR|Chahed|TUN
+VT|E4|LAROUSSI|Saadia|ALG
+VT|E5|HAUPTFLEISCH|Elizabeth|RSA
+VT|L|KAMBA|Christale|CMR
+UB|D1|MONTREUIL|Andrée|CAN
+UB|D2|BAKKER|Mariolize|RSA
+UB|E1|PAULSON|Samuel|CMR
+UB|E2|GEORGIOU|Marilena|CYP
+UB|E3|JAEGER|Nadine|NAM
+UB|E4|SAHLAL|Karima|MAR
+UB|E5|ELKHASHAB|Ingi|EGY
+UB|T|EWANE|Saya|CMR
+BB|D1|FRAUENKNECHT|Christine|SUI
+BB|D2|AHMED ELMERIDI|Mariam Samir|EGY
+BB|E1|DELGADO MIRAND|Diana|PER
+BB|E2|MORENO GAMBOA|Mabel Nayibe|COL
+BB|E3|SAKR|Chahed|TUN
+BB|E4|IDDIR|Lylia|ALG
+BB|E5|BEZUIDENHOUT|Leandri|RSA
+BB|T1|HAUPTFLEISCH|Elizabeth|RSA
+BB|T2|LAROUSSI|Saadia|ALG
+FX|D1|SEBIHI|Ouahiba|ALG
+FX|D2|BAKKER|Mariolize|RSA
+FX|E1|PAULSON|Samuel|CMR
+FX|E2|GEORGIOU|Marilena|CYP
+FX|E3|JAEGER|Nadine|NAM
+FX|E4|SAHLAL|Karima|MAR
+FX|E5|FAHMY|Amira|EGY
+FX|L1|EWANE|Saya|CMR
+FX|L2|ELKHASHAB|Ingi|EGY
+FX|T|COLINETTE|Biamou|CMR

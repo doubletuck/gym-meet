@@ -1,0 +1,37 @@
+{
+    "event" : {
+        "slug" : "2026-african-championships-jr",
+        "title" : "19th Junior African Artistic Championships",
+        "shortName" : "African Champs 2026",
+        "disciplines" : "WAG",
+        "ageCategory" : "JR",
+        "level" : "CONTINENTAL_CHAMPIONSHIPS",
+        "startDate" : "2026-04-23",
+        "endDate" : "2026-04-26",
+        "city" : "Yaounde",
+        "country" : "CMR",
+        "figEventNumber" : "18378",
+        "venue" : "Palais Polyvalent des Sports de Yaound\u00e9",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-BB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-FX.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-UB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-VT.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-BB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-FX.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-UB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-AA.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}

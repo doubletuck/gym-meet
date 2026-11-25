@@ -44,7 +44,7 @@ last sync: new results books, moved dates, cancellations.
 | FIG Event | FIG's event id: the EVENT.csv `FIG Event Number` |
 | Title | As FIG publishes it |
 | Priority | From the meets-list row linked to this event |
-| Status | The event's own state in its folder, or the meets-list Status when that was set by hand. `Imported` holds only for an event that is parsed: the 2026 African Championships row is imported, but its junior event shows `Downloaded` until it is parsed too |
+| Status | The event's own state in its folder, or the meets-list Status when that was set by hand. `Imported` holds only for an event that is parsed: the 2026 African Championships junior event showed `Downloaded` beside the imported seniors until it was parsed. The hand-set Status covers the whole row, so a newly parsed event of an imported row shows `Imported` before the importer has loaded it |
 | Start Date, End Date, City, Country, Venue | As FIG publishes them; the dates are the whole event's span |
 | Level | FIG's level name (`Continental Games`, `World Challenge Cup`) |
 | FIG Group | FIG's competition group (`Group 1` … `Group 4`). Where FIG gives none, a group set by hand is kept by `sync` (the 2026 Central American and Caribbean Games: `Group 4`) |

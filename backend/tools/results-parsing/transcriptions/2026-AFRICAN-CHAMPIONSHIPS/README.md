@@ -1,4 +1,10 @@
-# 2026 Senior African Championships transcriptions
+# 2026 African Championships transcriptions
+
+The senior book (`18377-ResultsbookMedia.pdf`) is transcribed in this folder; the junior book
+(`18378-ResultsbookMedia.pdf`) in [`JR/`](JR/), described at the end. One parser reads both
+(`../../parse_2026_african_championships.py <pdf>`, the book chosen by its FIG event number).
+
+## Seniors
 
 `18377-ResultsbookMedia.pdf` was laid out in CorelDRAW: the schedule, entry counts and entry list have
 text, which the parser reads from the PDF, but every results page is text converted to outlines and
@@ -34,3 +40,31 @@ broken as printed, names as each report prints them (the files take names from t
   `VT|rank|bib|SURNAME Given|NOC|Total|highest vault|E|D`; each page prints only the deciding value.
 - `<DISC>-FINALS-START.txt`: the Apparatus Finals Start List, `APP|#|bib|Given SURNAME|NOC`, `#` 1-8,
   `R1`, `R2`.
+
+## Juniors (`JR/`)
+
+`18378-ResultsbookMedia.pdf` (78 pages, "Microsoft: Print To PDF") is a scan: no page has a text
+layer, the schedule and entry list included. The pages were rendered at 220 dpi, read with OCR (fast
+and accurate recognizers merged, as for the seniors) and drafted with a column template per page
+layout; every line the drafts flagged was corrected against the page, and every rank, `Q`/`R` mark,
+bold team score and RK was checked by eye. The parser's checks then found the remaining slips (a 6
+read as 8 among the E judges' marks, a dropped shared rank, a bib misread). The files follow the
+senior formats above, with these differences:
+
+- `ENTRIES.txt` (p. 5): `#|NOC|SURNAME Given|Discipline|FIG ID|BIB|Date of Birth` as printed
+  (Egypt `yyyy/mm/dd`). `ENTRY-COUNTS.txt` (p. 4): `No.|Country|NOC|MAG|WAG|Total`, blank where
+  printed blank, then `T|Total||MAG|WAG|Total`; Mali's row prints the code in the Country cell.
+- Judges: no `SV`/`AS` rows on any panel. The WAG Superior Jury prints given names only, as in the
+  senior book, and is handled the same way.
+- Vault tables: `rank|bib|SURNAME Given|NOC|D|E|PEN|Score|Bonus|Total|mark`, then
+  `V2|D|E|PEN|Score|Bonus`. A bonus is that vault's own, included in its score (MAG ABOUWARD's
+  vault 2); there is no combined bonus.
+- Finals: a finalist who didn't start prints `DNS` in Total and nothing else:
+  `|bib|SURNAME Given|NOC|||||DNS|`.
+- `<DISC>-SCORES-<ROUND>-<APP>.txt`: the "Individual Judges Scores" page of every table, a
+  cross-check only (nothing in it is written that the tables don't have). An `H|…` line names the
+  printed columns: `E` is the E-score total, `Pen` the penalty total, `Total` the score (vault:
+  `Score` each vault's, `Bonus` its bonus, `Total` the two-vault result); penalty parts as printed
+  (`ND L1 L2 Time PEN`, vault `ND Line PEN`, bars `ND Time`, beam `ND T1 T2`). Then one line per
+  athlete as printed, and for vault a `V2|…` line without the identity columns and Total. A penalty
+  printed `0.000` stays.

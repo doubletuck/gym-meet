@@ -1,24 +1,28 @@
-"""Parse the 2026 Senior African Championships results book into the CSV standard.
+"""Parse the 2026 African Championships results books (senior and junior) into the CSV standard.
 
 Usage (needs poppler's pdftotext on PATH):
 
     python3 -I parse_2026_african_championships.py \\
-        data/2026/2026-AFRICAN-CHAMPIONSHIPS/18377-ResultsbookMedia.pdf
+        data/2026/2026-AFRICAN-CHAMPIONSHIPS/18377-ResultsbookMedia.pdf     # seniors
+    python3 -I parse_2026_african_championships.py \\
+        data/2026/2026-AFRICAN-CHAMPIONSHIPS/18378-ResultsbookMedia.pdf     # juniors
 
-Writes PARTICIPANTS, JUDGES, SCORES-QUAL-*, SCORES-EVENT-*, SUMMARY-QUAL-TEAM, SUMMARY-QUAL-AA and an
-IMPORT.json for MAG SR and WAG SR next to the PDF, reading event metadata from the EVENT.csv already
-there. Exits non-zero if any check fails (docs/instructions-results-parsing.md §3; this source
-format is §5.15).
+The book is chosen by the FIG event number the file name starts with. Writes PARTICIPANTS, JUDGES,
+SCORES-QUAL-*, SCORES-EVENT-*, SUMMARY-QUAL-TEAM, SUMMARY-QUAL-AA and an IMPORT.json for that book's MAG
+and WAG next to the PDF, reading event metadata from the EVENT.csv already there. Exits non-zero if any
+check fails (docs/instructions-results-parsing.md §3; this source format is §5.15).
 
-The organizer's media book, laid out in CorelDRAW: the schedule, entry counts and entry list have
-text, but every results page is text converted to outlines (or, for the judges, a photograph), so
-it has no text layer. Those pages were read with OCR and checked by eye into
-`transcriptions/2026-AFRICAN-CHAMPIONSHIPS/` (format in the README there); this parser reads them
-and checks every report against the others. Qualification decides the team and all-around titles
-(no team or all-around final); the top eight per apparatus, two per country, go to the finals.
+The organizer's media books. The senior book was laid out in CorelDRAW: the schedule, entry counts
+and entry list have text, but every results page is text converted to outlines (or, for the judges,
+a photograph). The junior book is a scan with no text layer at all, and adds an "Individual Judges
+Scores" page per table. The pages without text were read with OCR and checked by eye into
+`transcriptions/2026-AFRICAN-CHAMPIONSHIPS/` (seniors) and its `JR/` folder (juniors), format in the
+README there; this parser reads them and checks every report against the others. Qualification
+decides the team and all-around titles (no team or all-around final); the top eight per apparatus,
+two per country, go to the finals.
 """
 import os, re, sys
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
@@ -27,44 +31,93 @@ from common import D, split_surname_first
 PDF = sys.argv[1]
 OUT = os.path.dirname(os.path.abspath(PDF))
 EVENT_PREFIX = '2026-AFRICAN-CHAMPIONSHIPS'
-TRANSCRIPTIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'transcriptions', EVENT_PREFIX)
-PAGES = common.pdf_pages(PDF)
 EVENTS = common.read_events(OUT, EVENT_PREFIX)
 checks = common.Checks()
 err = checks.err
 
-PREFIX = {d: f'{EVENT_PREFIX}-{d}-SR' for d in ('MAG', 'WAG')}
+# What differs between the two books, keyed by the FIG event number.
+BOOKS = {
+    '18377': dict(
+        age='SR', folder='',
+        # From the Competition Schedule (pp. 2-3): senior qualification on Thu 23 April.
+        qual_date='2026-04-23',
+        # The entry list and counts have text (pp. 4-5).
+        entries_from_pdf=True,
+        # The "Number of Entries by NOC" page (p. 4) disagrees with the entry list for WAG: it counts
+        # one Namibian (the list has five, all of whom competed) and three Senegalese (two), 26 in all
+        # (29). Per country: (page, listed).
+        count_slips={'WAG': {'NAM': (1, 5), 'SEN': (3, 2)}},
+        count_total_slips=set(),
+        # Results print one athlete's given name differently from the entry list (HANDURA Nagaititue).
+        printed_names={'131': 'Ngaititue'},
+        # Namibia's fifth WAG entry (HANDURA, born 2010) is not on its team page: an individual.
+        individuals={'131'},
+        # The WAG uneven bars final prints a Q beside every finalist, a leftover of the qualification layout.
+        final_marks={('WAG', 'UB')},
+        # Vault: WAG's +0.2 is printed on the vault 2 line and added to the two-vault average.
+        vault_bonus='combined',
+        judge_scores=False,
+        judge_score_pen_slips=set()),
+    '18378': dict(
+        age='JR', folder='JR',
+        # From the Competition Schedule (pp. 2-3): junior qualification on Fri 24 April; the finals
+        # follow the seniors' each day. The tables' footers print the same dates.
+        qual_date='2026-04-24',
+        entries_from_pdf=False,
+        # The counts page (p. 4) counts five South African men (the list has three; three competed)
+        # and three Senegalese women (two), and leaves out DR Congo's one woman (RDC).
+        count_slips={'MAG': {'RSA': (5, 3)}, 'WAG': {'SEN': (3, 2), 'RDC': (0, 1)}},
+        # Mali's row prints the code in the Country cell and no Total.
+        count_total_slips={'MLI'},
+        printed_names={},
+        individuals=set(),
+        final_marks=set(),
+        # Vault: a bonus printed beside a vault is that vault's own (MAG ABOUWARD's vault 2: 3.600 +
+        # 9.266 - 0.100 + 0.100 = 12.866); the two-vault total is the plain average.
+        vault_bonus='vault',
+        judge_scores=True,
+        # The WAG vault judges' scores print a vault 2 ND that disagrees with the penalty total beside
+        # it (ND 0.000, total 0.100: ELGARHI, SAFADI; 0.300: FEKI, STRAUSS; ND 0.300, total 0.100:
+        # BADENHORST). The total agrees with the score and the vault table.
+        judge_score_pen_slips={('WAG', 'QUAL', '145', 2), ('WAG', 'QUAL', '157', 2), ('WAG', 'QUAL', '156', 2),
+                               ('WAG', 'QUAL', '165', 2), ('WAG', 'QUAL', '160', 2)}),
+}
+FIG_ID = os.path.basename(PDF).split('-')[0]
+if FIG_ID not in BOOKS:
+    raise SystemExit(f'{PDF}: expected a file name starting 18377 (seniors) or 18378 (juniors)')
+BOOK = BOOKS[FIG_ID]
+AGE = BOOK['age']
+TRANSCRIPTIONS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'transcriptions', EVENT_PREFIX,
+                              BOOK['folder'])
+PAGES = common.pdf_pages(PDF) if BOOK['entries_from_pdf'] else None
+
+PREFIX = {d: f'{EVENT_PREFIX}-{d}-{AGE}' for d in ('MAG', 'WAG')}
 EVENT_NAME = EVENTS[PREFIX['MAG']]['Title']
 EVENT_START = EVENTS[PREFIX['MAG']]['Start Date']
 if any(EVENTS[p]['Title'] != EVENT_NAME or EVENTS[p]['Start Date'] != EVENT_START for p in PREFIX.values()):
     raise SystemExit('MAG and WAG rows in EVENT.csv are expected to share a title and start date')
-AGE = 'SR'
-corrections = common.Corrections(OUT, EVENT_PREFIX, ['MAG-SR', 'WAG-SR'], err)
+if any(EVENTS[p]['FIG Event Number'] != FIG_ID for p in PREFIX.values()):
+    raise SystemExit(f'EVENT.csv rows for {AGE} are not FIG event {FIG_ID}')
+corrections = common.Corrections(OUT, EVENT_PREFIX, [f'MAG-{AGE}', f'WAG-{AGE}'], err)
 out = common.Output(OUT, corrections)
 # The book's apparatus order (all-around and team reports), and the SUMMARY column order.
 APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
 SUMMARY_APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
-# From the Competition Schedule (pp. 2-3): senior qualification, which decides the team and
-# all-around titles, on Thu 23 April; finals day 1 on Sat 25 April (MAG FX/PH/SR, WAG VT/UB),
-# day 2 on Sun 26 April (MAG VT/PB/HB, WAG BB/FX). The tables' footers print the same dates.
-QUAL_DATE = '2026-04-23'
+# Qualification (book-specific date); finals day 1 on Sat 25 April (MAG FX/PH/SR, WAG VT/UB), day 2 on
+# Sun 26 April (MAG VT/PB/HB, WAG BB/FX), for both books (schedule pp. 2-3; the footers agree).
+QUAL_DATE = BOOK['qual_date']
 FINAL_DATE = {'MAG': {'FX': '2026-04-25', 'PH': '2026-04-25', 'SR': '2026-04-25',
                       'VT': '2026-04-26', 'PB': '2026-04-26', 'HB': '2026-04-26'},
               'WAG': {'VT': '2026-04-25', 'UB': '2026-04-25', 'BB': '2026-04-26', 'FX': '2026-04-26'}}
 # The team reports print the country's name.
 COUNTRY = {'Algeria': 'ALG', 'Cameroon': 'CMR', 'Egypt': 'EGY', 'Namibia': 'NAM', 'Senegal': 'SEN',
-           'South Africa': 'RSA'}
-# The "Number of Entries by NOC" page (p. 4) disagrees with the entry list for WAG: it counts one
-# Namibian (the list has five, all of whom competed) and three Senegalese (two), 26 in all (29).
-# It prints Zimbabwe as ZIM, where the entry list and results print ZWE (written ZIM, a correction).
-COUNT_PAGE_SLIPS = {'WAG': {'NAM': (1, 5), 'SEN': (3, 2)}}
+           'South Africa': 'RSA', 'Tunisia': 'TUN'}
+# The counts page prints Zimbabwe as ZIM, where the entry list and results print ZWE (written ZIM, a
+# correction).
 COUNT_PAGE_CODES = {'ZIM': 'ZWE'}
-# Results print one athlete's given name differently from the entry list (HANDURA Nagaititue).
-PRINTED_NAMES = {'131': 'Ngaititue'}
-# Namibia's fifth WAG entry (HANDURA, born 2010) is not on its team page: an individual.
-INDIVIDUALS = {'131'}
-# The WAG uneven bars final prints a Q beside every finalist, a leftover of the qualification layout.
-FINAL_MARKS = {('WAG', 'UB')}
+PRINTED_NAMES = BOOK['printed_names']
+INDIVIDUALS = BOOK['individuals']
+FINAL_MARKS = BOOK['final_marks']
 
 def read(name):
     """A transcription's lines, without comments and blank lines, as (line number, fields)."""
@@ -82,9 +135,9 @@ def read(name):
 # ---------------------------------------------------------------- participants
 PEOPLE = {}   # bib -> dict(name, noc, words)
 
-def entry_counts():
+def entry_counts_pdf():
     """p. 4, `No. Country NOC MAG WAG Total`, a blank where a country entered none."""
-    counts = {'MAG': {}, 'WAG': {}}
+    rows = []
     lines = PAGES[3].splitlines()
     head = next(l for l in lines if re.search(r'\bMAG\s+WAG\s+Total', l))
     # Columns by position under the header (right edges): a blank MAG or WAG cell leaves two numbers
@@ -100,11 +153,37 @@ def entry_counts():
             if col in cells:
                 err(f'entry counts: {l!r}')
             cells[col] = int(x.group())
-        if cells.get('MAG', 0) + cells.get('WAG', 0) != cells.get('Total'):
-            err(f'entry counts {m.group(1)}: {cells}')
+        rows.append((m.group(1), cells))
+    return rows, None
+
+def entry_counts_transcribed():
+    """ENTRY-COUNTS.txt: `No.|Country|NOC|MAG|WAG|Total` as printed, then `T|Total||MAG|WAG|Total`."""
+    rows, total = [], None
+    for n, f in read('ENTRY-COUNTS.txt'):
+        if len(f) != 6 or not all(re.fullmatch(r'\d*', v) for v in f[3:]):
+            err(f'ENTRY-COUNTS.txt:{n}: {f}'); continue
+        cells = {c: int(v) for c, v in zip(('MAG', 'WAG', 'Total'), f[3:]) if v}
+        if f[0] == 'T':
+            total = cells
+        else:
+            # Mali's row prints the code in the Country cell and leaves NOC blank
+            rows.append((f[2] or f[1], cells))
+    return rows, total
+
+def entry_counts():
+    """Entries per discipline and country from the counts page, each row checked to add up."""
+    rows, total = entry_counts_pdf() if BOOK['entries_from_pdf'] else entry_counts_transcribed()
+    counts = {'MAG': {}, 'WAG': {}}
+    for noc, cells in rows:
+        if (cells.get('MAG', 0) + cells.get('WAG', 0) != cells.get('Total')) != (noc in BOOK['count_total_slips']):
+            err(f'entry counts {noc}: {cells}')
         for disc in ('MAG', 'WAG'):
             if cells.get(disc):
-                counts[disc][COUNT_PAGE_CODES.get(m.group(1), m.group(1))] = cells[disc]
+                counts[disc][COUNT_PAGE_CODES.get(noc, noc)] = cells[disc]
+    if total is not None:
+        sums = {c: sum(cells.get(c, 0) for _, cells in rows) for c in ('MAG', 'WAG', 'Total')}
+        if sums != total:
+            err(f'entry counts: column sums {sums} != printed total {total}')
     return counts
 
 def birth_date(s, noc):
@@ -118,17 +197,28 @@ def birth_date(s, noc):
     err(f'participants: birth date {s!r} ({noc})')
     return ''
 
-def participants():
+def entries_pdf():
     """p. 5, "Entries List by NOC": `# NOC SURNAME Given Discipline FIG-ID BIB dd/mm/yyyy`."""
-    rows = {'MAG': [], 'WAG': []}
-    counts = {'MAG': {}, 'WAG': {}}
     for l in PAGES[4].splitlines():
         m = re.fullmatch(r'\s*(\d+)\s+([A-Z]{3})\s+(.+?)\s+(MAG|WAG)\s+(\d+)\s+(\d{3})\s+([\d/]+)\s*', l)
         if not m:
             if re.match(r'\s*\d+\s+[A-Z]{3}\s', l):
                 err(f'participants: unparsed line {l!r}')
             continue
-        order, noc, name, disc, lic, bib, born = m.groups()
+        yield m.groups()
+
+def entries_transcribed():
+    """ENTRIES.txt: `#|NOC|SURNAME Given|Discipline|FIG ID|BIB|Date of Birth` as printed."""
+    for n, f in read('ENTRIES.txt'):
+        if len(f) != 7 or not re.fullmatch(r'\d+', f[0]) or not re.fullmatch(r'[A-Z]{3}', f[1]) or \
+                f[3] not in ('MAG', 'WAG') or not re.fullmatch(r'\d+', f[4]) or not re.fullmatch(r'\d{3}', f[5]):
+            err(f'ENTRIES.txt:{n}: {f}'); continue
+        yield f
+
+def participants():
+    rows = {'MAG': [], 'WAG': []}
+    counts = {'MAG': {}, 'WAG': {}}
+    for order, noc, name, disc, lic, bib, born in (entries_pdf() if BOOK['entries_from_pdf'] else entries_transcribed()):
         sur, giv = split_surname_first(name)
         if not sur or not giv:
             err(f'participants: name split {name!r} -> {sur!r}/{giv!r}')
@@ -146,8 +236,8 @@ def participants():
     printed = entry_counts()
     for disc in ('MAG', 'WAG'):
         want = dict(printed[disc])
-        for noc, (page, listed) in COUNT_PAGE_SLIPS.get(disc, {}).items():
-            if want.get(noc) != page:
+        for noc, (page, listed) in BOOK['count_slips'].get(disc, {}).items():
+            if want.get(noc, 0) != page:
                 err(f'participants {disc}: count page slip for {noc} no longer {page}')
             want[noc] = listed
         if counts[disc] != want:
@@ -173,8 +263,8 @@ def check_identity(ctx, bib, name, noc=None, disc=None):
 def judges(disc):
     """`APP|function|SURNAME|Given|NOC`, as printed. MAG's Competition Jury has no apparatus or
     function printed and is written as the Technical Delegate (`TD`), credited to UAG (blank). WAG
-    panels are headed by `AS` (apparatus supervisor), written `SV`; WAG's `SUPERIOR JURY <n>` is
-    written `Member`."""
+    panels are headed by `AS` (apparatus supervisor, seniors only), written `SV`; WAG's
+    `SUPERIOR JURY <n>` is written `Member`."""
     rows = []
     for rnd in ('QUAL', 'EVENT'):
         n0 = len(rows)
@@ -383,10 +473,13 @@ def team_report(disc, aa):
 # ---------------------------------------------------------------- apparatus tables
 def table(disc, rnd, app):
     """Non-vault: `rank|bib|SURNAME Given|NOC|D|E|PEN|BONUS|Total|mark` (WAG prints no BONUS column:
-    blank). Vault: `rank|bib|SURNAME Given|NOC|D|E|PEN|Score|Total|mark` for vault 1, then
-    `V2|D|E|PEN|Score|Bonus` or `V2|DNS`; Total is the two-vault result, `DNF`, or blank for one
-    vault. Marks: `Q`, `R` as printed."""
+    blank); a finalist who didn't start prints only `DNS` in Total. Vault, seniors:
+    `rank|bib|SURNAME Given|NOC|D|E|PEN|Score|Total|mark` for vault 1, then `V2|D|E|PEN|Score|Bonus`
+    (the combined bonus) or `V2|DNS`; juniors: `rank|bib|SURNAME Given|NOC|D|E|PEN|Score|Bonus|Total|mark`
+    and `V2|D|E|PEN|Score|Bonus`, each bonus that vault's own. Total is the two-vault result, `DNF`,
+    or blank for one vault. Marks: `Q`, `R` as printed."""
     name = f'{disc}-{rnd}-{app}.txt'
+    per_vault = BOOK['vault_bonus'] == 'vault'
     rows, cur = [], None
     for n, f in read(name):
         ctx = f'{name}:{n}'
@@ -395,6 +488,9 @@ def table(disc, rnd, app):
                 err(f'{ctx}: vault 2 out of place'); continue
             if f[1:] == ['DNS']:
                 cur['v2'] = 'DNS'
+            elif len(f) == 6 and per_vault:
+                cur['v2'] = routine(f'{ctx} bib {cur["bib"]} vault 2', f[1], f[2], f[3], f[5], f[4])
+                cur['vb'] = ''
             elif len(f) == 6:
                 cur['v2'] = routine(f'{ctx} bib {cur["bib"]} vault 2', f[1], f[2], f[3], '', f[4])
                 cur['vb'] = f[5]
@@ -403,18 +499,28 @@ def table(disc, rnd, app):
             else:
                 err(f'{ctx}: vault 2 {f}')
             continue
-        if len(f) != 10 or not re.fullmatch(r'\d*', f[0]) or not re.fullmatch(r'\d{3}', f[1]):
+        width = 11 if app == 'VT' and per_vault else 10
+        if len(f) != width or not re.fullmatch(r'\d*', f[0]) or not re.fullmatch(r'\d{3}', f[1]):
             err(f'{ctx}: athlete line {f}'); cur = None; continue
-        rank, bib, nm, noc, d, e, pen, x, total, mk = f
+        rank, bib, nm, noc = f[:4]
+        mk = f[-1]
         check_identity(ctx, bib, nm, noc, disc)
         if rnd == 'EVENT' and (disc, app) in FINAL_MARKS and mk == 'Q':
             mk = ''
         if mk not in ('', 'Q', 'R') or mk and rnd != 'QUAL':
             err(f'{ctx}: mark {mk!r}')
-        if app == 'VT':
-            cur = dict(rank=rank, bib=bib, mk=mk, v1=routine(f'{ctx} bib {bib} vault 1', d, e, pen, '', x),
-                       total=total)
+        if f[-2] == 'DNS':
+            # A finalist who didn't start: no values, no rank
+            if rnd != 'EVENT' or rank or any(f[4:-2]):
+                err(f'{ctx}: DNS row {f}')
+            cur = dict(rank='', bib=bib, mk=mk, total='DNS', **({'v1': 'DNS', 'v2': 'DNS'} if app == 'VT' else {'g': 'DNS'}))
+        elif app == 'VT':
+            d, e, pen, score = f[4:8]
+            b1 = f[8] if per_vault else ''
+            cur = dict(rank=rank, bib=bib, mk=mk, v1=routine(f'{ctx} bib {bib} vault 1', d, e, pen, b1, score),
+                       total=f[-2])
         else:
+            d, e, pen, x, total = f[4:9]
             if x and disc == 'WAG':
                 err(f'{ctx}: WAG bonus {x!r}')
             cur = dict(rank=rank, bib=bib, mk=mk, g=routine(f'{ctx} bib {bib}', d, e, pen, x, total), total=total)
@@ -422,7 +528,7 @@ def table(disc, rnd, app):
     if len({r['bib'] for r in rows}) != len(rows):
         err(f'{name}: a bib listed twice')
     for r in rows:
-        if app != 'VT':
+        if app != 'VT' or r['total'] == 'DNS':
             continue
         ctx = f'{disc} {rnd} VT bib {r["bib"]}'
         v2 = r.get('v2')
@@ -495,14 +601,18 @@ def qual(disc, app, aa):
     else:
         check_ranks(ctx, out_rows)
     out.csv(f'{PREFIX[disc]}-SCORES-QUAL-{app}.csv', common.score_header(app == 'VT', True), out_rows)
-    return marks, {r['bib']: r for r in rows}
+    return marks, rows
 
 def final(disc, app, marks, starts):
     rows = table(disc, 'EVENT', app)
     ctx = f'{disc} EVENT {app}'
     out_rows = []
     for r in rows:
-        if app == 'VT':
+        if r['total'] == 'DNS':
+            w = {**meta(disc, 'EVENT', app, '', r['bib']),
+                 **({**routine_cols('DNS', '1'), **routine_cols('DNS', '2'), 'Combined Bonus': '', 'Total': ''}
+                    if app == 'VT' else routine_cols('DNS'))}
+        elif app == 'VT':
             if not isinstance(r.get('v2'), dict):
                 err(f'{ctx} bib {r["bib"]}: two vaults expected'); continue
             w = {**meta(disc, 'EVENT', 'VT', r['rank'], r['bib']), **routine_cols(r['v1'], '1'),
@@ -525,6 +635,9 @@ def final(disc, app, marks, starts):
             err(f'{ctx}: finalist {b} is neither a qualifier, a reserve nor a compatriot of an absent qualifier')
     if absent:
         print(f'  {ctx}: qualifiers {sorted(absent)} absent; in their place {sorted(finalists - q)}')
+    dns = sorted(w['Bib'] for w in out_rows if w['Status' if app != 'VT' else 'Status1'] == 'DNS')
+    if dns:
+        print(f'  {ctx}: {dns} did not start')
     # The finals start list already shows the changes known when it was printed; its eight and the
     # final's eight must differ only by such replacements.
     start = [b for pos, b in starts.get(app, []) if pos.isdigit()]
@@ -541,6 +654,7 @@ def final(disc, app, marks, starts):
               f'adds {sorted(finalists - set(start))}')
     check_ranks(ctx, out_rows)
     out.csv(f'{PREFIX[disc]}-SCORES-EVENT-{app}.csv', common.score_header(app == 'VT', False), out_rows)
+    return rows
 
 def finals_start(disc):
     """`APP|#|bib|Given SURNAME|NOC`: the Apparatus Finals Start List."""
@@ -555,8 +669,9 @@ def finals_start(disc):
 def tie_breaks(disc, tables):
     """The Tie Break pages, as printed (`08.366`): `APP|rank|bib|SURNAME Given|NOC|Total|E|D`, or for
     vault `VT|…|Total|highest vault|E|D`. Each page prints only the value that decides (E, or the
-    higher vault). Checked against the tables: same rank and total, and the deciding values order
-    the tied athletes."""
+    higher vault), or E and D where E is equal. Checked against the tables: same rank and total, and
+    the deciding values order the tied athletes; equal on them, the rank is shared (junior MAG pommel
+    horse DAVIES VANEETVELDE and LECHHEB, 4th)."""
     pairs = {}
     for n, f in read(f'{disc}-TIE-BREAKS.txt'):
         ctx = f'{disc}-TIE-BREAKS.txt:{n}'
@@ -565,7 +680,7 @@ def tie_breaks(disc, tables):
             err(f'{ctx}: {f}'); continue
         app, rank, bib, nm, noc, total = f[:6]
         check_identity(ctx, bib, nm, noc, disc)
-        r = tables[app].get(bib)
+        r = {x['bib']: x for x in tables[app]}.get(bib)
         if not r:
             err(f'{ctx}: bib {bib} not in the {app} table'); continue
         if vault:
@@ -580,14 +695,91 @@ def tie_breaks(disc, tables):
         pairs.setdefault((app, total), []).append((int(rank), [D(p) for p in printed if p]))
     for (app, total), tied in pairs.items():
         tied.sort()
-        if len(tied) < 2 or any(a[1] <= b[1] for a, b in zip(tied, tied[1:])):
+        if len(tied) < 2 or any((a[0] == b[0]) != (a[1] == b[1]) or a[1] < b[1] for a, b in zip(tied, tied[1:])):
             err(f'{disc} tie break {app} {total}: {tied}')
     # Every equal total in a qualification ranking has its tie-break
     for app, rows in tables.items():
-        totals = [D(r['total']) for r in rows.values() if r['rank']]
+        totals = [D(r['total']) for r in rows if r['rank']]
         tied = {t for t in totals if totals.count(t) > 1}
         if tied != {D(t) for a, t in pairs if a == app}:
             err(f'{disc} {app}: tied totals {sorted(tied)} vs tie-break pages')
+
+# ---------------------------------------------------------------- judges' scores (juniors)
+PENALTY_PARTS = ('ND', 'L1', 'L2', 'Time', 'PEN', 'Line', 'T1', 'T2')
+
+def trunc(x):
+    return x.quantize(Decimal('0.001'), rounding=ROUND_DOWN)
+
+def judge_scores(disc, rnd, app, rows):
+    """`<DISC>-SCORES-<ROUND>-<APP>.txt`, the "Individual Judges Scores" page: an `H|…` line names the
+    printed columns (E is the E-score total, Pen the penalty total, Total the score; vault: Score each
+    vault's, Bonus its bonus, Total the two-vault result), then one line per athlete as printed, and a
+    `V2|…` line for vault 2 without the leading identity columns and Total. A cross-check, not
+    written: every routine's E must be the mean of the middle three judges' marks, truncated; the
+    penalty parts add up to the penalty total; D + E - penalty + bonus is the score; and every value
+    and rank agrees with the apparatus table."""
+    name = f'{disc}-SCORES-{rnd}-{app}.txt'
+    lines = read(name)
+    if not lines or lines[0][1][0] != 'H':
+        err(f'{name}: no H line'); return
+    cols = lines[0][1][1:]
+    table_rows = {r['bib']: r for r in rows}
+    seen, cur = [], None
+    for n, f in lines[1:]:
+        ctx = f'{name}:{n}'
+        if f[0] == 'V2':
+            if app != 'VT' or cur is None:
+                err(f'{ctx}: vault 2 out of place'); continue
+            v = dict(zip(cols[4:-1], f[1:]))
+            if len(f) != len(cols) - 4:
+                err(f'{ctx}: {len(f)} fields'); continue
+            judged(ctx, disc, rnd, app, cur, v, 2)
+            continue
+        if len(f) != len(cols):
+            err(f'{ctx}: {len(f)} fields, header has {len(cols)}'); cur = None; continue
+        v = dict(zip(cols, f))
+        bib = v['BIB']
+        check_identity(ctx, bib, v['Name'], v['NOC'], disc)
+        cur = table_rows.get(bib)
+        if cur is None:
+            err(f'{ctx}: bib {bib} not in the {app} table'); continue
+        seen.append(bib)
+        if v['Rank'] != cur['rank']:
+            err(f'{ctx}: rank {v["Rank"]!r} != table {cur["rank"]!r}')
+        if v['Total'] == 'DNS' or cur['total'] == 'DNS':
+            if v['Total'] != cur['total'] or any(v[c] for c in cols[4:-1]):
+                err(f'{ctx}: DNS row {f}')
+            continue
+        if app == 'VT':
+            if v['Total'] != (cur['total'] if isinstance(cur.get('v2'), dict) else ''):
+                err(f'{ctx}: total {v["Total"]!r} != table {cur["total"]!r}')
+        judged(ctx, disc, rnd, app, cur, v, 1)
+    if seen != [r['bib'] for r in rows]:
+        err(f'{name}: athletes {seen} differ from the {app} table {[r["bib"] for r in rows]}')
+
+def judged(ctx, disc, rnd, app, row, v, vault):
+    """One routine on a judges' scores page, against the apparatus table's row."""
+    for c, x in v.items():
+        if c in ('Rank', 'BIB', 'Name', 'NOC'):
+            continue
+        if x and not re.fullmatch(SCORE, x):
+            err(f'{ctx}: {c} {x!r}')
+    es = [D(v[f'E{i}']) for i in range(1, 6)]
+    if trunc(sum(sorted(es)[1:4]) / 3) != D(v['E']):
+        err(f'{ctx}: E {v["E"]} is not the mean of the middle three of {[str(e) for e in es]}')
+    parts = sum((D(v[c]) for c in PENALTY_PARTS if c in v), Decimal(0))
+    if parts != D(v['Pen']) and (disc, rnd, row['bib'], vault) not in BOOK['judge_score_pen_slips']:
+        err(f'{ctx}: penalty parts {parts} != total {v["Pen"]!r}')
+    score_col = 'Score' if app == 'VT' else 'Total'
+    bonus = v.get('BONUS', v.get('Bonus', ''))
+    check_routine(ctx, v['D'], v['E'], v['Pen'], bonus, v[score_col])
+    g = row['g'] if app != 'VT' else row['v1'] if vault == 1 else row.get('v2')
+    if not isinstance(g, dict):
+        err(f'{ctx}: no vault {vault} in the table'); return
+    want = [g['D'], g['E'], D(g['Pen']), g['B'], g['Total']]
+    got = [v['D'], v['E'], D(v['Pen']), bonus, v[score_col]]
+    if got != want:
+        err(f'{ctx}: {[str(x) for x in got]} != table {[str(x) for x in want]}')
 
 # ---------------------------------------------------------------- main
 participants()
@@ -600,7 +792,10 @@ for disc in ('MAG', 'WAG'):
     tables = {}
     for app in APPS[disc]:
         marks, tables[app] = qual(disc, app, aa)
-        final(disc, app, marks, starts)
+        finals = final(disc, app, marks, starts)
+        if BOOK['judge_scores']:
+            judge_scores(disc, 'QUAL', app, tables[app])
+            judge_scores(disc, 'EVENT', app, finals)
     tie_breaks(disc, tables)
     for app in APPS[disc]:
         performed = sum(app in a['apps'] for a in aa.values())
