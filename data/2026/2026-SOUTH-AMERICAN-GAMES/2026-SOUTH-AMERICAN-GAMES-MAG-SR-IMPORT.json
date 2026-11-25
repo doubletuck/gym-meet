@@ -1,0 +1,41 @@
+{
+    "event" : {
+        "slug" : "2026-south-american-games-mag-sr",
+        "title" : "XIII Juegos Suramericanos",
+        "shortName" : "SA Games 2026",
+        "disciplines" : "MAG",
+        "ageCategory" : "SR",
+        "level" : "REGIONAL_COMPETITION",
+        "startDate" : "2026-09-13",
+        "endDate" : "2026-09-16",
+        "city" : "Rosario Santa Fe",
+        "country" : "ARG",
+        "figEventNumber" : "18708",
+        "venue" : "Invencible Arena",
+        "apparatusSuppliers" : "Gymnova"
+    },
+    "participants" : [
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-EVENT-FX.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-EVENT-HB.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-EVENT-PB.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-EVENT-PH.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-EVENT-SR.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-EVENT-VT.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-QUAL-FX.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-QUAL-HB.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-QUAL-PB.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-QUAL-PH.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-QUAL-SR.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SCORES-QUAL-VT.csv"
+    ],
+    "summaries" : [
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-SOUTH-AMERICAN-GAMES-MAG-SR-SUMMARY-FINAL-TEAM.csv"
+    ]
+}
