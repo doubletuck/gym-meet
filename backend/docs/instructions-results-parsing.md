@@ -246,6 +246,12 @@ decisions that come up while parsing.
   The Central American and Caribbean Games break every tie the same way, and their Tie Break
   Reports' ranks match the tables (all-around: the best three, two, one apparatus scores, then E,
   then D); equal on E and D, the rank is shared (MAG floor final: NUÑEZ FARFAN and VELEZ BELENDEZ 4th).
+  The Asian Games book (§5.21) breaks ties the same way and shares a rank on equal E and D (MAG floor
+  qualification: OKA and KARIMI `=6`). Its all-around Tie Break Report ranks the whole field, counting
+  the athletes the final leaves unranked (MAG TRAN 14th, the final's 13th, behind an unranked third
+  Japanese); the final's ranks are written. Its all-around report's vault `Rk` shares a rank on an
+  equal first vault (MAG HASHIMOTO and IDRISSOV `13`) that the Results Vault 1 list breaks on E (13
+  and 14); the list's is written.
   Where a better source publishes the tie-break the book leaves out
   (sporttech.io's export ranks equal totals by E score, while the Junior Pan
   Americans book prints them tied), take that rank and log it as a
@@ -272,6 +278,9 @@ decisions that come up while parsing.
 - **A blank cell for an athlete on the apparatus's start list** (Oceania WAG SR BAYLES's beam, between
   bars and floor printed `Final DNS`; WAG JR ATKINSON's bars): a `DNS` row, logged as a `ROW`
   correction (agreed with the user).
+- **`DNS` after placeholder zeros** (Asian Games: `0.0 0.000 DNS` in a table, `D 0.000 DNS` over
+  `E 0.000` in a team report) is `DNS`; the zeros aren't scores, and the parsers check they are zero.
+  A vaulter who did neither vault prints `DNS DNS` (`Status1` and `Status2` `DNS`, no result).
 - **A bare zero on another apparatus** (Junior Pan Americans MAG CERNA's rings:
   `0`, no D or E, counted in Ecuador's team total): `COMPLETED`, blank D/E,
   `Total` `0`, its printed rank.
@@ -326,6 +335,9 @@ decisions that come up while parsing.
 
 ### 4.5 Vault
 
+- **A single-vault list published apart from the book** (Asian Games MAG "Results Vault 1", §5.21)
+  is read like one: it gives every first vault and its `Rank`, and the book's reports are checked
+  against it.
 - **Two FIG listings in qualification**: a single-vault list (everyone, first
   vault, whole-field rank — the vault that counts for all-around and team) and
   a double-vault list (vault-final hopefuls: both vaults, average, its own
@@ -342,7 +354,7 @@ decisions that come up while parsing.
   report's vault `RK` column ranks the whole field on vault 1 (shared on equal
   scores), and that is `Rank`, as a single-vault list's would be.
 - **A two-vault table only, with an all-around report that ranks vault 1**
-  (Commonwealth Games, Central American and Caribbean Games): the one-vault athletes' first vaults come from the team
+  (Commonwealth Games, Central American and Caribbean Games, Asian Games WAG): the one-vault athletes' first vaults come from the team
   and all-around reports; the all-around report's vault `Rk` ranks each
   all-arounder's first vault against the whole field and is their `Rank`; the
   others' `Rank` is blank (§5.19).
@@ -410,6 +422,9 @@ decisions that come up while parsing.
   and Caribbean Games WAG floor: SWABY RANGER `Q` out, HERRERA POLANCO `R1` in; the start list's
   reserves are the qualification's `R2` and `R3`, printed `R1` and `R2`). The table's markers are
   written; the start list is checked against them renumbered. Its notes name each replacement.
+  The Asian Games' start lists likewise take one off each remaining reserve's number for every
+  reserve already in the final (MAG floor: KIM Jaeho, `R1`, in), and keep tied reserves' numbers
+  (MAG pommel horse `R1`, `R1`, `R3`).
 - **Replacements without reserve markers** (Senior Pan Americans all-around:
   `Q` on 24, no `R`): a finalist who wasn't a qualifier keeps a blank
   `Qualification`; the parser reports absent qualifiers and their replacements
@@ -428,6 +443,7 @@ decisions that come up while parsing.
 | The Oceania Championships' single Superior Jury (`SJ Gareth Brettell (OGU)` in the MAG sheet's title, `SUPERIOR JURY Allana Slater OGU (AUS)` on WAG's) | `TD`, apparatus blank (agreed with the user) |
 | `Reserve` printed in each panel (Oceania WAG: the same judge in all four) | `R`, with that panel's apparatus |
 | `MAG AGU President` / `WAG AGU President:` heading the Asian Championships sheets | `President`, NOC blank |
+| `Superior Jury: <name>  AGU  President`, then `<name>  AGU  <Apparatus> Supervisor` per apparatus (Asian Games) | `President`, NOC blank; `SV` with that apparatus |
 | `S` (Osijek panel supervisor, printed after `E5`) | `SV`, with the panel's apparatus |
 | Spanish: `Línea`, `Línea1`, `Tiempo`, `Tiempo1`, `Presidenta`, `Miembro` | `L`, `L1`, `T`, `T1`, `President`, `Member` |
 | Superior Jury name with no function printed (Pan Americans MAG) | `Member` |
@@ -461,7 +477,9 @@ Central American and Caribbean Games credit their Superior Juries and every appa
 corrections: MACERONI Mauricio, an `ARG` E judge in the same book's finals, `ARG`; CABRERA DÁVILA
 Yazaira `PUR`, CAMACHO Esteban `CRC`, and so on), and so is the Asian
 Gymnastics Union's `AGU` and the Oceania Gymnastics Union's `OGU` where nothing better is known (the Asian Championships' Presidents;
-its apparatus supervisors' federations were looked up, §5.16). A federation printed with the union
+its apparatus supervisors' federations were looked up, §5.16; the Asian Games' supervisors are the same
+judges, given the same federations; its one `AGU` panel judge, D1 AMER Rima, is written `JOR`, as
+given by the user). A federation printed with the union
 (`AUS / OGU`, `OGU (AUS)`) is written as the federation; the Oceania MAG Superior Jury's plain `OGU`
 is written `NZL`, his federation at the 2026 World Championships (a `NOC` correction). Men's
 finals line judges lent by the women's panel print `WAG` as their federation
@@ -481,7 +499,8 @@ finals line judges lent by the women's panel print `WAG` as their federation
 - Some entry lists print the NOC only on each country's first row.
 - **An ISO code where the IOC code differs** is corrected and logged (`NOC`):
   the African Championships print Zimbabwe `ZWE` on the entry list and results,
-  `ZIM` on the entries by NOC page; written `ZIM`.
+  `ZIM` on the entries by NOC page; written `ZIM`. The Asian Games credit two Singaporean judges to
+  `SIN` on the WAG qualification and team final sheets and to `SGP` on the finals sheets; written `SGP`.
 - The US Championships prints no NOC; participants are written as `USA`.
 - **Commonwealth Games Associations** are written as printed (agreed with the user): at the
   Commonwealth Games England, Scotland, Wales, Northern Ireland, the Isle of Man and Jersey compete
@@ -517,6 +536,7 @@ meet records it. So:
 | Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games, Commonwealth Games ("Team Final and Individual Qualification"), Central American and Caribbean Games |
 | Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
 | Qualification that is also the team and all-around finals, published as separate final rankings of the same routines | `QUAL` (every routine, `SUMMARY-QUAL-TEAM`/`-AA` with Q/R/NR), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL`, `EVENT` per apparatus | Asian Championships |
+| Qualification that is also the all-around final, followed by a team final and apparatus finals | `QUAL` (every routine, `SUMMARY-QUAL-TEAM` with Q/R), `TEAM` (its own routines, `SUMMARY-FINAL-TEAM`), `AA` holding only `SUMMARY-FINAL-AA` with `Scores Round` `QUAL` (24 ranked, two per country; the others keep their totals unranked), `EVENT` per apparatus | Asian Games |
 | One competition deciding the team and all-around titles, called finals, with nothing to qualify for | `AA` (every routine, single-attempt vault, `SUMMARY-FINAL-AA`), `TEAM` holding only `SUMMARY-FINAL-TEAM` with `Scores Round` `AA` | Oceania Championships |
 | Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
 | Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
@@ -1756,6 +1776,76 @@ apparatus, three counting; individuals from countries without a team.
   one had a single federation across the Worlds, World Cup and Senior Pan American files.
 - Entry-list birth dates for ALVAREZ Jorman (MAG 202) and HERRERA POLANCO Brithany (WAG 110) differ
   from the 2026 Worlds entry list by ten days; Worlds' are written (`BIRTH_DATE` corrections).
+
+### 5.21 Games results book, ORIS-style Bornan print (Asian Games)
+
+The Aichi-Nagoya 2026 Games' OCA results book (`18608-AG2026_GAR_RB_v1.pdf`, 136 pages, Bornan
+timing), and the MAG "Results Vault 1" report (`18608-AG2026-MAG-SR-VAULT-QUAL-C73I_Results.pdf`, one
+page, the same print and code `GARM1APVTQUAL_73I`), published apart from the book: artistic only, every page with text and a footer code but the cover, the copyright page and
+the back cover (p. 136, an image). The codes and layout are the Central American and Caribbean
+Games' (§5.20), so the parser
+([`parse_2026_asian_games.py`](../tools/results-parsing/parse_2026_asian_games.py)) started from that
+one. Headers are bilingual (English, then Japanese).
+
+**Structure.** "Qualification and All-Around Final" (MAG 21, WAG 22 September) ranks the all-around
+title (the best 24, two per NOC; the others print their totals unranked) and qualifies eight teams to
+the team final (23 September, three up, three counting, its own routines) and eight athletes to each
+apparatus final (24-25 September). So it is `QUAL`; the all-around final is a `SUMMARY-FINAL-AA` with
+`Scores Round` `QUAL` and the team final a normal `TEAM` session (§4.9). Qualification teams are five
+up to four, three counting; individuals from other NOCs.
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`, men and women under one code) | the participants; Number of Entries by NOC (`_30`) counts them |
+| Apparatus results (`_73I`, vault `_73J`) | every qualification and apparatus final SCORES file; vault qualification lists only the two-vault athletes. Finals add the qualification rank and start order (cross-checked) |
+| Team results, qualification (`GARMTEAMQUAL_73C`/`GARWTEAMQUAL_73D`) | the team summary, markers (`Q`, WAG KAZ `R1`) and penalty; each member's routines (cross-checked) and the first vaults of team members |
+| Team results, final (`…TEAMFNL_73C`/`_73D`) | the team final's routines (SCORES-TEAM) and standings |
+| All-around results (`GARM1AAFNL_73G`/`GARW1AAFNL_73H`, titled Final, the qualification's routines) | SUMMARY-FINAL-AA; the first vaults of all-arounders and their whole-field rank; every routine cross-checked against the tables |
+| Qualification results by team (`_73A`/`_73B`) | scores only, every athlete, all-around rank (cross-checked) |
+| MAG Results Vault 1 (the separate file) | every first vault, with D, E and its whole-field `Rank`; the only source for KAMILJANOV's (below). The two-vault table and the team and all-around reports are checked against it |
+| Judges Assignments (qualification `_57A`/`_57B`, team final `…TEAMFNL_57x`, apparatus finals `GAR-FNL-000<day>00_57D`) | JUDGES |
+| Lists of Qualifiers (`_53B`/`_53C` apparatus, `_53D` team), start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
+
+**Gotchas**
+
+- **A vault in no report of the book but the results by team.** MAG KAMILJANOV Ravshan (UZB, 154),
+  an individual who did pommel horse and one vault, is in neither the team nor the all-around report
+  nor the two-vault table; the results by team print only his score (`12.433`). The Results Vault 1
+  report gives his D and E, and every vaulter's rank. WAG has no such list: its first vaults' `Rank`
+  is the all-around report's (all-arounders only), as at the CAC Games.
+- **Tied first vaults**: the Results Vault 1 list breaks them on E (MAG ZHANG and LAN 7 and 8 at
+  14.133; HASHIMOTO 14 behind IDRISSOV, PUA 26 behind RYU), where the all-around report's `Rk` shares
+  the rank (13, 25). The list's ranks are written.
+- **A two-vault result printed above the truncated average**: MAG qualification TRINH Hai Khang,
+  13.366 and 14.033, printed `13.700` (13.6995; the unrounded E scores average to 13.700, but other
+  results are truncated, KIM Jaeho's `14.149`). Written as printed; the parser allows this one.
+- **Placeholder zeros before `DNS`** (§4.3): MAG KANETA's floor (`0.0 0.000 DNS`, and `D 0.000 DNS`
+  over `E 0.000` in the team report). MIRVALIEV (UZB) prints `DNS DNS` in the two-vault table.
+- **The finals start lists and judges pages are printed twice** (pp. 52-55 = 113-116); the first copy
+  is read, the second checked identical. Each lists the men's finals down the left and the women's
+  down the right; a start list's block heading can share a line with the other side's last reserve.
+- **Names.** The entry list prints MAS `Muhammad Sharul Aimy` and MYA `PAN EI PHYU` with no
+  SURNAME Given split; their other 2026 entries (same licences) split them AIMY / Muhammad Sharul and
+  PHYU / Pan Ei, and so does the parser (agreed with the user). The results by team print initials
+  (`TAN A`, `CHEN HYJ`, `MSA`); the all-around report cuts long names, wrapping the rest under them.
+  Taiwanese given names print with lower-case second syllables (`TANG Chia-hung`), other 2026 books
+  `Chia-Hung`; they link by licence.
+- **Judges**: the Superior Jury (`President` and one `<Apparatus> Supervisor` per apparatus, all
+  `AGU`) heads each sheet; panels `D1 D2 E1-E5` with time and line judges, in the grid MAG FX/PH,
+  SR/VT, PB/HB and WAG VT/UB, BB/FX (floor's and vault's line judges, beam's two time judges). Reserves:
+  MAG `R1 R2` per round; WAG none in qualification, `R1` in the team final; the finals' per day and
+  discipline, written once for each of that day's finals. The supervisors' federations come from the
+  Asian Championships and D1 AMER Rima's (`JOR`) from the user (`NOC` corrections); `AL-BUAINAIN Abeer` and `ORTEGA Jasmin Amanda` are kept as
+  printed (the Asian Championships print `AL BOUAINAIN Abeer`, `ORTEGA Jasmin`).
+- **WAG KAZ**, ninth and first reserve team, has `* Penalty -1.0` (a wrong start order) under its total
+  (`130.796*`): `SJ Penalty` `-1.0`.
+- **Finals replacements**: MAG floor ZHANG (`Q`) out for KIM Jaeho (`R1`), OKA (`Q`) for HASHIMOTO
+  (`NR`); rings OKA for LEE Junghyo (`R1`); parallel bars ZHANG for LAN (`NR`); high bar ZHANG for
+  HAMIDI (`R1`). WAG bars KE for QIU (`NR`); floor ZHANG Qingying for ZHANG Yihan and AN Chang Ok for
+  HAN Yon Mi (both `NR`).
+- Birth dates for GHADIMI Mehrdad (QAT, 137: 16 Jun 2003) and ANDREW Chiara Dawn (PHI, 537: 30 May
+  2006) differ from the 2026 Asian Championships entry list (5 Oct 2003, 20 May 2006); written as
+  printed (agreed with the user).
 
 ## 6. Open items
 

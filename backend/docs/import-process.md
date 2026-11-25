@@ -105,7 +105,7 @@ The session's date is the `Session Start Date` of its scores. A split round's
 whole-round session (part blank), which holds only combined standings, is
 created from the summaries and dated on its first part. A summary with a
 `Scores Round` (2026 Asian Championships: the team and all-around finals,
-`QUAL`) creates its session too, linked to that round's session
+`QUAL`; 2026 Asian Games: the all-around final) creates its session too, linked to that round's session
 (`Session.scoresSession`) and dated on it; that round's scores must already be
 imported, and the session can have no scores of its own.
 

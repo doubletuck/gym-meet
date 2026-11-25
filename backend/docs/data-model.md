@@ -272,7 +272,8 @@ also the team and all-around finals, published as separate rankings of the
 same routines (2026 Asian Championships: the qualification's top eight teams
 and its 24 all-around qualifiers, two per country, re-ranked), the `TEAM` and
 `AA` sessions hold only those rankings (`TeamResult`, `AllAroundResult`), and
-`scoresSession` points at the `QUAL` session holding the `Score`s. Their `date`
+`scoresSession` points at the `QUAL` session holding the `Score`s. The 2026 Asian
+Games do the same for the all-around final only; their team final has its own routines. Their `date`
 is that session's. `Session.sessionWithScores()` gives the session holding a
 session's routines: the one it ranks, or itself.
 

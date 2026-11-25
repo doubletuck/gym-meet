@@ -1,0 +1,48 @@
+{
+    "event" : {
+        "slug" : "2026-asian-games-mag-sr",
+        "title" : "20th Asian Games Aichi-Nagoya 2026",
+        "shortName" : "Asian Games 2026",
+        "disciplines" : "MAG",
+        "ageCategory" : "SR",
+        "level" : "CONTINENTAL_GAMES",
+        "startDate" : "2026-09-21",
+        "endDate" : "2026-09-25",
+        "city" : "Nagoya",
+        "country" : "JPN",
+        "figEventNumber" : "18608",
+        "venue" : "Nagoya Gymnasium Rainbow Hall",
+        "apparatusSuppliers" : "Taishan Sports Equipment"
+    },
+    "participants" : [
+        "2026-ASIAN-GAMES-MAG-SR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-ASIAN-GAMES-MAG-SR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-EVENT-FX.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-EVENT-HB.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-EVENT-PB.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-EVENT-PH.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-EVENT-SR.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-EVENT-VT.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-QUAL-FX.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-QUAL-HB.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-QUAL-PB.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-QUAL-PH.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-QUAL-SR.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-QUAL-VT.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-TEAM-FX.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-TEAM-HB.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-TEAM-PB.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-TEAM-PH.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-TEAM-SR.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SCORES-TEAM-VT.csv"
+    ],
+    "summaries" : [
+        "2026-ASIAN-GAMES-MAG-SR-SUMMARY-FINAL-AA.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SUMMARY-FINAL-TEAM.csv",
+        "2026-ASIAN-GAMES-MAG-SR-SUMMARY-QUAL-TEAM.csv"
+    ]
+}
