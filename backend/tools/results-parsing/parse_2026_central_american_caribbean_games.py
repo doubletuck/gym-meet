@@ -227,7 +227,7 @@ SJ_FUNCTION = {'President': 'President', 'Technical Delegate': 'TD'}
 
 def judge_noc(noc):
     """Judges credited to the Pan American union (`UPAG`: the Superior Jury and the apparatus
-    supervisors) have no federation written (§4.7)."""
+    supervisors) are blank here; CORRECTIONS.csv fills each one's federation from other meets (§4.7)."""
     return '' if noc == 'UPAG' else noc
 
 def judge_page(disc, code, rnd, rows):

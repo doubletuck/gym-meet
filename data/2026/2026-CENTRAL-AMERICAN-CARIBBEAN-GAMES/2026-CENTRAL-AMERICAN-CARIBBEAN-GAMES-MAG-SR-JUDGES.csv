@@ -1,7 +1,7 @@
 Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Name,Surname,Given Name,NOC Code
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,,TD,CAMACHO Esteban,CAMACHO,Esteban,
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PH,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,,TD,CAMACHO Esteban,CAMACHO,Esteban,CRC
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,MEX
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PH,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,D1,LI LIN WAY Jim Anthony,LI LIN WAY,Jim Anthony,PER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PH,D1,BERNABÉ RODEZNO José Douglas,BERNABÉ RODEZNO,José Douglas,ESA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,D2,VALENZUELA REYES Ricardo Jose,VALENZUELA REYES,Ricardo Jose,GUA
@@ -18,7 +18,7 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,L1,VILLAR MAR
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,L2,CAMACHO MONTANEZ Richard,CAMACHO MONTANEZ,Richard,PUR
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,FX,T,PÉREZ ARIAS Angel Gabriel,PÉREZ ARIAS,Angel Gabriel,DOM
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,SR,SV,MACERONI Mauricio,MACERONI,Mauricio,ARG
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,VT,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,VT,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,MEX
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,SR,D1,VÉLEZ MARTINEZ Ricardo Antonio,VÉLEZ MARTINEZ,Ricardo Antonio,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,VT,D1,LI LIN WAY Jim Anthony,LI LIN WAY,Jim Anthony,PER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,SR,D2,NAJERA IBARRA Anahuac,NAJERA IBARRA,Anahuac,MEX
@@ -32,7 +32,7 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,VT,E3,ROBLES HER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,SR,E4,PEREZ CABALLERO Raul Antonio,PEREZ CABALLERO,Raul Antonio,PAN
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,VT,E4,RAMOS NIN Tommy,RAMOS NIN,Tommy,PUR
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,VT,L,LIRANZO CAMACHO Jose Abel,LIRANZO CAMACHO,Jose Abel,DOM
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PB,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PB,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,HB,SV,MACERONI Mauricio,MACERONI,Mauricio,ARG
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PB,D1,BERNABÉ RODEZNO José Douglas,BERNABÉ RODEZNO,José Douglas,ESA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,HB,D1,VÉLEZ MARTINEZ Ricardo Antonio,VÉLEZ MARTINEZ,Ricardo Antonio,COL
@@ -46,9 +46,9 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PB,E3,COLÓN ROB
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,HB,E3,ROMERO LEE William Andres,ROMERO LEE,William Andres,CRC
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,PB,E4,SOTO MENDEZ Luis Alejandro,SOTO MENDEZ,Luis Alejandro,CRC
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,QUAL,HB,E4,PEREZ CABALLERO Raul Antonio,PEREZ CABALLERO,Raul Antonio,PAN
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,,TD,CAMACHO Esteban,CAMACHO,Esteban,
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PH,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,,TD,CAMACHO Esteban,CAMACHO,Esteban,CRC
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,MEX
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PH,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,D1,LI LIN WAY Jim Anthony,LI LIN WAY,Jim Anthony,PER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PH,D1,BERNABÉ RODEZNO José Douglas,BERNABÉ RODEZNO,José Douglas,ESA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,D2,VALENZUELA REYES Ricardo Jose,VALENZUELA REYES,Ricardo Jose,GUA
@@ -65,7 +65,7 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,L1,CAMACHO MONT
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,L2,VILLAR MARTE Domingo Antonio,VILLAR MARTE,Domingo Antonio,DOM
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,FX,T,PÉREZ ARIAS Angel Gabriel,PÉREZ ARIAS,Angel Gabriel,DOM
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,SR,SV,MACERONI Mauricio,MACERONI,Mauricio,ARG
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,VT,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,VT,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,MEX
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,SR,D1,VÉLEZ MARTINEZ Ricardo Antonio,VÉLEZ MARTINEZ,Ricardo Antonio,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,VT,D1,LI LIN WAY Jim Anthony,LI LIN WAY,Jim Anthony,PER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,SR,D2,NAJERA IBARRA Anahuac,NAJERA IBARRA,Anahuac,MEX
@@ -79,7 +79,7 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,VT,E3,ROBLES HERRE
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,SR,E4,VALENZUELA REYES Marco Vinicio,VALENZUELA REYES,Marco Vinicio,GUA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,VT,E4,COLÓN ROBLES Hector Javier,COLÓN ROBLES,Hector Javier,PUR
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,VT,L,LIRANZO CAMACHO Jose Abel,LIRANZO CAMACHO,Jose Abel,DOM
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PB,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PB,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,HB,SV,MACERONI Mauricio,MACERONI,Mauricio,ARG
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PB,D1,BERNABÉ RODEZNO José Douglas,BERNABÉ RODEZNO,José Douglas,ESA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,HB,D1,VÉLEZ MARTINEZ Ricardo Antonio,VÉLEZ MARTINEZ,Ricardo Antonio,COL
@@ -93,9 +93,9 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PB,E3,HERNÁNDEZ O
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,HB,E3,RAMOS NIN Tommy,RAMOS NIN,Tommy,PUR
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,PB,E4,SOTO MENDEZ Luis Alejandro,SOTO MENDEZ,Luis Alejandro,CRC
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,AA,HB,E4,VALENZUELA REYES Marco Vinicio,VALENZUELA REYES,Marco Vinicio,GUA
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,,TD,CAMACHO Esteban,CAMACHO,Esteban,
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,PH,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,,TD,CAMACHO Esteban,CAMACHO,Esteban,CRC
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,MEX
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,PH,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,D1,LI LIN WAY Jim Anthony,LI LIN WAY,Jim Anthony,PER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,PH,D1,BERNABÉ RODEZNO José Douglas,BERNABÉ RODEZNO,José Douglas,ESA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,D2,VALENZUELA REYES Ricardo Jose,VALENZUELA REYES,Ricardo Jose,GUA
@@ -112,7 +112,7 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,L1,ROBLES HE
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,L2,VILLAR MARTE Domingo Antonio,VILLAR MARTE,Domingo Antonio,DOM
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,FX,T,SABINO Giovanni,SABINO,Giovanni,BRA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,SR,SV,MACERONI Mauricio,MACERONI,Mauricio,ARG
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,VT,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,VT,SV,VALENZUELA GOMEZ César Fernando,VALENZUELA GOMEZ,César Fernando,MEX
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,SR,D1,VÉLEZ MARTINEZ Ricardo Antonio,VÉLEZ MARTINEZ,Ricardo Antonio,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,VT,D1,LI LIN WAY Jim Anthony,LI LIN WAY,Jim Anthony,PER
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,SR,D2,NAJERA IBARRA Anahuac,NAJERA IBARRA,Anahuac,MEX
@@ -126,7 +126,7 @@ XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,VT,E3,BERNABÉ 
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,SR,E4,HERNÁNDEZ Oscar Alberto,HERNÁNDEZ,Oscar Alberto,VEN
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,VT,E4,SABINO Giovanni,SABINO,Giovanni,BRA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,VT,L,CAMACHO MONTANEZ Richard,CAMACHO MONTANEZ,Richard,PUR
-XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,PB,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,
+XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,PB,SV,VELÁSQUEZ ALVARADO Juan Carlos,VELÁSQUEZ ALVARADO,Juan Carlos,COL
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,HB,SV,MACERONI Mauricio,MACERONI,Mauricio,ARG
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,PB,D1,BERNABÉ RODEZNO José Douglas,BERNABÉ RODEZNO,José Douglas,ESA
 XXV Central American and Caribbean Games,MAG,SR,2026-08-02,EVENT,HB,D1,VÉLEZ MARTINEZ Ricardo Antonio,VÉLEZ MARTINEZ,Ricardo Antonio,COL

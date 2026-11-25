@@ -424,7 +424,7 @@ decisions that come up while parsing.
 | `Line Judge`, `Line Judge 1`, `Line 1` | `L`, `L1`, `L1` |
 | `<Apparatus> Supervisor` (Superior Jury) | `SV`, with that apparatus |
 | `AS` / `SA` (Pan American, Cairo, African, Asian and Oceania Championships, Central American and Caribbean Games panel supervisor) | `SV`, with the panel's apparatus |
-| `Superior Jury: <name>  UPAG  Technical Delegate` / `President` (Central American and Caribbean Games, one per discipline on every judges page) | `TD` / `President`, apparatus and NOC blank |
+| `Superior Jury: <name>  UPAG  Technical Delegate` / `President` (Central American and Caribbean Games, one per discipline on every judges page) | `TD` / `President`, apparatus blank, NOC from other meets (§4.7 below) |
 | The Oceania Championships' single Superior Jury (`SJ Gareth Brettell (OGU)` in the MAG sheet's title, `SUPERIOR JURY Allana Slater OGU (AUS)` on WAG's) | `TD`, apparatus blank (agreed with the user) |
 | `Reserve` printed in each panel (Oceania WAG: the same judge in all four) | `R`, with that panel's apparatus |
 | `MAG AGU President` / `WAG AGU President:` heading the Asian Championships sheets | `President`, NOC blank |
@@ -455,10 +455,11 @@ someone else).
 Every value must resolve through `JudgeFunction.find`. The `Apparatus` column
 is the two-letter code, never the spelled-out name. Superior Jury rows may
 have no NOC (blank); a Superior Jury credited to `FIG` is written blank too. Judges credited to a continental union print it as their
-federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank (except where the same book credits
-the judge to a federation elsewhere: the Central American and Caribbean Games' MACERONI Mauricio,
-an `UPAG` supervisor on MAG rings and high bar and an `ARG` E judge in the finals, is written `ARG`
-throughout, a `NOC` correction), and so is the Asian
+federation: `UPAG-ECU` is written `ECU`, a plain `UPAG` is blank where nothing better is known (the
+Central American and Caribbean Games credit their Superior Juries and every apparatus supervisor to
+`UPAG`; each is written with the federation the same book or other 2026 meets give them, as `NOC`
+corrections: MACERONI Mauricio, an `ARG` E judge in the same book's finals, `ARG`; CABRERA DÁVILA
+Yazaira `PUR`, CAMACHO Esteban `CRC`, and so on), and so is the Asian
 Gymnastics Union's `AGU` and the Oceania Gymnastics Union's `OGU` where nothing better is known (the Asian Championships' Presidents;
 its apparatus supervisors' federations were looked up, §5.16). A federation printed with the union
 (`AUS / OGU`, `OGU (AUS)`) is written as the federation; the Oceania MAG Superior Jury's plain `OGU`
@@ -1750,6 +1751,9 @@ apparatus, three counting; individuals from countries without a team.
   MARTINEZ for SOTO RODRIGUEZ, both `NR` compatriots; WAG floor, §4.6) are noted at the foot.
 - MAG all-around: 15 `Q` (GUA's third, `NR`, is the only reserve); BELL Clayton (JAM) didn't start
   the final, so 14 are ranked.
+- Judges credited to `UPAG` (both Superior Juries, every apparatus supervisor) are written with the
+  federation other 2026 meets give them, each a `NOC` correction keyed by the judge's name; every
+  one had a single federation across the Worlds, World Cup and Senior Pan American files.
 - Entry-list birth dates for ALVAREZ Jorman (MAG 202) and HERRERA POLANCO Brithany (WAG 110) differ
   from the 2026 Worlds entry list by ten days; Worlds' are written (`BIRTH_DATE` corrections).
 
@@ -1800,8 +1804,5 @@ apparatus, three counting; individuals from countries without a team.
 11. **World Gymnastics judge IDs.** Every judge has an ID in the World Gymnastics database
    (the African Championships WAG sheets print some as judge numbers). Backfill them, which would
    link a judge across meets despite spelling and federation differences (item 7), and replace the
-   hand-checked federations of judges credited to a continental union. The 2026 Central American
-   and Caribbean Games credit their Superior Juries and every apparatus supervisor to `UPAG`,
-   written blank; other 2026 meets give most of them a federation (CABRERA DÁVILA Yazaira PUR,
-   CALABRÓ Mónica ARG, VALENZUELA GOMEZ César MEX, SANCHEZ VILLALOBOS Carlos VEN, VELÁSQUEZ
-   ALVARADO Juan Carlos COL, CAMACHO Esteban CRC).
+   hand-checked federations of judges credited to a continental union (the 2026 Central American
+   and Caribbean Games' nine, filled from other 2026 meets).
