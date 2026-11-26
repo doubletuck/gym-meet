@@ -915,6 +915,22 @@ class EventImporterTest {
     }
 
     @Test
+    void testImport_VaultWithoutASingleVaultList_HasOnlyItsTwoVaultRank(@TempDir Path dir) throws IOException {
+        // As at the 2026 Junior Pan Americans: no single-vault list, so no vault placing of its own
+        Path manifest = copyFixture(WORLDS_MAG, dir);
+        Path vault = dir.resolve("2026-WORLD-CHAMPIONSHIPS-MAG-SR-SCORES-C1-VT.csv");
+        Files.writeString(vault, Files.readString(vault).replaceAll("(?m)^([^,]*,[^,]*,[^,]*,[^,]*,C1,,VT,)\\d+,",
+                "$1,"));
+
+        eventImporter.importManifest(manifest, false);
+
+        Score jarman = score("Jarman", "Jake", CompetitionType.C1, Apparatus.VT);
+        assertNull(rank(jarman));
+        assertEquals(1, qualificationRank(jarman));
+        assertEquals(QualificationResult.Q, qualification(jarman));
+    }
+
+    @Test
     void testImport_ApparatusTitlesDecidedInCompetitionI_ItsPlacingsAreFinal(@TempDir Path dir) throws IOException {
         Path manifest = writeMinimalMeet(dir, "5.5", "101");
 

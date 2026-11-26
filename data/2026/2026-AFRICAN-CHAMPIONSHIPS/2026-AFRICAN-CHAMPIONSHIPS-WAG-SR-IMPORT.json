@@ -12,7 +12,10 @@
         "country" : "CMR",
         "figEventNumber" : "18377",
         "venue" : "Palais Polyvalent des Sports de Yaound\u00e9",
-        "apparatusSuppliers" : "Taishan Sports Equipment"
+        "apparatusSuppliers" : "Taishan Sports Equipment",
+        "teamFormat" : "C1",
+        "aaFormat" : "C1",
+        "apparatusFormat" : "FINAL"
     },
     "participants" : [
         "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv"
@@ -21,17 +24,17 @@
         "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-JUDGES.csv"
     ],
     "scores" : [
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-BB.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-FX.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-UB.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-EVENT-VT.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-BB.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-FX.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-UB.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-QUAL-VT.csv"
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C1-BB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C1-FX.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C1-UB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C1-VT.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C3-BB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C3-FX.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C3-UB.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SCORES-C3-VT.csv"
     ],
-    "summaries" : [
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-AA.csv",
-        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv"
+    "rankings" : [
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-RANKING-FINAL-AA.csv",
+        "2026-AFRICAN-CHAMPIONSHIPS-WAG-SR-RANKING-FINAL-TEAM.csv"
     ]
 }

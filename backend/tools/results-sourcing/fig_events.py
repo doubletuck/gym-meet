@@ -59,7 +59,7 @@ FIG_EVENTS_COLUMNS = ['FIG Event', 'Title', 'Priority', 'Status', 'Start Date', 
                       'Results Book', 'Digital Results', 'Folder', 'Meet']
 EVENT_COLUMNS = ['Prefix', 'Slug', 'Title', 'Short Name', 'Disciplines', 'Age Category', 'Level',
                  'Start Date', 'End Date', 'City', 'Country', 'Venue', 'FIG Event Number',
-                 'Apparatus Suppliers']
+                 'Apparatus Suppliers', 'Team Format', 'AA Format', 'Apparatus Format']
 # Statuses sync derives from a meet folder, least advanced first; any other Status is set by
 # hand and kept.
 STATES = ['', 'Downloaded', 'Parsed']
@@ -157,7 +157,9 @@ def draft_event_rows(folder, details):
                 'Start Date': d['startEvent'], 'End Date': d['endEvent'],
                 'City': city_name(d['city']['name']), 'Country': d['city']['country']['code'],
                 'Venue': (d.get('venue') or '').strip(), 'FIG Event Number': str(d['id']),
-                'Apparatus Suppliers': suppliers(d)}
+                'Apparatus Suppliers': suppliers(d),
+                # Where each title was decided (C1, FINAL or NONE): read from the book, not FIG's record
+                'Team Format': '', 'AA Format': '', 'Apparatus Format': ''}
     order = list(AGE_CATEGORIES.values())
     return sorted(rows.values(), key=lambda r: (order.index(r['Age Category'])
                                                 if r['Age Category'] in order else 9, r['Disciplines']))

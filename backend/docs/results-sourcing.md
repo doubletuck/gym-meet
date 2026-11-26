@@ -144,6 +144,7 @@ the folder that holds those FIG events, if any.
 | Level | Mapped from FIG's level where the mapping is settled (table below); otherwise blank |
 | Start Date, End Date | FIG's span for the whole event. For multi-sport Games this is wider than the gymnastics days; take them from the book's competition schedule |
 | City, Country, Venue, FIG Event Number, Apparatus Suppliers | FIG's values (city in title case without region) |
+| Team Format, AA Format, Apparatus Format | Left blank: where each title was decided (`C1`, `FINAL` or `NONE`) comes from the book's schedule and results, not FIG's record (import-file-model.md) |
 
 | FIG level | EventLevel |
 |---|---|

@@ -1,3 +1,3 @@
-Prefix,Slug,Title,Short Name,Disciplines,Age Category,Level,Start Date,End Date,City,Country,Venue,FIG Event Number,Apparatus Suppliers
-2026-SOUTH-AMERICAN-GAMES-MAG-SR,2026-south-american-games-mag-sr,XIII Juegos Suramericanos,SA Games 2026,MAG,SR,REGIONAL_COMPETITION,2026-09-13,2026-09-16,Rosario Santa Fe,ARG,"Invencible Arena",18708,"Gymnova"
-2026-SOUTH-AMERICAN-GAMES-WAG-SR,2026-south-american-games-wag-sr,XIII Juegos Suramericanos,SA Games 2026,WAG,SR,REGIONAL_COMPETITION,2026-09-13,2026-09-16,Rosario Santa Fe,ARG,"Invencible Arena",18708,"Gymnova"
+Prefix,Slug,Title,Short Name,Disciplines,Age Category,Level,Start Date,End Date,City,Country,Venue,FIG Event Number,Apparatus Suppliers,Team Format,AA Format,Apparatus Format
+2026-SOUTH-AMERICAN-GAMES-MAG-SR,2026-south-american-games-mag-sr,XIII Juegos Suramericanos,SA Games 2026,MAG,SR,REGIONAL_COMPETITION,2026-09-13,2026-09-16,Rosario Santa Fe,ARG,Invencible Arena,18708,Gymnova,C1,C1,FINAL
+2026-SOUTH-AMERICAN-GAMES-WAG-SR,2026-south-american-games-wag-sr,XIII Juegos Suramericanos,SA Games 2026,WAG,SR,REGIONAL_COMPETITION,2026-09-13,2026-09-16,Rosario Santa Fe,ARG,Invencible Arena,18708,Gymnova,C1,C1,FINAL

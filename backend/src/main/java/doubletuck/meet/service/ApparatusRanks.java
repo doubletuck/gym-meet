@@ -43,14 +43,15 @@ public final class ApparatusRanks {
      * The placing a score is published with on its apparatus. A competition ranks an apparatus
      * once, except qualification's vault, ranked twice: the single-vault list (every vaulter, on
      * the first vault) gives the placing, and the two-vault list, which decides the final, the
-     * {@link #qualificationRank}.
+     * {@link #qualificationRank}. Where a book prints no single-vault list (2026 Junior Pan
+     * Americans), a vault score has no placing of its own.
      */
     public Integer rank(Score score) {
         ApparatusResult result = result(score, RankingPurpose.FINAL);
         if (result == null) {
             result = result(score, RankingPurpose.INFORMATIONAL);
         }
-        if (result == null) {
+        if (result == null && score.getApparatus() != Apparatus.VT) {
             result = result(score, RankingPurpose.QUALIFYING);
         }
         return result == null ? null : result.getRank();

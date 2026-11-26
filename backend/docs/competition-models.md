@@ -11,7 +11,7 @@ it before the model change. The rules settled here move into
 |---|---|---|
 | 1 | Schema and domain: `Competition`, `Ranking`, `Team`, `TeamResultScore`, rank status; data rebuilt by re-importing | Done ([data-model.md](data-model.md)) |
 | 2 | Import file standard: `RANKING-*`, `C1`–`C4`, `Purpose`, `Rank Status`, format columns, `EventFormat`; the importer reads only the new files, and `convert_file_standard.py` makes the mechanical renames. The `Team` column moved to step 6 | Done ([import-file-model.md](import-file-model.md)) |
-| 3 | Reshape the existing files: convert `data/`, then by hand the formats, title-deciding `RANKING-QUAL` → `RANKING-FINAL` of `C1`, rank statuses for blank ranks, Asian Championships' qualifying rankings dropped, `CORRECTIONS.csv` keys | |
+| 3 | Reshape the existing files: formats in `EVENT.csv`, `data/` converted, then `reshape_2026_files.py`: title-deciding `RANKING-QUAL` → `RANKING-FINAL` of `C1`, a rank status for every blank rank, Asian Championships' qualifying rankings dropped (the whole field in the final ranking); Europeans MAG JR all-around final ranking parsed. `CORRECTIONS.csv` keys move with the parsers in step 4 | Done |
 | 4 | Parsers and the parsing doc | |
 | 5 | API and front end aligned with the model | |
 | 6 | Youth Olympic Games, mixed team included | |
@@ -38,7 +38,7 @@ titles that aren't held.
 | Meet | Prefixes | Team | AA | Apparatus | Model |
 |---|---|---|---|---|---|
 | World Championships | MAG SR, WAG SR | Qual | Qual | Qual | A |
-| European Championships | MAG SR | Qual | — | Qual | B |
+| European Championships | MAG SR | Qual | — (see §7.6, open) | Qual | B |
 | European Championships | WAG SR | Qual | Final | Qual | C |
 | Asian Games | MAG SR, WAG SR | Qual | Final | Qual | C |
 | European Championships | MAG JR | Final | Qual | Qual | D |
@@ -469,7 +469,22 @@ Decided:
 
 8. **Mixed teams** are modelled in §8.
 
-Nothing is open. Next: the implementation plan.
+Decided in step 3:
+
+9. **Unranked rows below a printed top** (Asian Games, South American Games: 24 ranked, two per
+   country): `NOC_LIMIT` when two compatriots are ranked and the total beats the lowest ranked
+   total, otherwise `UNPLACED`.
+10. **An entry who started no apparatus** but is listed in an all-around ranking (Worlds MAG,
+    Commonwealth MAG, Pan Ams WAG JR, Asian Championships MAG JR): `INCOMPLETE`.
+
+Open:
+
+- **Europeans MAG SR all-around.** The title exists and Competition I decided it: the book's
+  medallists (gold KOVTUN Illia, CRO) are dated on qualification day. But the senior book prints
+  no all-around ranking, only the three medallists. For now the AA format is `NONE`, which is
+  knowingly wrong. Options: store the medallists as a `FINAL` ranking of `C1` (the other
+  all-arounders `UNPLACED`), compute the ranking from the scores (a correction, since ranks are
+  otherwise copied as printed), or leave it.
 
 ## 8. Mixed teams (Youth Olympic Games, Dakar 2026)
 

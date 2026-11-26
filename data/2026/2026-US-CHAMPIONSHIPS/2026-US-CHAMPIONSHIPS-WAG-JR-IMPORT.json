@@ -11,23 +11,26 @@
         "country" : "USA",
         "figEventNumber" : "",
         "venue" : "Mortgage Matchup Center",
-        "apparatusSuppliers" : ""
+        "apparatusSuppliers" : "",
+        "teamFormat" : "NONE",
+        "aaFormat" : "C1",
+        "apparatusFormat" : "C1"
     },
     "participants" : [
         "2026-US-CHAMPIONSHIPS-WAG-JR-PARTICIPANTS.csv"
     ],
     "judges" : [],
     "scores" : [
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-AA-BB.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-AA-FX.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-AA-UB.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-AA-VT.csv"
+        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-C1-BB.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-C1-FX.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-C1-UB.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-SCORES-C1-VT.csv"
     ],
-    "summaries" : [
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-AA.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-BB.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-FX.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-UB.csv",
-        "2026-US-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-VT.csv"
+    "rankings" : [
+        "2026-US-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-AA.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-BB.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-FX.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-UB.csv",
+        "2026-US-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-VT.csv"
     ]
 }

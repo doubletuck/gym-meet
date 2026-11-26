@@ -12,7 +12,10 @@
         "country" : "CHN",
         "figEventNumber" : "18568",
         "venue" : "Zunyi Olympic Sports Center",
-        "apparatusSuppliers" : "Taishan Sports Equipment"
+        "apparatusSuppliers" : "Taishan Sports Equipment",
+        "teamFormat" : "C1",
+        "aaFormat" : "C1",
+        "apparatusFormat" : "FINAL"
     },
     "participants" : [
         "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-PARTICIPANTS.csv"
@@ -21,19 +24,17 @@
         "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-JUDGES.csv"
     ],
     "scores" : [
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-BB.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-FX.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-UB.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-EVENT-VT.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-BB.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-FX.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-UB.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-QUAL-VT.csv"
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C1-BB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C1-FX.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C1-UB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C1-VT.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C3-BB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C3-FX.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C3-UB.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SCORES-C3-VT.csv"
     ],
-    "summaries" : [
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-AA.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-FINAL-TEAM.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-AA.csv",
-        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-SUMMARY-QUAL-TEAM.csv"
+    "rankings" : [
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-AA.csv",
+        "2026-ASIAN-CHAMPIONSHIPS-WAG-JR-RANKING-FINAL-TEAM.csv"
     ]
 }

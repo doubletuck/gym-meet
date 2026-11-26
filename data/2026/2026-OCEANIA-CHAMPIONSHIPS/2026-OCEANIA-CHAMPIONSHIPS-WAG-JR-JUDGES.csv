@@ -1,41 +1,41 @@
-Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Name,Surname,Given Name,NOC Code
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,,TD,Allana Slater,SLATER,Allana,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,SV,McMURDO Michelle Jane,McMURDO,Michelle Jane,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,D1,WOOLF Michelle Jayne,WOOLF,Michelle Jayne,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,D2,ROBBINS Nicki,ROBBINS,Nicki,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,E1,JURY Hayley Dorne,JURY,Hayley Dorne,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,E2,READ Melissa,READ,Melissa,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,E3,GODFREY Jacqui,GODFREY,Jacqui,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,E4,CARTER Rebecca,CARTER,Rebecca,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,E5,BAKER Shirley,BAKER,Shirley,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,VT,L,MORIARTY Stephanie,MORIARTY,Stephanie,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,SV,WILLCOCKS Nyssa Marie,WILLCOCKS,Nyssa Marie,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,D1,BROOKS Tracie Lee,BROOKS,Tracie Lee,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,D2,ENSLOW Avril,ENSLOW,Avril,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,E1,BARTON Rachel,BARTON,Rachel,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,E2,MCNABB Kate,MCNABB,Kate,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,E3,WESTON Stacey,WESTON,Stacey,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,E4,SHARP Tracy,SHARP,Tracy,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,E5,KEATING Alan,KEATING,Alan,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,UB,T1,WATSON Laura,WATSON,Laura,RSA
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,SV,McMURDO Michelle Jane,McMURDO,Michelle Jane,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,D1,WOOLF Michelle Jayne,WOOLF,Michelle Jayne,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,D2,ROBBINS Nicki,ROBBINS,Nicki,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,E1,JURY Hayley Dorne,JURY,Hayley Dorne,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,E2,READ Melissa,READ,Melissa,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,E3,GODFREY Jacqui,GODFREY,Jacqui,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,E4,CARTER Rebecca,CARTER,Rebecca,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,E5,BAKER Shirley,BAKER,Shirley,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,T1,ELLIOT Debbie,ELLIOT,Debbie,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,BB,T2,MORIARTY Stephanie,MORIARTY,Stephanie,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,SV,WILLCOCKS Nyssa Marie,WILLCOCKS,Nyssa Marie,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,D1,BROOKS Tracie Lee,BROOKS,Tracie Lee,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,D2,ENSLOW Avril,ENSLOW,Avril,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,E1,BARTON Rachel,BARTON,Rachel,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,E2,MCNABB Kate,MCNABB,Kate,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,E3,WESTON Stacey,WESTON,Stacey,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,E4,SHARP Tracy,SHARP,Tracy,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,E5,KEATING Alan,KEATING,Alan,AUS
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,T,BOW Michelle,BOW,Michelle,NZL
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,L1,WATSON Laura,WATSON,Laura,RSA
-Junior Oceania Championships,WAG,JR,2026-05-09,AA,FX,L2,DICKENS Phillipa,DICKENS,Phillipa,AUS
+Event Name,Discipline,Age Category,Event Start Date,Competition,Apparatus,Function,Name,Surname,Given Name,NOC Code
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,,TD,Allana Slater,SLATER,Allana,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,SV,McMURDO Michelle Jane,McMURDO,Michelle Jane,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,D1,WOOLF Michelle Jayne,WOOLF,Michelle Jayne,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,D2,ROBBINS Nicki,ROBBINS,Nicki,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,E1,JURY Hayley Dorne,JURY,Hayley Dorne,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,E2,READ Melissa,READ,Melissa,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,E3,GODFREY Jacqui,GODFREY,Jacqui,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,E4,CARTER Rebecca,CARTER,Rebecca,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,E5,BAKER Shirley,BAKER,Shirley,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,VT,L,MORIARTY Stephanie,MORIARTY,Stephanie,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,SV,WILLCOCKS Nyssa Marie,WILLCOCKS,Nyssa Marie,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,D1,BROOKS Tracie Lee,BROOKS,Tracie Lee,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,D2,ENSLOW Avril,ENSLOW,Avril,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,E1,BARTON Rachel,BARTON,Rachel,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,E2,MCNABB Kate,MCNABB,Kate,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,E3,WESTON Stacey,WESTON,Stacey,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,E4,SHARP Tracy,SHARP,Tracy,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,E5,KEATING Alan,KEATING,Alan,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,UB,T1,WATSON Laura,WATSON,Laura,RSA
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,SV,McMURDO Michelle Jane,McMURDO,Michelle Jane,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,D1,WOOLF Michelle Jayne,WOOLF,Michelle Jayne,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,D2,ROBBINS Nicki,ROBBINS,Nicki,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,E1,JURY Hayley Dorne,JURY,Hayley Dorne,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,E2,READ Melissa,READ,Melissa,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,E3,GODFREY Jacqui,GODFREY,Jacqui,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,E4,CARTER Rebecca,CARTER,Rebecca,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,E5,BAKER Shirley,BAKER,Shirley,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,T1,ELLIOT Debbie,ELLIOT,Debbie,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,BB,T2,MORIARTY Stephanie,MORIARTY,Stephanie,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,SV,WILLCOCKS Nyssa Marie,WILLCOCKS,Nyssa Marie,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,D1,BROOKS Tracie Lee,BROOKS,Tracie Lee,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,D2,ENSLOW Avril,ENSLOW,Avril,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,E1,BARTON Rachel,BARTON,Rachel,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,E2,MCNABB Kate,MCNABB,Kate,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,E3,WESTON Stacey,WESTON,Stacey,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,E4,SHARP Tracy,SHARP,Tracy,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,E5,KEATING Alan,KEATING,Alan,AUS
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,T,BOW Michelle,BOW,Michelle,NZL
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,L1,WATSON Laura,WATSON,Laura,RSA
+Junior Oceania Championships,WAG,JR,2026-05-09,C1,FX,L2,DICKENS Phillipa,DICKENS,Phillipa,AUS

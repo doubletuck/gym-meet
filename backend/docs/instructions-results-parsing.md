@@ -17,6 +17,16 @@ entities are in [`data-model.md`](data-model.md).
   section below (§4 conventions, §5 the source format) rather than appending a
   history.
 
+> **In transition (competition-models.md, rollout).** The files under `data/2026` follow the
+> current standard in `import-file-model.md` (`SCORES-C1`–`C4`, `RANKING-*`, `Purpose`, `Rank
+> Status`, the event formats), and only that standard imports. The parsers still write the
+> previous one (`SCORES-QUAL/AA/EVENT/TEAM`, `SUMMARY-*`, `Round`, `Scores Round`), as does
+> this guide's wording (§4.9 especially), until step 4 moves them over; in the meantime, a
+> parser's output is brought to the standard with `convert_file_standard.py` and then
+> `reshape_2026_files.py`, which also apply the step 3 decisions (titles decided in Competition
+> I are final rankings; every blank rank states its Rank Status). `CORRECTIONS.csv` keys still
+> name the files and codes the parsers write.
+
 ## 1. Workflow
 
 1. **Survey the PDF** — page count, which pages have text, which report types
@@ -597,7 +607,12 @@ the apparatus totals the source prints.
 A concatenation of reports, each stamped with a footer like
 `GARM1APFX-------------QUAL--------_73I 1.0  <timestamp>  Page 1/5`.
 Parsers: [`parse_2026_world_championships.py`](../tools/results-parsing/parse_2026_world_championships.py)
-(the 2026 Europeans files predate the parsers and were built by hand).
+(the 2026 Europeans files predate the parsers and were built by hand, except the juniors' men's
+all-around final ranking, which
+[`parse_2026_european_championships.py`](../tools/results-parsing/parse_2026_european_championships.py)
+writes from its "All-Around Results" report, in the current standard). The senior men's book prints
+no all-around ranking: only the medallists, dated on qualification day (see
+competition-models.md, open items).
 
 **Finding reports**
 
