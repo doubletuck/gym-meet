@@ -1,0 +1,46 @@
+{
+    "event" : {
+        "slug" : "2026-youth-olympic-games",
+        "title" : "Youth Olympic Games of the IV Olympiad",
+        "shortName" : "YOG 2026",
+        "disciplines" : "WAG",
+        "ageCategory" : "JR",
+        "level" : "YOUTH_OLYMPIC_GAMES",
+        "startDate" : "2026-11-08",
+        "endDate" : "2026-11-10",
+        "city" : "Dakar",
+        "country" : "SEN",
+        "figEventNumber" : "18178",
+        "venue" : "Dakar Expo Center",
+        "apparatusSuppliers" : "Taishan Sports Equipment",
+        "teamFormat" : "FINAL",
+        "aaFormat" : "FINAL",
+        "apparatusFormat" : "NONE"
+    },
+    "participants" : [
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-PARTICIPANTS.csv"
+    ],
+    "judges" : [
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C1-BB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C1-FX.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C1-UB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C1-VT.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C2-BB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C2-FX.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C2-UB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C2-VT.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C4-BB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C4-FX.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C4-UB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-SCORES-C4-VT.csv"
+    ],
+    "rankings" : [
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-RANKING-FINAL-AA.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-RANKING-FINAL-TEAM.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-RANKING-QUAL-AA.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-WAG-JR-RANKING-QUAL-TEAM.csv"
+    ]
+}

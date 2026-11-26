@@ -1,5 +1,5 @@
 import type { AgeCategory, Apparatus, Discipline } from "~/api/types";
-import { AGE_CATEGORY_LABELS, APPARATUS_LABELS, DISCIPLINE_LABELS } from "~/lib/labels";
+import { AGE_CATEGORY_LABELS, APPARATUS_LABELS, DISCIPLINE_LABELS, DISCIPLINE_OWNER } from "~/lib/labels";
 
 /**
  * A short form with its full form as a tooltip. A spoken abbreviation is also
@@ -21,13 +21,24 @@ export function Abbreviation({ short, label, spoken = false }: { short: string; 
   );
 }
 
-/** An apparatus by its FIG code ("PH"), read out in full; `routine` numbers a vault ("VT1"). */
-export function ApparatusCode({ apparatus, routine }: { apparatus: Apparatus; routine?: number }) {
+/**
+ * An apparatus by its FIG code ("PH"), read out in full; `routine` numbers a vault ("VT1"). Where both
+ * disciplines are shown (a mixed team), `discipline` tells their floors apart: "M FX", "Men's Floor Exercise".
+ */
+export function ApparatusCode({
+  apparatus,
+  routine,
+  discipline,
+}: {
+  apparatus: Apparatus;
+  routine?: number;
+  discipline?: Discipline;
+}) {
   const suffix = routine != null ? String(routine) : "";
   return (
     <Abbreviation
-      short={`${apparatus}${suffix}`}
-      label={`${APPARATUS_LABELS[apparatus]}${suffix && ` ${suffix}`}`}
+      short={`${discipline ? `${discipline[0]} ` : ""}${apparatus}${suffix}`}
+      label={`${discipline ? `${DISCIPLINE_OWNER[discipline]} ` : ""}${APPARATUS_LABELS[apparatus]}${suffix && ` ${suffix}`}`}
       spoken
     />
   );

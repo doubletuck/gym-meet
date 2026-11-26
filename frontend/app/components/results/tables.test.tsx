@@ -450,9 +450,19 @@ describe("TeamTable", () => {
       total: 252.0,
       sjPenalty: null,
       qualification: null,
-      apparatusTotals: { FX: 42.1 },
+      apparatusTotals: [{ discipline: "MAG", apparatus: "FX", total: 42.1 }],
+      round: null,
     };
-    render(<TeamTable rows={[team]} apparatus={["FX", "PH"]} qualification={false} />);
+    render(
+      <TeamTable
+        rows={[team]}
+        apparatus={[
+          { discipline: "MAG", apparatus: "FX" },
+          { discipline: "MAG", apparatus: "PH" },
+        ]}
+        qualification={false}
+      />,
+    );
 
     const cell = screen.getByText("Japan").closest("td")!;
     expect(within(cell).getByTitle("Floor Exercise").parentElement).toHaveTextContent(/ 42\.100$/);
@@ -468,10 +478,15 @@ describe("TeamTable", () => {
       total,
       sjPenalty,
       qualification: null,
-      apparatusTotals: {},
+      apparatusTotals: [],
+      round: null,
     });
     const { unmount } = render(
-      <TeamTable rows={[team("CAN", 243.026, null)]} apparatus={["FX"]} qualification={false} />,
+      <TeamTable
+        rows={[team("CAN", 243.026, null)]}
+        apparatus={[{ discipline: "MAG", apparatus: "FX" }]}
+        qualification={false}
+      />,
     );
     expect(screen.queryByRole("columnheader", { name: /Pen/ })).not.toBeInTheDocument();
     unmount();
@@ -479,7 +494,7 @@ describe("TeamTable", () => {
     render(
       <TeamTable
         rows={[team("CAN", 243.026, null), team("CUB", 190.728, -1)]}
-        apparatus={["FX"]}
+        apparatus={[{ discipline: "MAG", apparatus: "FX" }]}
         qualification={false}
       />,
     );
@@ -487,6 +502,37 @@ describe("TeamTable", () => {
     const cells = screen.getAllByRole("row").map((row) => row.textContent);
     expect(cells.filter((text) => text?.includes("-1.000"))).toHaveLength(1);
     expect(cells.find((text) => text?.includes("-1.000"))).toContain("190.728");
+  });
+
+  it("tells a mixed team's men's and women's floor apart, and marks places an earlier round printed", () => {
+    const team = (noc: string, rank: number, round: number | null): TeamRow => ({
+      rank,
+      rankStatus: "RANKED",
+      noc,
+      total: 27.832,
+      sjPenalty: null,
+      qualification: null,
+      apparatusTotals: [
+        { discipline: "MAG", apparatus: "FX", total: 13.966 },
+        { discipline: "WAG", apparatus: "FX", total: 13.866 },
+      ],
+      round,
+    });
+    render(
+      <TeamTable
+        rows={[team("CHN", 1, null), team("GBR", 9, 1)]}
+        apparatus={[
+          { discipline: "MAG", apparatus: "FX" },
+          { discipline: "WAG", apparatus: "FX" },
+        ]}
+        qualification={false}
+      />,
+    );
+
+    expect(screen.getByRole("columnheader", { name: "Men's Floor Exercise" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Women's Floor Exercise" })).toBeInTheDocument();
+    expect(screen.getByText("Great Britain").closest("td")).toHaveTextContent("Round 1");
+    expect(screen.getByText("China").closest("td")).not.toHaveTextContent("Round");
   });
 });
 
@@ -516,7 +562,9 @@ describe("standingsApparatus", () => {
   });
 
   it("takes the score tables' apparatus", () => {
-    expect(standingsApparatus(results({ apparatus: [{ apparatus: "BB", scores: [] }] }))).toEqual(["BB"]);
+    expect(standingsApparatus(results({ apparatus: [{ discipline: "WAG", apparatus: "BB", scores: [] }] }))).toEqual([
+      { discipline: "WAG", apparatus: "BB" },
+    ]);
   });
 
   it("without score tables, takes the apparatus the standings have scores on, in Olympic order", () => {
@@ -533,6 +581,11 @@ describe("standingsApparatus", () => {
       apparatusScores: { FX: 13.233, BB: 14.933, UB: 14.4, VT: 13.733 },
       parts: [],
     };
-    expect(standingsApparatus(results({ allAround: [row] }))).toEqual(["VT", "UB", "BB", "FX"]);
+    expect(standingsApparatus(results({ allAround: [row] }))).toEqual([
+      { discipline: "WAG", apparatus: "VT" },
+      { discipline: "WAG", apparatus: "UB" },
+      { discipline: "WAG", apparatus: "BB" },
+      { discipline: "WAG", apparatus: "FX" },
+    ]);
   });
 });

@@ -23,9 +23,14 @@ public record EventDetailResponse(
         @Nullable String apparatusSuppliers,
         List<DivisionCompetitions> divisions) {
 
-    /** One discipline and age category's competitions, in the order they're held. */
+    /**
+     * One discipline and age category's competitions, in the order they're held.
+     *
+     * @param rankings its rankings with no competition of their own (a mixed team's qualification),
+     *                 held before its competitions
+     */
     public record DivisionCompetitions(Discipline discipline, AgeCategory ageCategory,
-            List<CompetitionSummaryResponse> competitions) {
+            List<RankingSummaryResponse> rankings, List<CompetitionSummaryResponse> competitions) {
     }
 
     public static EventDetailResponse from(Event event, List<DivisionCompetitions> divisions) {

@@ -4,8 +4,10 @@ import doubletuck.meet.domain.AllAroundResult;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.RankingPurpose;
 import doubletuck.meet.domain.RankingType;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
@@ -18,6 +20,7 @@ import doubletuck.meet.dto.CompetitionResultsResponse.AllAroundRow;
 import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusScores;
 import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusStandingRow;
 import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusStandings;
+import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusTotal;
 import doubletuck.meet.dto.CompetitionResultsResponse.AthleteRef;
 import doubletuck.meet.dto.CompetitionResultsResponse.PartResult;
 import doubletuck.meet.dto.CompetitionResultsResponse.PartScore;
@@ -30,20 +33,26 @@ import doubletuck.meet.repository.RankingRepository;
 import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.TeamResultRepository;
 import doubletuck.meet.repository.TeamResultScoreRepository;
+import doubletuck.meet.service.CompetitionNaming.ApparatusColumn;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Rebuilds a competition's results page from what was imported, ranked as published: its scores,
@@ -80,8 +89,9 @@ public class CompetitionResultsService {
 
     private CompetitionResultsResponse results(Competition competition) {
         List<Apparatus> order = CompetitionNaming.apparatusOrder(competition.getDiscipline());
+        List<ApparatusColumn> columns = CompetitionNaming.columns(competition.getDiscipline());
         List<Score> scores = scoreRepository.findResultsByCompetition(competition);
-        List<Ranking> rankings = rankingRepository.findByCompetition(competition);
+        List<Ranking> rankings = CompetitionNaming.own(rankingRepository.findByCompetition(competition), competition);
         List<Competition> division = competitionRepository.findByEventAndDisciplineAndAgeCategory(
                 competition.getEvent(), competition.getDiscipline(), competition.getAgeCategory());
         CompetitionSummaries summaries = new CompetitionSummaries(division,
@@ -90,7 +100,8 @@ public class CompetitionResultsService {
         List<Competition> partCompetitions = SplitRound.parts(competition, division);
         List<Part> parts = partCompetitions.stream()
                 .map(part -> new Part(part.getPart(), scoreRepository.findResultsByCompetition(part),
-                        CompetitionNaming.preferred(rankingRepository.findByCompetition(part), RankingType.AA)
+                        CompetitionNaming.preferred(CompetitionNaming.own(rankingRepository.findByCompetition(part),
+                                part), RankingType.AA)
                                 .map(allAroundResultRepository::findResultsByRanking).orElse(List.of())))
                 .toList();
 
@@ -124,9 +135,9 @@ public class CompetitionResultsService {
             }
         }
 
-        List<ApparatusScores> apparatus = order.stream()
-                .map(app -> new ApparatusScores(app, scores.stream()
-                        .filter(score -> score.getApparatus() == app)
+        List<ApparatusScores> apparatus = columns.stream()
+                .map(column -> new ApparatusScores(column.discipline(), column.apparatus(), scores.stream()
+                        .filter(score -> isIn(score, column))
                         .map(score -> scoreRow(score, ranks, teamRole(score, teamRanking.isPresent(), roleByScore)))
                         .sorted(byRank(ScoreRow::rank, ScoreRow::total, ScoreRow::athlete))
                         .toList()))
@@ -140,10 +151,13 @@ public class CompetitionResultsService {
                 .map(result -> allAroundRow(result, scores, parts, order))
                 .toList();
 
-        List<TeamRow> teams = teamResults.stream()
+        List<TeamRow> teams = new ArrayList<>(teamResults.stream()
                 .sorted(Comparator.comparing(TeamResult::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
-                .map(result -> teamRow(result, contributions.getOrDefault(result, List.of()), order))
-                .toList();
+                .map(result -> teamRow(result, contributions.getOrDefault(result, List.of()), columns, null))
+                .toList());
+        if (competition.getRound() != null && teamRanking.map(Ranking::getPurpose).orElse(null) == RankingPurpose.FINAL) {
+            teams.addAll(eliminated(competition, division, teams, columns));
+        }
 
         // Only a split competition's whole row holds combined apparatus standings; elsewhere a
         // competition's apparatus rankings are its scores' own placings, shown with the scores
@@ -176,7 +190,7 @@ public class CompetitionResultsService {
         return teamsRanked ? TeamScoreRole.INDIVIDUAL : TeamScoreRole.COUNTING;
     }
 
-    private static ScoreRow scoreRow(Score score, ApparatusRanks ranks, TeamScoreRole teamRole) {
+    static ScoreRow scoreRow(Score score, ApparatusRanks ranks, TeamScoreRole teamRole) {
         Participant participant = score.getParticipant();
         return new ScoreRow(ranks.rank(score), participant.getBibNumber(), athlete(participant), participant.getNoc(),
                 club(participant), routine(score.getRoutine()), routine(score.getSecondRoutine()), score.getCombinedBonus(),
@@ -259,21 +273,64 @@ public class CompetitionResultsService {
                 participant.getNoc(), club(participant), result.getTotalScore(), partScores);
     }
 
-    private static TeamRow teamRow(TeamResult result, List<TeamResultScore> contributions, List<Apparatus> order) {
-        Map<Apparatus, Double> apparatusTotals = new LinkedHashMap<>();
-        for (Apparatus app : order) {
+    /**
+     * The teams a final round's earlier rounds eliminated, at the places those rounds printed: the
+     * round before's, then the one before that (competition-models.md §8.4). Nothing is computed.
+     */
+    private List<TeamRow> eliminated(Competition competition, List<Competition> division, List<TeamRow> shown,
+            List<ApparatusColumn> columns) {
+        Set<String> nocs = shown.stream().map(TeamRow::noc).collect(Collectors.toCollection(HashSet::new));
+        List<TeamRow> rows = new ArrayList<>();
+        for (int round = competition.getRound() - 1; round >= 1; round--) {
+            int number = round;
+            Optional<Ranking> ranking = division.stream()
+                    .filter(earlier -> earlier.getType() == competition.getType()
+                            && Objects.equals(earlier.getApparatus(), competition.getApparatus())
+                            && earlier.getPart() == null && Objects.equals(earlier.getRound(), number))
+                    .findFirst()
+                    .flatMap(earlier -> CompetitionNaming.preferred(
+                            CompetitionNaming.own(rankingRepository.findByCompetition(earlier), earlier), RankingType.TEAM));
+            if (ranking.isEmpty()) {
+                continue;
+            }
+            List<TeamResult> results = teamResultRepository.findByRanking(ranking.get());
+            Map<TeamResult, List<TeamResultScore>> links = teamResultScoreRepository.findByTeamResultIn(results).stream()
+                    .collect(Collectors.groupingBy(TeamResultScore::getTeamResult));
+            results.stream()
+                    .sorted(Comparator.comparing(TeamResult::getRank, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .filter(result -> nocs.add(result.getTeam().getNoc()))
+                    .forEach(result -> rows.add(teamRow(result, links.getOrDefault(result, List.of()), columns, number)));
+        }
+        return rows;
+    }
+
+    /** Whether the score is on the column's apparatus, by a gymnast of its discipline. */
+    static boolean isIn(Score score, ApparatusColumn column) {
+        return score.getApparatus() == column.apparatus()
+                && score.getParticipant().getAthlete().getDiscipline() == column.discipline();
+    }
+
+    /**
+     * @param round on a final round's page, the earlier round that printed the place; null otherwise
+     */
+    static TeamRow teamRow(TeamResult result, List<TeamResultScore> contributions, List<ApparatusColumn> columns,
+            @Nullable Integer round) {
+        // A mixed team counts one score an apparatus: two gymnasts tied for it both count
+        boolean mixed = result.getRanking().getDiscipline() == Discipline.MIX;
+        List<ApparatusTotal> apparatusTotals = new ArrayList<>();
+        for (ApparatusColumn column : columns) {
             List<Double> counted = contributions.stream()
-                    .filter(link -> link.getRole() == TeamContributionRole.COUNTING
-                            && link.getScore().getApparatus() == app)
+                    .filter(link -> link.getRole() == TeamContributionRole.COUNTING && isIn(link.getScore(), column))
                     .map(link -> link.getScore().getRoutine().getScore())
                     .filter(Objects::nonNull)
                     .toList();
             if (!counted.isEmpty()) {
-                apparatusTotals.put(app, sum(counted));
+                apparatusTotals.add(new ApparatusTotal(column.discipline(), column.apparatus(),
+                        mixed ? Collections.max(counted) : sum(counted)));
             }
         }
-        return new TeamRow(result.getRank(), result.getRankStatus(), result.getTeam().getNoc(), result.getTotalScore(), result.getSjPenalty(),
-                result.getQualificationResult(), apparatusTotals);
+        return new TeamRow(result.getRank(), result.getRankStatus(), result.getTeam().getNoc(), result.getTotalScore(),
+                result.getSjPenalty(), result.getQualificationResult(), apparatusTotals, round);
     }
 
     // Summed in decimal: binary doubles would print 41.232000000000006

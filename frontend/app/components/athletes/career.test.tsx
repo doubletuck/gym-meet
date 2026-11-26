@@ -210,7 +210,15 @@ describe("CareerResults", () => {
   }
 
   function entry(competitions: EntryCompetition[], overrides: Partial<AthleteEntry> = {}): AthleteEntry {
-    return { event: worlds, noc: "KOR", club: null, entryStatus: "COMPETITOR", competitions, ...overrides };
+    return {
+      event: worlds,
+      noc: "KOR",
+      club: null,
+      entryStatus: "COMPETITOR",
+      competitions,
+      mixedTeam: null,
+      ...overrides,
+    };
   }
 
   const row = (name: RegExp) => screen.getByRole("row", { name });
@@ -519,5 +527,45 @@ describe("CareerResults", () => {
     // First on bars qualifies for the final, which awards the medal
     expect(within(row(/Uneven Bars/)).queryByTitle(/medal/)).not.toBeInTheDocument();
     expect(within(row(/^All-Around/)).getByTitle(/over the limit per country/)).toHaveTextContent("NR");
+  });
+
+  it("shows the mixed team a member counted for, with its medal, though they competed in no final round", () => {
+    const yog = { ...worlds, slug: "2026-youth-olympic-games", title: "Youth Olympic Games" };
+    const result = (slug: string, name: string, rank: number, purpose: "QUALIFYING" | "FINAL") => ({
+      slug,
+      name,
+      discipline: "MIX" as const,
+      ageCategory: "JR" as const,
+      rank,
+      rankStatus: "RANKED" as const,
+      total: 81.898,
+      qualification: purpose === "QUALIFYING" ? ("Q" as const) : null,
+      purpose,
+    });
+    render(
+      <CareerResults
+        athlete={athlete([
+          entry([], {
+            event: yog,
+            noc: "CHN",
+            mixedTeam: {
+              noc: "CHN",
+              results: [
+                result("qualification", "Qualification", 1, "QUALIFYING"),
+                result("team-final-round-3", "Team Final, Round 3", 1, "FINAL"),
+              ],
+            },
+          }),
+        ])}
+      />,
+    );
+
+    expect(roundHeaders().map((header) => header.textContent)).toEqual(["Mixed Team CHN"]);
+    expect(within(row(/^Qualification/)).queryByTitle(/medal/)).not.toBeInTheDocument();
+    expect(within(row(/^Team Final, Round 3/)).getByTitle("Gold medal")).toBeInTheDocument();
+    expect(within(row(/^Team Final, Round 3/)).getByRole("link")).toHaveAttribute(
+      "href",
+      "/events/2026-youth-olympic-games/mix/jr/team-final-round-3?view=teams&athlete=7",
+    );
   });
 });

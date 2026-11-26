@@ -35,8 +35,9 @@ export default function Event({ params }: Route.ComponentProps) {
               <Division discipline={division.discipline} ageCategory={division.ageCategory} />
             </h2>
             <ul className="mt-2 divide-y divide-gray-200 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
-              {division.competitions.map((competition) => (
-                <li key={competition.id}>
+              {/* A ranking with no competition of its own (a mixed team's qualification) comes first */}
+              {[...division.rankings, ...division.competitions].map((competition) => (
+                <li key={competition.slug}>
                   <Link
                     to={competitionPath(event.slug, competition)}
                     className="flex items-baseline justify-between gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"

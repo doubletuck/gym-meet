@@ -34,7 +34,7 @@ import lombok.ToString;
 @Table(name = "judge", uniqueConstraints = {
         // V9 declares this NULLS NOT DISTINCT, which JPA can't express, so that null apparatus
         // values count as equal and a duplicate is rejected
-        @UniqueConstraint(name = "uk_judge", columnNames = { "competition_id", "apparatus_code", "function_code", "surname", "given_name" })
+        @UniqueConstraint(name = "uk_judge", columnNames = { "competition_id", "discipline_code", "apparatus_code", "function_code", "surname", "given_name" })
 })
 public class Judge extends BaseEntity {
 
@@ -42,6 +42,12 @@ public class Judge extends BaseEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "competition_id", nullable = false, foreignKey = @ForeignKey(name = "fk_judge_competition"))
     private Competition competition;
+
+    // The panel's discipline in a mixed competition, which has a men's and a women's panel on floor;
+    // null elsewhere, where the competition's discipline says it
+    @Column(name = "discipline_code", length = 3)
+    @Enumerated(EnumType.STRING)
+    private Discipline discipline;
 
     @Column(name = "apparatus_code", length = 5)
     @Enumerated(EnumType.STRING)

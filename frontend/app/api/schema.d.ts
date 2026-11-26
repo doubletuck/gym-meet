@@ -36,6 +36,22 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/rankings/{id}/results": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["findResults"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/events/{slug}": {
     parameters: {
       query?: never;
@@ -59,7 +75,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations["findResults"];
+    get: operations["findResults_1"];
     put?: never;
     post?: never;
     delete?: never;
@@ -168,6 +184,114 @@ export interface components {
       /** Format: date-time */
       lastUpdateTimestamp?: string;
     };
+    ApparatusScores: {
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
+      scores: components["schemas"]["ScoreRow"][];
+    };
+    ApparatusTotal: {
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
+      /** Format: double */
+      total: number;
+    };
+    AthleteRef: {
+      /** Format: int64 */
+      id: number;
+      surname: string;
+      givenName: string;
+    };
+    BonusDetail: {
+      /** Format: double */
+      bonus?: number;
+      description?: string;
+    };
+    EventRef: {
+      slug: string;
+      title: string;
+    };
+    RankingResultsResponse: {
+      event: components["schemas"]["EventRef"];
+      ranking: components["schemas"]["RankingSummaryResponse"];
+      teams: components["schemas"]["TeamRow"][];
+      apparatus: components["schemas"]["ApparatusScores"][];
+    };
+    RankingSummaryResponse: {
+      /** Format: int64 */
+      id: number;
+      slug: string;
+      name: string;
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      ageCategory: "SR" | "JR" | "JR16" | "JR17";
+      /** @enum {string} */
+      type: "TEAM" | "AA" | "APPARATUS";
+      /** @enum {string} */
+      purpose: "QUALIFYING" | "FINAL" | "INFORMATIONAL";
+      /** Format: date */
+      date: string;
+      /** Format: date */
+      endDate: string | null;
+    };
+    Routine: {
+      /** @enum {string} */
+      status: "COMPLETED" | "DNS" | "INVALID_VAULT" | "UNKNOWN";
+      /** Format: double */
+      difficulty: number | null;
+      difficultyInquiry: boolean;
+      /** Format: double */
+      execution: number | null;
+      /** Format: double */
+      bonus: number | null;
+      bonusDetail: components["schemas"]["BonusDetail"][] | null;
+      /** Format: double */
+      penalty: number | null;
+      /** Format: double */
+      sjPenalty: number | null;
+      /** Format: double */
+      score: number | null;
+    };
+    ScoreRow: {
+      /** Format: int32 */
+      rank: number | null;
+      bib: string | null;
+      athlete: components["schemas"]["AthleteRef"];
+      noc: string;
+      club: string | null;
+      routine: components["schemas"]["Routine"];
+      secondRoutine: components["schemas"]["Routine"] | null;
+      /** Format: double */
+      combinedBonus: number | null;
+      /** Format: double */
+      total: number | null;
+      /** Format: int32 */
+      qualificationRank: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+      /** @enum {string} */
+      teamRole: "COUNTING" | "DROPPED" | "INDIVIDUAL";
+    };
+    TeamRow: {
+      /** Format: int32 */
+      rank: number | null;
+      /** @enum {string} */
+      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
+      noc: string;
+      /** Format: double */
+      total: number | null;
+      /** Format: double */
+      sjPenalty: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+      apparatusTotals: components["schemas"]["ApparatusTotal"][];
+      /** Format: int32 */
+      round: number | null;
+    };
     Division: {
       /** @enum {string} */
       discipline: "MAG" | "WAG" | "MIX";
@@ -229,6 +353,7 @@ export interface components {
       discipline: "MAG" | "WAG" | "MIX";
       /** @enum {string} */
       ageCategory: "SR" | "JR" | "JR16" | "JR17";
+      rankings: components["schemas"]["RankingSummaryResponse"][];
       competitions: components["schemas"]["CompetitionSummaryResponse"][];
     };
     EventDetailResponse: {
@@ -288,11 +413,6 @@ export interface components {
       };
       parts: components["schemas"]["PartResult"][];
     };
-    ApparatusScores: {
-      /** @enum {string} */
-      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
-      scores: components["schemas"]["ScoreRow"][];
-    };
     ApparatusStandingRow: {
       /** Format: int32 */
       rank: number | null;
@@ -309,17 +429,6 @@ export interface components {
       apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
       rows: components["schemas"]["ApparatusStandingRow"][];
     };
-    AthleteRef: {
-      /** Format: int64 */
-      id: number;
-      surname: string;
-      givenName: string;
-    };
-    BonusDetail: {
-      /** Format: double */
-      bonus?: number;
-      description?: string;
-    };
     CompetitionResultsResponse: {
       event: components["schemas"]["EventRef"];
       competition: components["schemas"]["CompetitionSummaryResponse"];
@@ -327,10 +436,6 @@ export interface components {
       allAround: components["schemas"]["AllAroundRow"][];
       teams: components["schemas"]["TeamRow"][];
       apparatusStandings: components["schemas"]["ApparatusStandings"][];
-    };
-    EventRef: {
-      slug: string;
-      title: string;
     };
     PartResult: {
       /** Format: int32 */
@@ -346,60 +451,6 @@ export interface components {
       part: number;
       /** Format: double */
       score: number | null;
-    };
-    Routine: {
-      /** @enum {string} */
-      status: "COMPLETED" | "DNS" | "INVALID_VAULT" | "UNKNOWN";
-      /** Format: double */
-      difficulty: number | null;
-      difficultyInquiry: boolean;
-      /** Format: double */
-      execution: number | null;
-      /** Format: double */
-      bonus: number | null;
-      bonusDetail: components["schemas"]["BonusDetail"][] | null;
-      /** Format: double */
-      penalty: number | null;
-      /** Format: double */
-      sjPenalty: number | null;
-      /** Format: double */
-      score: number | null;
-    };
-    ScoreRow: {
-      /** Format: int32 */
-      rank: number | null;
-      bib: string | null;
-      athlete: components["schemas"]["AthleteRef"];
-      noc: string;
-      club: string | null;
-      routine: components["schemas"]["Routine"];
-      secondRoutine: components["schemas"]["Routine"] | null;
-      /** Format: double */
-      combinedBonus: number | null;
-      /** Format: double */
-      total: number | null;
-      /** Format: int32 */
-      qualificationRank: number | null;
-      /** @enum {string|null} */
-      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
-      /** @enum {string} */
-      teamRole: "COUNTING" | "DROPPED" | "INDIVIDUAL";
-    };
-    TeamRow: {
-      /** Format: int32 */
-      rank: number | null;
-      /** @enum {string} */
-      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
-      noc: string;
-      /** Format: double */
-      total: number | null;
-      /** Format: double */
-      sjPenalty: number | null;
-      /** @enum {string|null} */
-      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
-      apparatusTotals: {
-        [key: string]: number;
-      };
     };
     AthleteSummaryResponse: {
       /** Format: int64 */
@@ -473,6 +524,7 @@ export interface components {
       /** @enum {string} */
       entryStatus: "COMPETITOR" | "RESERVE" | "WITHDRAWN" | "HORS_CONCOURS";
       competitions: components["schemas"]["EntryCompetition"][];
+      mixedTeam: components["schemas"]["EntryMixedTeam"] | null;
     };
     EntryCompetition: {
       competition: components["schemas"]["CompetitionSummaryResponse"];
@@ -490,8 +542,30 @@ export interface components {
       /** Format: date */
       endDate: string;
     };
+    EntryMixedTeam: {
+      noc: string;
+      results: components["schemas"]["MixedTeamResult"][];
+    };
     EntryTeam: {
       noc: string;
+      /** Format: int32 */
+      rank: number | null;
+      /** @enum {string} */
+      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
+      /** Format: double */
+      total: number | null;
+      /** @enum {string|null} */
+      qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+      /** @enum {string} */
+      purpose: "QUALIFYING" | "FINAL" | "INFORMATIONAL";
+    };
+    MixedTeamResult: {
+      slug: string;
+      name: string;
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      ageCategory: "SR" | "JR" | "JR16" | "JR17";
       /** Format: int32 */
       rank: number | null;
       /** @enum {string} */
@@ -630,6 +704,28 @@ export interface operations {
       };
     };
   };
+  findResults: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RankingResultsResponse"];
+        };
+      };
+    };
+  };
   findEvent: {
     parameters: {
       query?: never;
@@ -652,7 +748,7 @@ export interface operations {
       };
     };
   };
-  findResults: {
+  findResults_1: {
     parameters: {
       query?: never;
       header?: never;

@@ -52,6 +52,7 @@ If changes to the code changes, then any documentation that refers to the change
 | backend/docs/development-run.md | Running the backend locally, and importing results. |
 | backend/docs/api/api-event.md | The Event API: listing events, an event's sessions, and creating or changing events. |
 | backend/docs/api/api-competition.md | The Competition API: a competition's results as published, and how competitions are named from their rankings. |
+| backend/docs/api/api-ranking.md | The Ranking API: a ranking with no competition of its own, such as a mixed team's qualification. |
 | backend/docs/api/api-athlete.md | The Athlete API: athlete search and an athlete's career. |
 | frontend/README.md | Running, testing and the layout of the front end. |
 

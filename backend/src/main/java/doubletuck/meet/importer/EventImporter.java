@@ -140,7 +140,18 @@ public class EventImporter {
         format = eventFormatRepository.save(format);
 
         ImportContext context = new ImportContext(manifestFile.getParent(), manifest, format, report,
-                competitionService, rankingRepository, teamRepository);
+                competitionService, competitionRepository, rankingRepository, teamRepository);
+        if (context.isMixed()) {
+            // A mixed team's gymnasts are the event's men and women, entered by their own manifests
+            if (!manifest.participants().isEmpty()) {
+                throw new ImportException(manifestFile.getFileName() + ": a mixed team has no participants file; "
+                        + "its gymnasts are the MAG and WAG entries");
+            }
+            participantRepository.findByEvent(event).stream()
+                    .filter(participant -> participant.getAthlete().getDiscipline() != Discipline.MIX)
+                    .forEach(participant -> context.getParticipantsByBib().put(participant.getBibNumber(),
+                            participant));
+        }
         manifest.participants().forEach(file -> participantImporter.importFile(context, file));
         manifest.scores().forEach(file -> scoreImporter.importFile(context, file));
         scoreImporter.rankScores(context);
@@ -159,13 +170,13 @@ public class EventImporter {
         if (figEventNumber != null) {
             Event event = eventRepository.findByFigEventNumber(figEventNumber).orElse(null);
             if (event != null) {
-                if (!event.getTitle().equalsIgnoreCase(source.title())
-                        || !event.getStartDate().equals(source.startDate())) {
-                    report.warn("existing event " + event.getId() + " (" + event.getTitle() + ", "
-                            + event.getStartDate()
-                            + ") matched by FIG event number has a different title or start date than the manifest");
+                if (!event.getTitle().equalsIgnoreCase(source.title())) {
+                    report.warn("existing event " + event.getId() + " (" + event.getTitle()
+                            + ") matched by FIG event number has a different title than the manifest");
                 }
-                return updateShortName(event, source, report);
+                // Its disciplines can start on different days (2026 Youth Olympic Games: MAG 7 November,
+                // WAG 8 November, the mixed team final 11 November)
+                return updateShortName(widenDates(event, source, report), source, report);
             }
         } else {
             List<Event> overlapping = eventRepository
@@ -262,6 +273,22 @@ public class EventImporter {
      */
     private void deleteSlice(Event event, Discipline discipline, AgeCategory ageCategory,
             List<Competition> competitions, ImportReport report) {
+        if (discipline != Discipline.MIX) {
+            // The mixed team ranks this slice's Competition I and holds its gymnasts' final-round
+            // routines, so it goes too, to be imported again after this slice
+            List<Competition> mixed = competitionRepository.findByEventAndDisciplineAndAgeCategory(event,
+                    Discipline.MIX, ageCategory);
+            if (!mixed.isEmpty() || !rankingRepository.findByEventAndDisciplineAndAgeCategory(event, Discipline.MIX,
+                    ageCategory).isEmpty()) {
+                deleteSlice(event, Discipline.MIX, ageCategory, mixed, report);
+                eventFormatRepository.findByEventAndDisciplineAndAgeCategory(event, Discipline.MIX, ageCategory)
+                        .ifPresent(eventFormatRepository::delete);
+                importLog.removed(event, Discipline.MIX, ageCategory, "removed when its " + discipline + " "
+                        + ageCategory + " slice was replaced; import it again");
+                report.warn("the mixed team (" + Discipline.MIX + " " + ageCategory + ") was removed with it; "
+                        + "import its manifest again");
+            }
+        }
         List<Ranking> rankings = rankingRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
                 ageCategory);
         List<TeamResult> teamResults = teamResultRepository.findByRankingIn(rankings);

@@ -12,6 +12,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -76,6 +77,7 @@ class ImportRunner implements ApplicationRunner {
             case NOT_IMPORTED -> name + ": not imported";
             case UP_TO_DATE -> name + ": up to date, imported " + status.lastRun().getCreationTimestamp();
             case CHANGED -> name + ": changed since it was imported " + status.lastRun().getCreationTimestamp();
+            case REMOVED -> name + ": " + status.lastRun().getReport();
         };
     }
 
@@ -84,7 +86,11 @@ class ImportRunner implements ApplicationRunner {
             return Stream.of(path);
         }
         try (Stream<Path> files = Files.walk(path)) {
-            return files.filter(file -> file.getFileName().toString().endsWith("-IMPORT.json")).sorted().toList()
+            // A mixed team's manifest after the rest: it uses the MAG and WAG slices' entries and Competition I
+            return files.filter(file -> file.getFileName().toString().endsWith("-IMPORT.json"))
+                    .sorted(Comparator.comparing((Path file) -> file.getFileName().toString().contains("-MIX-"))
+                            .thenComparing(Comparator.naturalOrder()))
+                    .toList()
                     .stream();
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to search " + path, e);

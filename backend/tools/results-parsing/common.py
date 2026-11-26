@@ -72,18 +72,33 @@ PARTICIPANTS = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 
                 'FIG License', 'Name', 'Surname', 'Given Name', 'Birth Year', 'Birth Date']
 JUDGES = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Apparatus', 'Function',
           'Name', 'Surname', 'Given Name', 'NOC Code']
-APPARATUS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
+APPARATUS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT'],
+             # A mixed team's apparatus, each named with its discipline (both have floor)
+             'MIX': ['MAG FX', 'MAG PB', 'MAG HB', 'WAG UB', 'WAG BB', 'WAG FX']}
 # A ranking's format column in EVENT.csv, by what it ranks (an apparatus code: the apparatus titles)
 FORMAT_COLUMNS = {'TEAM': 'Team Format', 'AA': 'AA Format'}
 
-def score_header(vault, qual, combined_sj_penalty=False, team_role=False):
+def with_round(header):
+    """A header with `Round` after `Competition`: a competition held in elimination rounds (the Youth
+    Olympic Games' mixed team final)."""
+    i = header.index('Competition') + 1
+    return header[:i] + ['Round'] + header[i:]
+
+def mixed_judges_header():
+    """JUDGES header for a mixed slice: `Round` (blank: every round), and `Panel`, the discipline of the
+    panel the judge sat on, since both disciplines have a floor panel."""
+    header = with_round(JUDGES)
+    return header[:header.index('Apparatus')] + ['Panel'] + header[header.index('Apparatus'):]
+
+def score_header(vault, qual, combined_sj_penalty=False, team_role=False, rounds=False):
     """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns.
     The vault shape's optional `Combined SJ Penalty` follows `Combined Bonus`; the optional `Team Role`
-    comes last."""
+    comes last; `rounds` adds `Round`."""
     cols = VAULT if vault else ROUTINE
     if vault and combined_sj_penalty:
         cols = VAULT[:-1] + ['Combined SJ Penalty', 'Total']
-    return SCORE_META + cols + (QUALIFICATION if qual else []) + (['Team Role'] if team_role else [])
+    header = SCORE_META + cols + (QUALIFICATION if qual else []) + (['Team Role'] if team_role else [])
+    return with_round(header) if rounds else header
 
 # ---------------------------------------------------------------- corrections
 CORRECTIONS = ['File', 'Key', 'Field', 'Printed', 'Corrected', 'Category', 'Source', 'Note']
@@ -93,7 +108,8 @@ def row_key(name, row):
     `Competition Apparatus Function` (apparatus `-` when blank). A judge correction can instead name
     the judge as printed, for every row with that name."""
     if 'JUDGES' in name:
-        return f'{row["Competition"]} {row["Apparatus"] or "-"} {row["Function"]}'
+        panel = f'{row["Panel"]} ' if row.get('Panel') else ''
+        return f'{row["Competition"]} {panel}{row["Apparatus"] or "-"} {row["Function"]}'
     return row.get('Bib') or row.get('Bib Number') or row['NOC Code']
 
 class Corrections:
@@ -171,7 +187,7 @@ class Output:
                 w.writerow([r[h] for h in header])
         print(f'{name}: {len(rows)} rows')
 
-    def ranking(self, prefix, kind, header, rows, event, left_out_from=None):
+    def ranking(self, prefix, kind, header, rows, event, left_out_from=None, last_round=None):
         """`<prefix>-RANKING-{QUAL,FINAL}-<kind>.csv` (kind `TEAM`, `AA` or an apparatus code): standings
         whose rows each name the competition they rank (`Competition`, `Part`). The parser's header has
         neither `Purpose` nor `Rank Status`; they're added here.
@@ -183,6 +199,8 @@ class Output:
         - `left_out_from`: the rows of a qualifying ranking printed over the same routines for a
           title Competition I decided (2026 Asian Championships). Only the final ranking is written,
           with the teams or athletes it leaves out added unranked, as the qualifying ranking has them.
+        - `last_round`: for a competition held in elimination rounds, the deciding one; a row of an
+          earlier round (its `Round` column) is `QUALIFYING`.
         - Corrections apply next, then every blank rank gets its Rank Status (`rank_status`)."""
         header = list(header)
         header.insert(header.index('Part') + 1, 'Purpose')
@@ -192,7 +210,8 @@ class Output:
             raise SystemExit(f'{prefix}: EVENT.csv has no {FORMAT_COLUMNS.get(kind, "Apparatus Format")}')
         for r in rows:
             r['Purpose'] = ('INFORMATIONAL' if r['Part'] else
-                            'QUALIFYING' if r['Competition'] == 'C1' and title_format == 'FINAL' else 'FINAL')
+                            'QUALIFYING' if r['Competition'] == 'C1' and title_format == 'FINAL' else
+                            'QUALIFYING' if r.get('Round') and int(r['Round']) < last_round else 'FINAL')
             r.setdefault('Rank Status', '')
         purposes = {r['Purpose'] for r in rows if not r['Part']}
         if len(purposes) != 1:
@@ -232,7 +251,11 @@ class Output:
         self.csv(name, header, rows, correct=False)
 
     def participants_of(self, prefix):
-        """The PARTICIPANTS rows written for the prefix, or the file already in the folder."""
+        """The PARTICIPANTS rows written for the prefix, or the file already in the folder. A mixed slice
+        has no entry list of its own: its gymnasts are the men's and women's."""
+        if '-MIX-' in prefix:
+            return self.participants_of(prefix.replace('-MIX-', '-MAG-')) + \
+                self.participants_of(prefix.replace('-MIX-', '-WAG-'))
         if prefix not in self.participants:
             path = os.path.join(self.dir, f'{prefix}-PARTICIPANTS.csv')
             with open(path, encoding='utf-8') as f:

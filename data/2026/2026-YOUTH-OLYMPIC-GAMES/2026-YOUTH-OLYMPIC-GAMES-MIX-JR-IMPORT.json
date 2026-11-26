@@ -1,0 +1,36 @@
+{
+    "event" : {
+        "slug" : "2026-youth-olympic-games",
+        "title" : "Youth Olympic Games of the IV Olympiad",
+        "shortName" : "YOG 2026",
+        "disciplines" : "MIX",
+        "ageCategory" : "JR",
+        "level" : "YOUTH_OLYMPIC_GAMES",
+        "startDate" : "2026-11-07",
+        "endDate" : "2026-11-11",
+        "city" : "Dakar",
+        "country" : "SEN",
+        "figEventNumber" : "18178",
+        "venue" : "Dakar Expo Center",
+        "apparatusSuppliers" : "Taishan Sports Equipment",
+        "teamFormat" : "FINAL",
+        "aaFormat" : "NONE",
+        "apparatusFormat" : "NONE"
+    },
+    "participants" : [],
+    "judges" : [
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-JUDGES.csv"
+    ],
+    "scores" : [
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-SCORES-C4-MAG-FX.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-SCORES-C4-MAG-HB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-SCORES-C4-MAG-PB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-SCORES-C4-WAG-BB.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-SCORES-C4-WAG-FX.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-SCORES-C4-WAG-UB.csv"
+    ],
+    "rankings" : [
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-RANKING-FINAL-TEAM.csv",
+        "2026-YOUTH-OLYMPIC-GAMES-MIX-JR-RANKING-QUAL-TEAM.csv"
+    ]
+}

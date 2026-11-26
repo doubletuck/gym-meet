@@ -322,13 +322,15 @@ Oceania Championships' team title ranked the all-around final's.
 |---|---|---|---|
 | id | Long | No | Generated primary key. |
 | competitionId | Long, FK → `Competition` | No | The competition this judge served on. |
+| discipline | Discipline | Yes | The discipline of the judge's panel, in a mixed competition only: its men's and women's panels both judge floor (2026 Youth Olympic Games). Null elsewhere, where the competition's discipline says it. |
 | apparatus | Apparatus | Yes | Which apparatus this judge is assigned to within the competition. Null for a competition-wide role (e.g. Superior Jury `PRESIDENT`/`MEMBER`) rather than a per-apparatus panel seat. |
 | function | JudgeFunction | No | The judge's role on the panel. |
 | givenName | String | No | Judge's given name, as published by the source. |
 | surname | String | No | Judge's family name, in the same written form as `Athlete.surname`. |
 | nocCode | String | Yes | The federation/NOC this judge is credited to. Not always a 3-letter IOC code — a continental union appointing a Superior Jury (e.g. `EG` for European Gymnastics) or a neutral code (`AIN1`) is credited here too, so no fixed length is enforced. Null when the source credits the official to no federation (e.g. the 2026 Worlds Superior Jury). |
 
-Unique key: `(competition_id, apparatus, function, surname, givenName)`. Not
+Unique key: `(competition_id, discipline, apparatus, function, surname, givenName)`
+(the same official can sit on the men's and the women's floor panel of a mixed final). Not
 simply `(competition_id, apparatus, function)`, since a single function can be
 held by more than one judge in the same competition with no apparatus to
 further distinguish them — e.g. a qualification's Superior Jury typically

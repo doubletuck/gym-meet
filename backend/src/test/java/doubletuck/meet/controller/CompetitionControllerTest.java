@@ -84,7 +84,7 @@ class CompetitionControllerTest {
                 .andExpect(jsonPath("$.teams[0].rank").value(1))
                 .andExpect(jsonPath("$.teams[0].total").value(164.996))
                 .andExpect(jsonPath("$.teams[0].qualification").value("Q"))
-                .andExpect(jsonPath("$.teams[0].apparatusTotals.BB").value(43.966))
+                .andExpect(jsonPath("$.teams[0].apparatusTotals[?(@.apparatus == 'BB')].total").value(43.966))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].total").value(55.999))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].apparatusScores.UB")
                         .value(14.933))
@@ -215,7 +215,7 @@ class CompetitionControllerTest {
                 .andExpect(jsonPath("$.allAround[0].qualification").value(nullValue()))
                 .andExpect(jsonPath("$.teams[0].noc").value("CHN"))
                 .andExpect(jsonPath("$.teams[0].total").value(168.498))
-                .andExpect(jsonPath("$.teams[0].apparatusTotals.BB").value(44.899));
+                .andExpect(jsonPath("$.teams[0].apparatusTotals[?(@.apparatus == 'BB')].total").value(44.899));
     }
 
     @Test

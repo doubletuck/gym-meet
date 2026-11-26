@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 /**
  * Checks a slice's competitions and rankings against its declared format: each held title
  * has its final ranking, ranking the competition the format says decided it; qualifying
- * rankings exist only for titles decided in a later final; and no final is held for a title
+ * rankings exist only for titles decided in a later final (ranking C1, or an earlier
+ * elimination round of that final); and no final is held for a title
  * that wasn't decided in one.
  */
 @Component
@@ -64,7 +65,10 @@ class FormatChecker {
                         + title(ranking.getType()) + " format is " + titleFormat
                         + "; a title Competition I decided has a FINAL ranking of C1");
             }
-            expected = CompetitionType.C1;
+            // An elimination round of the final qualifies for the next (the Youth Olympic Games' mixed team)
+            boolean round = !ranking.getCompetitions().isEmpty()
+                    && ranking.getCompetitions().stream().allMatch(competition -> competition.getRound() != null);
+            expected = round ? decidingFinal : CompetitionType.C1;
         } else {
             expected = titleFormat == TitleFormat.C1 ? CompetitionType.C1 : decidingFinal;
         }

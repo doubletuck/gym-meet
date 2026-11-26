@@ -5,6 +5,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.CompetitionType;
+import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.QualificationResult;
 import doubletuck.meet.domain.RankStatus;
 import doubletuck.meet.domain.Ranking;
@@ -15,6 +16,9 @@ import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.TeamResultRepository;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Imports {@code RANKING-*.csv} files: team standings (rows keyed by NOC),
@@ -43,8 +47,9 @@ class RankingImporter {
         RankingPurpose filePurpose = filePurpose(fileName);
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
             CompetitionType type = row.requiredCode("Competition", CompetitionType::find);
+            Integer round = row.integer("Round");
             Integer part = row.integer("Part");
-            Competition competition = context.competitionForResults(type, part, row);
+            List<Competition> competitions = context.competitionsForResults(type, round, part, row);
             RankingPurpose purpose = row.requiredCode("Purpose", RankingPurpose::find);
             RankingPurpose expected = part != null ? RankingPurpose.INFORMATIONAL : filePurpose;
             if (purpose != expected) {
@@ -54,11 +59,11 @@ class RankingImporter {
             if (row.hasColumn("Apparatus")) {
                 Apparatus apparatus = row.requiredCode("Apparatus", Apparatus::find);
                 importApparatusResult(context, row,
-                        context.ranking(competition, RankingType.APPARATUS, apparatus, purpose));
+                        context.ranking(competitions, RankingType.APPARATUS, apparatus, purpose));
             } else if (row.hasColumn("Bib")) {
-                importAllAroundResult(context, row, context.ranking(competition, RankingType.AA, null, purpose));
+                importAllAroundResult(context, row, context.ranking(competitions, RankingType.AA, null, purpose));
             } else {
-                importTeamResult(context, row, context.ranking(competition, RankingType.TEAM, null, purpose));
+                importTeamResult(context, row, context.ranking(competitions, RankingType.TEAM, null, purpose));
             }
         }
     }
@@ -75,12 +80,17 @@ class RankingImporter {
         context.getTeamResults().add(teamResultRepository.save(result));
         context.getReport().count("team results");
 
-        // Not stored: kept to work out which scores counted toward the team total
-        for (Apparatus apparatus : Apparatus.values()) {
-            Double total = row.decimal(apparatus.name() + " Total");
-            if (total != null) {
-                context.getPublishedTeamTotals().add(new ImportContext.PublishedTeamTotal(result, apparatus, total,
-                        row.location()));
+        // Not stored: kept to work out which scores counted toward the team total. A mixed team's
+        // columns name the discipline too, both having floor: MAG FX Total, WAG FX Total
+        for (Discipline discipline : context.isMixed() ? List.of(Discipline.MAG, Discipline.WAG)
+                : Collections.<Discipline>singletonList(null)) {
+            for (Apparatus apparatus : Apparatus.values()) {
+                String column = (discipline != null ? discipline + " " : "") + apparatus.name() + " Total";
+                Double total = row.decimal(column);
+                if (total != null) {
+                    context.getPublishedTeamTotals().add(new ImportContext.PublishedTeamTotal(result, discipline,
+                            apparatus, total, row.location()));
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package doubletuck.meet.repository;
 
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.Team;
 import doubletuck.meet.domain.TeamResult;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,8 @@ import java.util.List;
 public interface TeamResultRepository extends JpaRepository<TeamResult, Long> {
 
     List<TeamResult> findByRanking(Ranking ranking);
+
+    List<TeamResult> findByTeam(Team team);
 
     List<TeamResult> findByRankingIn(Collection<Ranking> rankings);
 

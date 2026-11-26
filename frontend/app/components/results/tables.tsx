@@ -10,7 +10,7 @@ import type {
   TeamRow,
 } from "~/api/types";
 import { formatScore, formatValue } from "~/lib/format";
-import { APPARATUS_LABELS, APPARATUS_ORDER } from "~/lib/labels";
+import { APPARATUS_LABELS, APPARATUS_ORDER, DISCIPLINE_OWNER, isMixed, type ApparatusColumn } from "~/lib/labels";
 import { Abbreviation } from "../Abbreviation";
 import { ExpandableTable, type Column } from "./ExpandableTable";
 import {
@@ -152,11 +152,14 @@ function scoreText(routine: Routine): string {
  */
 export function ScoreTable({
   apparatus,
+  discipline,
   scores,
   qualification,
   athleteId,
 }: {
   apparatus: Apparatus;
+  /** The gymnasts' discipline, where both are shown (a mixed team): it names the table */
+  discipline?: ApparatusColumn["discipline"];
   scores: ScoreRow[];
   qualification: boolean;
   /** The athlete whose row to highlight. */
@@ -249,7 +252,7 @@ export function ScoreTable({
 
   return (
     <ExpandableTable
-      caption={`${APPARATUS_LABELS[apparatus]} results`}
+      caption={`${discipline ? `${DISCIPLINE_OWNER[discipline]} ` : ""}${APPARATUS_LABELS[apparatus]} results`}
       columns={columns}
       defaultSort="#"
       rows={scores}
@@ -582,16 +585,37 @@ function penaltyColumn<T extends { sjPenalty: number | null }>(rows: T[]): Colum
   ];
 }
 
-/** Team results; on a phone, each team's apparatus totals are on a line under its name. */
+/** A column's header and its meaning: "FX", or where both disciplines are shown, "M FX", "Men's Floor Exercise". */
+function columnHeader(column: ApparatusColumn, mixed: boolean): [header: string, label: string] {
+  return mixed
+    ? [
+        `${column.discipline[0]} ${column.apparatus}`,
+        `${DISCIPLINE_OWNER[column.discipline]} ${APPARATUS_LABELS[column.apparatus]}`,
+      ]
+    : [column.apparatus, APPARATUS_LABELS[column.apparatus]];
+}
+
+function teamTotal(row: TeamRow, column: ApparatusColumn): number | undefined {
+  return row.apparatusTotals.find(
+    (total) => total.discipline === column.discipline && total.apparatus === column.apparatus,
+  )?.total;
+}
+
+/**
+ * Team results; on a phone, each team's apparatus totals are on a line under its name. On a final
+ * round's page, the teams earlier rounds eliminated follow at the places those rounds printed, each
+ * marked with its round.
+ */
 export function TeamTable({
   rows,
   apparatus,
   qualification,
 }: {
   rows: TeamRow[];
-  apparatus: Apparatus[];
+  apparatus: ApparatusColumn[];
   qualification: boolean;
 }) {
+  const mixed = isMixed(apparatus);
   const columns: Column<TeamRow>[] = [
     {
       header: "#",
@@ -607,19 +631,28 @@ export function TeamTable({
           <span className="font-medium">
             <Country noc={row.noc} />
           </span>
-          <PhoneLine spoken items={apparatusItems(apparatus, row.apparatusTotals)} />
+          {row.round != null && <span className="ml-2 text-xs text-gray-500">Round {row.round}</span>}
+          <PhoneLine
+            spoken
+            items={apparatus.map(
+              (column) => [...columnHeader(column, mixed), formatScore(teamTotal(row, column))] as const,
+            )}
+          />
         </>
       ),
     },
-    ...apparatus.map((app): Column<TeamRow> => ({
-      header: app,
-      label: APPARATUS_LABELS[app],
-      spoken: true,
-      align: "right",
-      wide: true,
-      sortValue: (row) => row.apparatusTotals[app],
-      cell: (row) => formatScore(row.apparatusTotals[app]),
-    })),
+    ...apparatus.map((column): Column<TeamRow> => {
+      const [header, label] = columnHeader(column, mixed);
+      return {
+        header,
+        label,
+        spoken: true,
+        align: "right",
+        wide: true,
+        sortValue: (row) => teamTotal(row, column),
+        cell: (row) => formatScore(teamTotal(row, column)),
+      };
+    }),
     ...penaltyColumn(rows),
     {
       header: "Total",
@@ -680,20 +713,23 @@ function athleteRow(athleteId: number | undefined) {
 
 /**
  * The apparatus columns of a competition's team and all-around standings: its
- * score tables', else a split round's combined standings', else, for
+ * score tables', else a split competition's combined standings', else, for
  * standings ranking another competition's routines (which have no score tables of
  * their own), those its rows have scores on, in Olympic order.
  */
-export function standingsApparatus(results: CompetitionResults): Apparatus[] {
+export function standingsApparatus(results: CompetitionResults): ApparatusColumn[] {
+  const { discipline } = results.competition;
   if (results.apparatus.length) {
-    return results.apparatus.map(({ apparatus }) => apparatus);
+    return results.apparatus.map(({ discipline, apparatus }) => ({ discipline, apparatus }));
   }
   if (results.apparatusStandings.length) {
-    return results.apparatusStandings.map(({ apparatus }) => apparatus);
+    return results.apparatusStandings.map(({ apparatus }) => ({ discipline, apparatus }));
   }
   const scored = new Set([
     ...results.allAround.flatMap((row) => Object.keys(row.apparatusScores)),
-    ...results.teams.flatMap((row) => Object.keys(row.apparatusTotals)),
+    ...results.teams.flatMap((row) => row.apparatusTotals.map((total) => total.apparatus)),
   ]);
-  return APPARATUS_ORDER[results.competition.discipline].filter((apparatus) => scored.has(apparatus));
+  return APPARATUS_ORDER[discipline]
+    .filter((apparatus) => scored.has(apparatus))
+    .map((apparatus) => ({ discipline, apparatus }));
 }

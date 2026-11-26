@@ -143,6 +143,7 @@ class CompetitionNamingTest {
     private static Ranking ranking(RankingType type, RankingPurpose purpose, Competition... competitions) {
         Ranking ranking = new Ranking();
         ranking.setId(nextId++);
+        ranking.setDiscipline(Discipline.MAG);
         ranking.setType(type);
         ranking.setPurpose(purpose);
         ranking.getCompetitions().addAll(new ArrayList<>(List.of(competitions)));

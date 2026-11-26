@@ -2,10 +2,12 @@ package doubletuck.meet.config;
 
 import doubletuck.meet.dto.AthleteResponse;
 import doubletuck.meet.dto.AthleteSummaryResponse;
-import doubletuck.meet.dto.EventDetailResponse;
-import doubletuck.meet.dto.EventSummaryResponse;
 import doubletuck.meet.dto.CompetitionResultsResponse;
 import doubletuck.meet.dto.CompetitionSummaryResponse;
+import doubletuck.meet.dto.EventDetailResponse;
+import doubletuck.meet.dto.EventSummaryResponse;
+import doubletuck.meet.dto.RankingResultsResponse;
+import doubletuck.meet.dto.RankingSummaryResponse;
 import io.swagger.v3.oas.models.media.Schema;
 import org.jspecify.annotations.Nullable;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -24,8 +26,8 @@ import java.util.stream.Stream;
 public class OpenApiConfig {
 
     private static final List<Class<?>> RESPONSES = List.of(EventSummaryResponse.class, EventDetailResponse.class,
-            CompetitionSummaryResponse.class, CompetitionResultsResponse.class, AthleteSummaryResponse.class,
-            AthleteResponse.class);
+            CompetitionSummaryResponse.class, CompetitionResultsResponse.class, RankingSummaryResponse.class,
+            RankingResultsResponse.class, AthleteSummaryResponse.class, AthleteResponse.class);
 
     /**
      * Describes the read API's responses exactly, so the front end's generated

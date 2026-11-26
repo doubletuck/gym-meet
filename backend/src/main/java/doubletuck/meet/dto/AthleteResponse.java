@@ -1,5 +1,6 @@
 package doubletuck.meet.dto;
 
+import doubletuck.meet.domain.AgeCategory;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.EntryStatus;
@@ -54,9 +55,26 @@ public record AthleteResponse(
      * @param entryStatus a competitor, a reserve, withdrawn, or hors concours; reserves, withdrawn and hors
      *                    concours athletes usually have no competitions
      * @param competitions the competitions they have results in, in the order they're held
+     * @param mixedTeam    the mixed team they were a member of (a score of theirs counted toward it), with
+     *                     its results; null when none
      */
     public record Entry(EntryEvent event, String noc, @Nullable String club, EntryStatus entryStatus,
-            List<EntryCompetition> competitions) {
+            List<EntryCompetition> competitions, @Nullable EntryMixedTeam mixedTeam) {
+    }
+
+    /** @param results its qualification, then each final round, as on their results pages */
+    public record EntryMixedTeam(String noc, List<MixedTeamResult> results) {
+    }
+
+    /**
+     * A mixed team's place in one of its rankings.
+     *
+     * @param slug    the results page's address within the mixed division, with its {@code name}
+     * @param purpose a top-three place in a {@code FINAL} ranking is a medal: the team's members all share it
+     */
+    public record MixedTeamResult(String slug, String name, Discipline discipline, AgeCategory ageCategory,
+            @Nullable Integer rank, RankStatus rankStatus, @Nullable Double total,
+            @Nullable QualificationResult qualification, RankingPurpose purpose) {
     }
 
     /**

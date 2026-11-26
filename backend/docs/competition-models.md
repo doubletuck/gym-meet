@@ -14,7 +14,7 @@ it before the model change. The rules settled here move into
 | 3 | Reshape the existing files: formats in `EVENT.csv`, `data/` converted, then `reshape_2026_files.py`: title-deciding `RANKING-QUAL` → `RANKING-FINAL` of `C1`, a rank status for every blank rank, Asian Championships' qualifying rankings dropped (the whole field in the final ranking); Europeans MAG JR all-around final ranking parsed. `CORRECTIONS.csv` keys move with the parsers in step 4 | Done |
 | 4 | Parsers and the parsing doc: every parser writes the standard itself (`common.Output.ranking` names ranking files and sets purposes and rank statuses from the format), reproducing `data/` byte for byte; `CORRECTIONS.csv` keys converted; the step 2–3 scripts retired | Done ([instructions-results-parsing.md](instructions-results-parsing.md)) |
 | 5 | API and front end aligned with the model: "session" becomes "competition" (`/api/competitions/{id}/results`); `round` becomes `type` (`C1`–`C4`); names, short names and slugs come from the rankings, with each ranking type's purpose in `purposes`; `rankStatus` on team and all-around results, shown as a code (HC, NR, INC, DNF, –) where the rank is blank; Q marks and medals follow the ranking's purpose | Done ([api-competition.md](api/api-competition.md)) |
-| 6 | Youth Olympic Games, mixed team included | |
+| 6 | Youth Olympic Games, mixed team included: `parse_2026_youth_olympic_games.py`; one event with MAG, WAG and MIX divisions; a mixed slice with no entry list, its qualification a ranking over the MAG and WAG Competition I, its final in `C4` rounds 1–3; `Round` and (judges) `Panel` columns; `Judge.discipline` (V11); the qualification as a ranking page (`/api/rankings/{id}/results`), round 3 reading back through the rounds, members' careers sharing the medal | Done (§8.5) |
 
 Sections 1–6 describe the model before step 1.
 
@@ -591,6 +591,29 @@ Decided:
      (`SUMMARY-*-TEAM` and `TeamResult` have no apparatus ranks).
    - Leaving them out for mixed teams too is consistent, and makes the fault irrelevant. The
      apparatus totals are still kept in the file and checked.
+
+Decided in step 6:
+
+5. **One event.** MAG, WAG and the mixed team share FIG event 18178: one event
+   (`2026-youth-olympic-games`) with three divisions, each EVENT.csv row dated by its own days.
+6. **Files**: the mixed slice's scores files name the discipline beside the apparatus
+   (`SCORES-C4-MAG-FX`, `SCORES-C4-WAG-FX`), with a `Round` column; its ranking files use `MAG FX Total`
+   … `WAG FX Total` (import-file-model.md, Mixed team).
+7. **The qualification is a page of its own** in the MIX division ("Qualification"), a ranking with no
+   competition: `GET /api/rankings/{id}/results` (api-ranking.md).
+8. **A tie for a mixed team's best score counts both**: GER men's floor (CSUKA and MIHAI, 12.366).
+   The team's apparatus total shown is then the best counting score, not the sum.
+9. **Mixed judges keep their panel's discipline** (`Judge.discipline`, V11): the men's and women's
+   floor panels judge the same competition. The one finals sheet is recorded against each round.
+
+### 8.5 As implemented
+
+| Need (§8.3) | Where |
+|---|---|
+| Discipline `MIX` | `Competition`, `Ranking`, `Team`, `EventFormat` (team `FINAL`, AA and apparatus `NONE`) |
+| `Competition.round` | `C4` rounds 1–3 on 11 November; rounds 1–2 `QUALIFYING` (Q), round 3 `FINAL` |
+| `TeamResultScore` | qualification: only each NOC's best score per apparatus, linked as counting; rounds: the pair's two scores |
+| Files | above, and no `PARTICIPANTS`: the gymnasts are the MAG and WAG entries, so the mixed manifest imports after theirs, and replacing either deletes it (import-process.md) |
 
 ## 9. Terminology
 

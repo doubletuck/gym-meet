@@ -104,7 +104,8 @@ public final class CompetitionNaming {
         Map<Competition, RankingPurposes> purposes = new HashMap<>();
         for (Competition competition : competitions) {
             purposes.put(competition, purposes(rankings.stream()
-                    .filter(ranking -> ranking.getCompetitions().contains(competition))
+                    .filter(ranking -> ranking.getCompetitions().contains(competition)
+                            && ranking.getDiscipline() == competition.getDiscipline())
                     .toList()));
         }
         return purposes;
@@ -191,6 +192,27 @@ public final class CompetitionNaming {
 
     private static String slugOf(String name) {
         return name.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+    }
+
+    /** An apparatus as a results column, with its discipline: a mixed competition has both floors. */
+    public record ApparatusColumn(Discipline discipline, Apparatus apparatus) {
+    }
+
+    /**
+     * The results columns of a discipline's competitions in Olympic order; a mixed competition's are
+     * the men's, then the women's.
+     */
+    public static List<ApparatusColumn> columns(Discipline discipline) {
+        return switch (discipline) {
+            case MAG, WAG -> apparatusOrder(discipline).stream()
+                    .map(apparatus -> new ApparatusColumn(discipline, apparatus)).toList();
+            case MIX -> Stream.concat(columns(Discipline.MAG).stream(), columns(Discipline.WAG).stream()).toList();
+        };
+    }
+
+    /** A competition's own rankings: a mixed team's ranking of the MAG and WAG Competition I isn't theirs. */
+    public static List<Ranking> own(Collection<Ranking> rankings, Competition competition) {
+        return rankings.stream().filter(ranking -> ranking.getDiscipline() == competition.getDiscipline()).toList();
     }
 
     public static List<Apparatus> apparatusOrder(Discipline discipline) {

@@ -18,6 +18,7 @@ import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.Team;
 import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.domain.TeamScoreRole;
+import doubletuck.meet.repository.CompetitionRepository;
 import doubletuck.meet.repository.RankingRepository;
 import doubletuck.meet.repository.TeamRepository;
 import doubletuck.meet.service.CompetitionService;
@@ -42,7 +43,12 @@ import java.util.Objects;
 @Getter
 class ImportContext {
 
-    record PublishedTeamTotal(TeamResult teamResult, Apparatus apparatus, double total, String location) {
+    /**
+     * @param discipline the apparatus's discipline in a mixed team's ranking (both have floor); null
+     *                   elsewhere
+     */
+    record PublishedTeamTotal(TeamResult teamResult, Discipline discipline, Apparatus apparatus, double total,
+            String location) {
     }
 
     /** A score's placings as its SCORES row gives them, turned into apparatus rankings once all are read. */
@@ -50,10 +56,10 @@ class ImportContext {
             String location) {
     }
 
-    private record CompetitionKey(CompetitionType type, Apparatus apparatus, Integer part) {
+    private record CompetitionKey(CompetitionType type, Apparatus apparatus, Integer round, Integer part) {
     }
 
-    private record RankingKey(Competition competition, RankingType type, Apparatus apparatus,
+    private record RankingKey(List<Competition> competitions, RankingType type, Apparatus apparatus,
             RankingPurpose purpose) {
     }
 
@@ -65,6 +71,7 @@ class ImportContext {
     private final EventFormat format;
     private final ImportReport report;
     private final CompetitionService competitionService;
+    private final CompetitionRepository competitionRepository;
     private final RankingRepository rankingRepository;
     private final TeamRepository teamRepository;
 
@@ -83,8 +90,8 @@ class ImportContext {
     private final List<PublishedTeamTotal> publishedTeamTotals = new ArrayList<>();
 
     ImportContext(Path directory, ImportManifest manifest, EventFormat format, ImportReport report,
-            CompetitionService competitionService, RankingRepository rankingRepository,
-            TeamRepository teamRepository) {
+            CompetitionService competitionService, CompetitionRepository competitionRepository,
+            RankingRepository rankingRepository, TeamRepository teamRepository) {
         this.directory = directory;
         this.manifest = manifest;
         this.event = format.getEvent();
@@ -93,6 +100,7 @@ class ImportContext {
         this.format = format;
         this.report = report;
         this.competitionService = competitionService;
+        this.competitionRepository = competitionRepository;
         this.rankingRepository = rankingRepository;
         this.teamRepository = teamRepository;
     }
@@ -101,11 +109,17 @@ class ImportContext {
         return directory.resolve(name);
     }
 
+    /** Whether this is a mixed team's slice, whose gymnasts are the event's men and women. */
+    boolean isMixed() {
+        return discipline == Discipline.MIX;
+    }
+
     Participant participant(CsvRow row) {
         String bib = row.requiredText("Bib");
         Participant participant = participantsByBib.get(bib);
         if (participant == null) {
-            throw row.error("bib " + bib + " is not in the participants file");
+            throw row.error("bib " + bib + (isMixed() ? " is not a MAG or WAG entry of the event; import the MAG "
+                    + "and WAG manifests first" : " is not in the participants file"));
         }
         String noc = row.text("NOC Code");
         if (noc != null && !noc.equals(participant.getNoc())) {
@@ -119,9 +133,9 @@ class ImportContext {
      * The competition a SCORES row was earned in, creating it the first time it's
      * seen. Scores are what establish a competition and its date.
      */
-    Competition competitionForScores(CompetitionType type, Apparatus apparatus, Integer part, LocalDate date,
-            CsvRow row) {
-        CompetitionKey key = new CompetitionKey(type, competitionApparatus(type, apparatus), part);
+    Competition competitionForScores(CompetitionType type, Apparatus apparatus, Integer round, Integer part,
+            LocalDate date, CsvRow row) {
+        CompetitionKey key = new CompetitionKey(type, competitionApparatus(type, apparatus), round, part);
         Competition competition = competitions.get(key);
         if (competition == null) {
             competition = create(key, date);
@@ -133,16 +147,31 @@ class ImportContext {
     }
 
     /**
-     * The competition whose routines a RANKING row ranks, named by its {@code Competition}
-     * and {@code Part}. It must already exist from the scores, except a split competition's
-     * whole row (part null), which holds only combined standings and is created here, dated
-     * on its first part.
+     * The competitions whose routines a RANKING row ranks, named by its {@code Competition},
+     * {@code Round} and {@code Part}: one, except a mixed team's ranking of C1, which has no
+     * routines of its own and ranks the event's MAG and WAG Competition I of its age category,
+     * imported before it. A competition must already exist from the scores, except a split
+     * competition's whole row (part null), which holds only combined standings and is created
+     * here, dated on its first part.
      */
-    Competition competitionForResults(CompetitionType type, Integer part, CsvRow row) {
-        CompetitionKey key = new CompetitionKey(type, null, part);
+    List<Competition> competitionsForResults(CompetitionType type, Integer round, Integer part, CsvRow row) {
+        if (isMixed() && type == CompetitionType.C1) {
+            List<Competition> ranked = new ArrayList<>();
+            for (Discipline other : List.of(Discipline.MAG, Discipline.WAG)) {
+                ranked.add(competitionRepository.findByEventAndDisciplineAndAgeCategory(event, other, ageCategory)
+                        .stream()
+                        .filter(competition -> competition.getType() == CompetitionType.C1
+                                && competition.getApparatus() == null && competition.getPart() == null)
+                        .findFirst()
+                        .orElseThrow(() -> row.error("a mixed team's C1 ranking ranks the " + other
+                                + " Competition I, which isn't imported; import the " + other + " manifest first")));
+            }
+            return ranked;
+        }
+        CompetitionKey key = new CompetitionKey(type, null, round, part);
         Competition competition = competitions.get(key);
         if (competition != null) {
-            return competition;
+            return List.of(competition);
         }
         if (part == null) {
             LocalDate firstPartDate = competitions.entrySet().stream()
@@ -152,18 +181,22 @@ class ImportContext {
                     .min(Comparator.naturalOrder())
                     .orElse(null);
             if (firstPartDate != null) {
-                return create(key, firstPartDate);
+                return List.of(create(key, firstPartDate));
             }
         }
         throw row.error("no scores were imported for the " + describe(key) + " competition this row ranks");
     }
 
+    Ranking ranking(Competition competition, RankingType type, Apparatus apparatus, RankingPurpose purpose) {
+        return ranking(List.of(competition), type, apparatus, purpose);
+    }
+
     /**
-     * The ranking of one competition's routines of this type, apparatus and purpose,
+     * The ranking of these competitions' routines of this type, apparatus and purpose,
      * creating it the first time it's needed.
      */
-    Ranking ranking(Competition competition, RankingType type, Apparatus apparatus, RankingPurpose purpose) {
-        return rankings.computeIfAbsent(new RankingKey(competition, type, apparatus, purpose), key -> {
+    Ranking ranking(List<Competition> ranked, RankingType type, Apparatus apparatus, RankingPurpose purpose) {
+        return rankings.computeIfAbsent(new RankingKey(List.copyOf(ranked), type, apparatus, purpose), key -> {
             Ranking ranking = new Ranking();
             ranking.setEvent(event);
             ranking.setDiscipline(discipline);
@@ -171,7 +204,7 @@ class ImportContext {
             ranking.setType(type);
             ranking.setApparatus(apparatus);
             ranking.setPurpose(purpose);
-            ranking.getCompetitions().add(competition);
+            ranking.getCompetitions().addAll(ranked);
             report.count("rankings");
             return rankingRepository.save(ranking);
         });
@@ -194,18 +227,17 @@ class ImportContext {
     /**
      * The competitions a judge served on: normally one, but a Superior Jury role
      * (no apparatus) in a competition held per apparatus -- the apparatus finals --
-     * presides over all of them. Empty when no scores were imported for it.
+     * presides over all of them, and a judge with no round given in a competition held
+     * in elimination rounds served every round. Empty when no scores were imported for it.
      */
-    List<Competition> competitionsForJudge(CompetitionType type, Apparatus apparatus) {
-        if (apparatus == null && isPerApparatus(type)) {
-            return competitions.entrySet().stream()
-                    .filter(entry -> entry.getKey().type() == type && entry.getKey().part() == null)
-                    .map(Map.Entry::getValue)
-                    .toList();
-        }
-        Competition competition = competitions.get(new CompetitionKey(type, competitionApparatus(type, apparatus),
-                null));
-        return competition == null ? List.of() : List.of(competition);
+    List<Competition> competitionsForJudge(CompetitionType type, Apparatus apparatus, Integer round) {
+        boolean everyApparatus = apparatus == null && isPerApparatus(type);
+        return competitions.entrySet().stream()
+                .filter(entry -> entry.getKey().type() == type && entry.getKey().part() == null
+                        && (everyApparatus || entry.getKey().apparatus() == competitionApparatus(type, apparatus))
+                        && (round == null || round.equals(entry.getKey().round())))
+                .map(Map.Entry::getValue)
+                .toList();
     }
 
     /** Whether the competition is a split competition's whole row, holding the combined standings of its parts. */
@@ -216,7 +248,8 @@ class ImportContext {
 
     static boolean isPartOf(Competition part, Competition whole) {
         return whole.getPart() == null && part.getPart() != null && part.getType() == whole.getType()
-                && Objects.equals(part.getApparatus(), whole.getApparatus());
+                && Objects.equals(part.getApparatus(), whole.getApparatus())
+                && Objects.equals(part.getRound(), whole.getRound());
     }
 
     private boolean isPerApparatus(CompetitionType type) {
@@ -235,6 +268,7 @@ class ImportContext {
         competition.setDiscipline(discipline);
         competition.setAgeCategory(ageCategory);
         competition.setApparatus(key.apparatus());
+        competition.setRound(key.round());
         competition.setPart(key.part());
         competition = competitionService.createCompetition(competition);
         competitions.put(key, competition);
@@ -244,6 +278,7 @@ class ImportContext {
 
     private static String describe(CompetitionKey key) {
         return key.type() + (key.apparatus() != null ? " " + key.apparatus() : "")
+                + (key.round() != null ? " round " + key.round() : "")
                 + (key.part() != null ? " part " + key.part() : "");
     }
 }

@@ -5,6 +5,8 @@ import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.CompetitionType;
+import doubletuck.meet.domain.Discipline;
+import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.QualificationResult;
 import doubletuck.meet.domain.RankStatus;
 import doubletuck.meet.domain.Ranking;
@@ -17,6 +19,7 @@ import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.domain.TitleFormat;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.ScoreRepository;
+import doubletuck.meet.service.CompetitionNaming;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -25,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Imports {@code SCORES-<ROUND>-<APP>.csv} files, creating each competition the
@@ -40,6 +45,8 @@ class ScoreImporter {
             Map.entry("E+", "Execution bonus"),
             Map.entry("S+", "Stick bonus"));
 
+    private static final Pattern MIXED_FILE = Pattern.compile("-SCORES-C\\d-(MAG|WAG)-[A-Z]{2}\\.csv$");
+
     private final ScoreRepository scoreRepository;
     private final ApparatusResultRepository apparatusResultRepository;
 
@@ -49,18 +56,30 @@ class ScoreImporter {
     }
 
     void importFile(ImportContext context, String fileName) {
+        Discipline fileDiscipline = context.isMixed() ? mixedFileDiscipline(fileName) : null;
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
             CompetitionType type = row.requiredCode("Competition", CompetitionType::find);
             Apparatus apparatus = row.requiredCode("Apparatus", Apparatus::find);
+            Integer round = row.integer("Round");
             Integer part = row.integer("Part");
             if (row.date("Competition Start Date") == null) {
                 throw row.error("'Competition Start Date' is required");
             }
-            Competition competition = context.competitionForScores(type, apparatus, part,
+            Participant participant = context.participant(row);
+            if (fileDiscipline != null) {
+                if (participant.getAthlete().getDiscipline() != fileDiscipline) {
+                    throw row.error("bib " + participant.getBibNumber() + " is a "
+                            + participant.getAthlete().getDiscipline() + " gymnast in a " + fileDiscipline + " file");
+                }
+                if (!CompetitionNaming.apparatusOrder(fileDiscipline).contains(apparatus)) {
+                    throw row.error(apparatus + " isn't a " + fileDiscipline + " apparatus");
+                }
+            }
+            Competition competition = context.competitionForScores(type, apparatus, round, part,
                     row.date("Competition Start Date"), row);
 
             Score score = new Score();
-            score.setParticipant(context.participant(row));
+            score.setParticipant(participant);
             score.setCompetition(competition);
             score.setApparatus(apparatus);
             // The two-attempt vault shape suffixes each attempt's columns with 1 or 2
@@ -88,6 +107,19 @@ class ScoreImporter {
             }
             context.getReport().count("scores");
         }
+    }
+
+    /**
+     * A mixed team's scores files name the gymnasts' discipline beside the apparatus, since both
+     * disciplines have floor: {@code SCORES-C4-MAG-FX}.
+     */
+    private static Discipline mixedFileDiscipline(String fileName) {
+        Matcher matcher = MIXED_FILE.matcher(fileName);
+        if (!matcher.find()) {
+            throw new ImportException(fileName + ": a mixed team's scores file is named SCORES-<competition>-"
+                    + "<MAG|WAG>-<apparatus>");
+        }
+        return Discipline.valueOf(matcher.group(1));
     }
 
     /**

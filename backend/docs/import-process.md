@@ -47,7 +47,9 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
 ```
 
 A changed manifest is brought up to date by importing it again with
-`--import.replace`. Changing a file's line endings counts as a change.
+`--import.replace`. Changing a file's line endings counts as a change. A mixed team's manifest
+removed with the slice it depends on (below) reports `removed when its WAG JR slice was replaced;
+import it again`.
 
 ## What a manifest import does
 
@@ -61,7 +63,9 @@ names the file and line.
    2026 Worlds' MAG and WAG) therefore import into one `Event`. A meet's
    disciplines can run on different days under one title (the 2026 US
    Championships: MAG 6–8 August, WAG 7–9 August), so a manifest that matches
-   on title and overlapping dates widens the event's dates to cover its own.
+   on title and overlapping dates widens the event's dates to cover its own, as does one
+   matching on FIG event number (the 2026 Youth Olympic Games: MAG 7–10, WAG 8–10, the
+   mixed team 7–11 November).
    Every manifest needs a `shortName`; an existing event takes the
    manifest's when it differs ("event short names updated"). Databases from
    before short names start with each event's title cut to 40 characters,
@@ -81,7 +85,8 @@ names the file and line.
 2. **Participants.** Each entry-list row is matched to an `Athlete` (below) and
    entered into the event. A club is found or created by name within the
    participant's NOC. Some entry lists print a country's NOC only on its first
-   row; it carries down to the rows below.
+   row; it carries down to the rows below. A mixed team has no entry list: its gymnasts
+   are the event's MAG and WAG participants, by bib.
 3. **Scores.** Each row creates a `Score`, and the first score of a competition
    creates the `Competition` (see [Competitions](#competitions)). A `!` before a D
    score is stripped and sets `difficultyInquiry`. The itemized US bonus columns
@@ -89,10 +94,13 @@ names the file and line.
    the placings printed with the scores become apparatus rankings (see
    [Rankings](#rankings)).
 4. **Rankings.** Team, all-around and combined apparatus standings
-   (`RANKING-*` files) become rankings of the competition their `Competition`
-   and `Part` identify (see [Rankings](#rankings)). Then the competitions and
+   (`RANKING-*` files) become rankings of the competition their `Competition`,
+   `Round` and `Part` identify (see [Rankings](#rankings)); a mixed team's `C1`
+   ranking ranks the MAG and WAG Competition I together. Then the competitions and
    rankings are checked against the format.
-5. **Judges.** Attached to the competition their `Competition` and apparatus identify.
+5. **Judges.** Attached to the competition their `Competition` and apparatus identify; with
+   no `Round` in a competition held in rounds, to every round. A mixed team's judges keep
+   their panel's discipline (`Panel`).
 6. **Reconciling.** The imported scores are checked against the published
    totals (see [Checks](#checks)).
 
@@ -229,4 +237,8 @@ With `--import.replace`, a discipline and age category already in the event is
 deleted and imported again: its format, its rankings with their results and team score links,
 its teams, and its competitions with their scores and judges, then the event's participants of that discipline left with no results at all.
 Athletes and clubs are kept, so the reimport matches them again. Other
-disciplines and age categories sharing the event aren't touched.
+disciplines and age categories sharing the event aren't touched, with one exception: a mixed team
+(`MIX`) ranks its age category's MAG and WAG Competition I and uses their gymnasts, so replacing
+either deletes the mixed slice too, reports it, and records it in the import log as removed. Import
+its manifest again afterwards. Importing a folder does this in order: a mixed team's manifest is
+imported after the event's others.

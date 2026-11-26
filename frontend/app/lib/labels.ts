@@ -24,11 +24,30 @@ export const APPARATUS_LABELS: Record<Apparatus, string> = {
   HB: "Horizontal Bar",
 };
 
+/** "Men's", "Women's": a mixed team's apparatus by discipline. */
+export const DISCIPLINE_OWNER: Record<Discipline, string> = { MAG: "Men's", WAG: "Women's", MIX: "Mixed" };
+
+/** An apparatus as a results column, with its discipline: a mixed competition has both floors. */
+export type ApparatusColumn = { discipline: Discipline; apparatus: Apparatus };
+
+/**
+ * A results view's key for an apparatus: its code ("UB"), or where both disciplines are shown (a mixed
+ * team) the discipline too ("MAG-FX").
+ */
+export function columnKey(column: ApparatusColumn, mixed: boolean): string {
+  return mixed ? `${column.discipline}-${column.apparatus}` : column.apparatus;
+}
+
+/** Whether the columns span both disciplines. */
+export function isMixed(columns: ApparatusColumn[]): boolean {
+  return new Set(columns.map((column) => column.discipline)).size > 1;
+}
+
 /** Each discipline's apparatus in Olympic order, the order results are printed in. */
 export const APPARATUS_ORDER: Record<Discipline, Apparatus[]> = {
   MAG: ["FX", "PH", "SR", "VT", "PB", "HB"],
   WAG: ["VT", "UB", "BB", "FX"],
-  // A mixed team's apparatus belong to both disciplines (men's and women's floor); not shown yet
+  // A mixed team's apparatus belong to both disciplines (men's and women's floor): see ApparatusColumn
   MIX: [],
 };
 

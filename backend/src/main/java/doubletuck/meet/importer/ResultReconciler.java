@@ -4,12 +4,14 @@ import doubletuck.meet.domain.AllAroundResult;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.TeamContributionRole;
 import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.domain.TeamResultScore;
 import doubletuck.meet.domain.TeamScoreRole;
+import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.TeamResultScoreRepository;
 import org.springframework.stereotype.Component;
 
@@ -42,9 +44,11 @@ class ResultReconciler {
     private static final int MAX_ATHLETES_PER_NOC = 12;
 
     private final TeamResultScoreRepository teamResultScoreRepository;
+    private final ScoreRepository scoreRepository;
 
-    ResultReconciler(TeamResultScoreRepository teamResultScoreRepository) {
+    ResultReconciler(TeamResultScoreRepository teamResultScoreRepository, ScoreRepository scoreRepository) {
         this.teamResultScoreRepository = teamResultScoreRepository;
+        this.scoreRepository = scoreRepository;
     }
 
     void reconcile(ImportContext context) {
@@ -52,7 +56,11 @@ class ResultReconciler {
                 .collect(Collectors.groupingBy(ImportContext.PublishedTeamTotal::teamResult, LinkedHashMap::new,
                         Collectors.toList()));
         teams.forEach((team, totals) -> {
-            linkTeamScores(context, team, totals);
+            if (team.getRanking().getDiscipline() == Discipline.MIX) {
+                linkMixedTeamScores(context, team, totals);
+            } else {
+                linkTeamScores(context, team, totals);
+            }
             checkTeamTotal(context, team, totals);
         });
         context.getAllAroundResults().forEach(result -> checkAllAround(context, result));
@@ -137,6 +145,43 @@ class ResultReconciler {
         link(context, team, onTotals, countedScores::contains);
         onTotals.stream().filter(score -> !countedScores.contains(score))
                 .forEach(score -> context.getReport().count("scores not counting toward team"));
+    }
+
+    /**
+     * Records the scores counting toward a mixed team's apparatus totals: on each discipline's
+     * apparatus, the NOC's best score, which is the published total. In qualification that is
+     * the best of its gymnasts' Competition I scores, ranked in the MAG and WAG competitions; in
+     * a final round, its gymnast's one routine there. Only counting scores are linked, since a
+     * mixed team's members are the gymnasts whose scores counted (competition-models.md §8.4).
+     * Where two of its gymnasts tie for the best, both count (2026 Youth Olympic Games, GER men's
+     * floor).
+     */
+    private void linkMixedTeamScores(ImportContext context, TeamResult team,
+            List<ImportContext.PublishedTeamTotal> totals) {
+        String noc = team.getTeam().getNoc();
+        List<Score> scores = team.getRanking().getCompetitions().stream()
+                .flatMap(competition -> scoreRepository.findResultsByCompetition(competition).stream())
+                .filter(score -> score.getParticipant().getNoc().equals(noc) && score.getRoutine().getScore() != null)
+                .toList();
+        for (ImportContext.PublishedTeamTotal total : totals) {
+            List<Score> onApparatus = scores.stream()
+                    .filter(score -> score.getApparatus() == total.apparatus()
+                            && score.getParticipant().getAthlete().getDiscipline() == total.discipline())
+                    .toList();
+            List<Score> counting = onApparatus.stream()
+                    .filter(score -> Math.abs(score.getRoutine().getScore() - total.total()) < TOLERANCE)
+                    .toList();
+            boolean better = onApparatus.stream()
+                    .anyMatch(score -> score.getRoutine().getScore() - total.total() >= TOLERANCE);
+            if (counting.isEmpty() || better) {
+                context.getReport().warn(total.location() + ": " + noc + " mixed team's " + total.discipline() + " "
+                        + total.apparatus() + " total " + total.total() + " isn't its best score there");
+            }
+            if (counting.size() > 1) {
+                context.getReport().count("tied counting scores", counting.size());
+            }
+            link(context, team, counting, score -> true);
+        }
     }
 
     private void link(ImportContext context, TeamResult team, List<Score> scores, Predicate<Score> counting) {

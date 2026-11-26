@@ -25,13 +25,17 @@ import java.util.stream.Stream;
 @Component
 public class ImportLog {
 
+    /** {@code REMOVED}: imported, then deleted with a slice it depends on (a mixed team with the MAG slice). */
     public enum State {
-        NOT_IMPORTED, UP_TO_DATE, CHANGED
+        NOT_IMPORTED, UP_TO_DATE, CHANGED, REMOVED
     }
 
     /** @param lastRun null when never imported */
     public record Status(State state, ImportRun lastRun) {
     }
+
+    // A run's content hash when the slice was deleted with another; never a SHA-256
+    private static final String REMOVED = "removed";
 
     private final ImportRunRepository importRunRepository;
 
@@ -53,9 +57,29 @@ public class ImportLog {
         importRunRepository.save(run);
     }
 
+    /**
+     * Records that a slice imported earlier was deleted along with another, so its manifest shows as
+     * needing to be imported again.
+     */
+    void removed(Event event, Discipline discipline, AgeCategory ageCategory, String reason) {
+        importRunRepository.findFirstByEventAndDisciplineAndAgeCategoryOrderByIdDesc(event, discipline, ageCategory)
+                .ifPresent(last -> {
+                    ImportRun run = new ImportRun();
+                    run.setManifest(last.getManifest());
+                    run.setEvent(event);
+                    run.setDiscipline(discipline);
+                    run.setAgeCategory(ageCategory);
+                    run.setContentHash(REMOVED);
+                    run.setReplaced(true);
+                    run.setReport(reason);
+                    importRunRepository.save(run);
+                });
+    }
+
     public Status status(Path manifestFile) {
         return importRunRepository.findFirstByManifestOrderByIdDesc(manifestFile.getFileName().toString())
-                .map(run -> new Status(run.getContentHash().equals(
+                .map(run -> run.getContentHash().equals(REMOVED) ? new Status(State.REMOVED, run)
+                        : new Status(run.getContentHash().equals(
                         contentHash(manifestFile, ImportManifest.read(manifestFile))) ? State.UP_TO_DATE
                         : State.CHANGED, run))
                 .orElse(new Status(State.NOT_IMPORTED, null));

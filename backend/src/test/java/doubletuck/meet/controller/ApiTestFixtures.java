@@ -18,6 +18,9 @@ final class ApiTestFixtures {
     static final String WORLDS_MAG = "worlds/2026-WORLD-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     static final String US_MAG = "us/2026-US-CHAMPIONSHIPS-MAG-SR-IMPORT.json";
     static final String ASIAN_WAG = "asian/2026-ASIAN-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
+    static final String YOG_MAG = "yog/2026-YOUTH-OLYMPIC-GAMES-MAG-JR-IMPORT.json";
+    static final String YOG_WAG = "yog/2026-YOUTH-OLYMPIC-GAMES-WAG-JR-IMPORT.json";
+    static final String YOG_MIX = "yog/2026-YOUTH-OLYMPIC-GAMES-MIX-JR-IMPORT.json";
 
     private ApiTestFixtures() {
     }

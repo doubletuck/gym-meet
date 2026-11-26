@@ -64,7 +64,7 @@ The competition's `purposes` say which it is.
 |-------|------|-------------|
 | event | Object | `{slug, title}` of the competition's event |
 | competition | [CompetitionSummaryResponse](#competitionsummaryresponse-object) | The competition itself |
-| apparatus | List | `{apparatus, scores}` for each apparatus with scores, in Olympic order (MAG: FX, PH, SR, VT, PB, HB; WAG: VT, UB, BB, FX); `scores` is a list of [ScoreRow](#scorerow-object) ranked as published, unranked rows (e.g. did not start) last |
+| apparatus | List | `{discipline, apparatus, scores}` for each apparatus with scores, in Olympic order (MAG: FX, PH, SR, VT, PB, HB; WAG: VT, UB, BB, FX; a mixed competition: the men's, then the women's, since both have floor); `discipline` is the gymnasts'; `scores` is a list of [ScoreRow](#scorerow-object) ranked as published, unranked rows (e.g. did not start) last |
 | allAround | List | [AllAroundRow](#allaroundrow-object) objects ranked as published |
 | teams | List | [TeamRow](#teamrow-object) objects ranked as published |
 | apparatusStandings | List | `{apparatus, rows}`: a split competition's combined standings on each apparatus; each row is `{rank, bib, athlete, noc, club, total, parts}`, with `rank`, `bib`, `club` and `total` nullable, and `parts` the athlete's result on the apparatus in each part as `{part, score}` (for two vaults, their combination) |
@@ -159,4 +159,5 @@ One athlete's result on one apparatus.
 | total | Double, nullable | Team total as published |
 | sjPenalty | Double, nullable | Penalty on the team as a whole (negative), already deducted from `total`; the apparatus totals don't include it |
 | qualification | String, nullable | Qualification to the team final, where the ranking qualifies to one |
-| apparatusTotals | Map | Sum of the scores counting toward the team on each apparatus, keyed by apparatus code |
+| apparatusTotals | List | `{discipline, apparatus, total}` for each apparatus with counting scores, in the order of `apparatus` above: the sum of the scores counting toward the team, or for a mixed team, which counts one score an apparatus, the best of them (two gymnasts tied for it both count) |
+| round | Integer, nullable | On a final elimination round's page, the earlier round that printed this place, for a team it eliminated: the 2026 Youth Olympic Games' mixed team round 3 lists its 4 teams, then round 2's places 5–8 (`round` 2), then round 1's 9–12 (`round` 1). Every place is one a round printed; `null` otherwise |

@@ -161,7 +161,7 @@ Returned by `GET /api/events/{slug}`. The fields of
 | venue | String | Venue or arena name, or `null` |
 | figEventNumber | String | FIG-assigned event code, or `null` |
 | apparatusSuppliers | String | Equipment manufacturer(s), or `null` |
-| divisions | List | `{discipline, ageCategory, competitions}`, where `competitions` lists [CompetitionSummaryResponse](api-competition.md#competitionsummaryresponse-object) objects in the order they're held: Competition I, team final, all-around final, apparatus finals, apparatus in Olympic order, then elimination rounds, and a split competition's combined row before its parts, since it holds the result the competition is decided on |
+| divisions | List | `{discipline, ageCategory, rankings, competitions}`, where `rankings` lists [RankingSummaryResponse](api-ranking.md#rankingsummaryresponse-object) objects for the division's rankings with no competition of their own (a mixed team's qualification, which ranks the men's and women's Competition I), held before its competitions, and `competitions` lists [CompetitionSummaryResponse](api-competition.md#competitionsummaryresponse-object) objects in the order they're held: Competition I, team final, all-around final, apparatus finals, apparatus in Olympic order, then elimination rounds, and a split competition's combined row before its parts, since it holds the result the competition is decided on |
 
 **Example** (abridged)
 
@@ -181,6 +181,7 @@ Returned by `GET /api/events/{slug}`. The fields of
     {
       "discipline": "WAG",
       "ageCategory": "SR",
+      "rankings": [],
       "competitions": [
         {
           "id": 15, "slug": "qualification", "name": "Qualification", "shortName": "Qualification",

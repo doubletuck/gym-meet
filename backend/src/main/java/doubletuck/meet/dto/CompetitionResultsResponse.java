@@ -2,6 +2,7 @@ package doubletuck.meet.dto;
 
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.BonusDetail;
+import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.QualificationResult;
 import doubletuck.meet.domain.RankStatus;
 import doubletuck.meet.domain.ScoreStatus;
@@ -37,7 +38,12 @@ public record CompetitionResultsResponse(
     public record AthleteRef(Long id, String surname, String givenName) {
     }
 
-    public record ApparatusScores(Apparatus apparatus, List<ScoreRow> scores) {
+    /** @param discipline the gymnasts' discipline: a mixed competition has a men's and a women's floor */
+    public record ApparatusScores(Discipline discipline, Apparatus apparatus, List<ScoreRow> scores) {
+    }
+
+    /** @param total the scores counting toward the team on the discipline's apparatus */
+    public record ApparatusTotal(Discipline discipline, Apparatus apparatus, double total) {
     }
 
     /**
@@ -112,7 +118,11 @@ public record CompetitionResultsResponse(
     /**
      * @param sjPenalty       a penalty on the team as a whole (negative), already deducted from the total
      * @param rankStatus      as on {@link AllAroundRow}
-     * @param apparatusTotals the sum of the scores counting toward the team on each apparatus
+     * @param apparatusTotals each apparatus's total in Olympic order (a mixed team's: the men's, then the
+     *                        women's): the sum of the scores counting toward the team, or for a mixed team,
+     *                        which counts one score an apparatus, the best of them
+     * @param round           on a final round's page, the earlier elimination round that printed this place,
+     *                        for a team it eliminated; null otherwise
      */
     public record TeamRow(
             @Nullable Integer rank,
@@ -121,7 +131,8 @@ public record CompetitionResultsResponse(
             @Nullable Double total,
             @Nullable Double sjPenalty,
             @Nullable QualificationResult qualification,
-            Map<Apparatus, Double> apparatusTotals) {
+            List<ApparatusTotal> apparatusTotals,
+            @Nullable Integer round) {
     }
 
     public record ApparatusStandings(Apparatus apparatus, List<ApparatusStandingRow> rows) {

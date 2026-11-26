@@ -45,6 +45,12 @@ export const athleteQuery = (id: number) =>
     queryFn: async () => orThrow(await api.GET("/api/athletes/{id}", { params: { path: { id } } })),
   });
 
+export const rankingResultsQuery = (id: number) =>
+  queryOptions({
+    queryKey: ["rankings", id, "results"],
+    queryFn: async () => orThrow(await api.GET("/api/rankings/{id}/results", { params: { path: { id } } })),
+  });
+
 export const competitionResultsQuery = (id: number) =>
   queryOptions({
     queryKey: ["competitions", id, "results"],

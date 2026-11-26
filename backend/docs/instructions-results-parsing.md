@@ -589,6 +589,8 @@ meet records it.
 | One competition deciding the team and all-around titles, nothing to qualify for | `C1`, `C1`, `NONE` | `C1` (single-attempt vault, as at any all-around final); both final rankings of `C1` | Oceania Championships |
 | Competition split into parts, decided on the combined total | `NONE`, `C1`, `C1` | `C1` per part, and the whole `C1` (part blank) holding the combined standings: `RANKING-FINAL-AA` (part rows `INFORMATIONAL`) and `RANKING-FINAL-<APP>` | US Championships |
 | Apparatus competition | `NONE`, `NONE`, `FINAL` | `C1` and `C3` per apparatus | Apparatus World Cups, World Challenge Cups |
+| Team and all-around finals, no apparatus finals | `FINAL`, `FINAL`, `NONE` | `C1` (one vault), `C4`, `C2` | Youth Olympic Games MAG and WAG |
+| Mixed team (`MIX`) | `FINAL`, `NONE`, `NONE` | No `C1` of its own: its `RANKING-QUAL-TEAM` rows of `C1` rank the men's and women's Competition I. `C4` in elimination rounds (`Round` 1, 2, 3, scores reset each round): rounds 1 and 2 `QUALIFYING`, the last `FINAL` (`out.ranking(..., last_round=3)`) | Youth Olympic Games (§5.23) |
 
 If a meet doesn't fit any of these, stop and discuss the model change first.
 
@@ -2021,6 +2023,54 @@ unranked.
   at Paris).
 - **MAG TORRES Sebastian (VEN, 77)** is on the vault start list (rotation 3) and in no vault report;
   his vault isn't written (§6).
+
+### 5.23 FIG / Swiss Timing results book without apparatus tables (Youth Olympic Games)
+
+The Dakar 2026 Youth Olympic Games book (`18178-ResultsbookMedia.pdf`, 124 pages, every page with
+text): MAG (pp. 12-60), WAG (pp. 61-102) and the mixed team (pp. 103-119), in the FIG layout (§5.1)
+with its footer codes (`GARMTEAM--------------QUAL--------_73C`). Parser:
+[`parse_2026_youth_olympic_games.py`](../tools/results-parsing/parse_2026_youth_olympic_games.py).
+The schedule (page 10) dates MAG Competition I 7 November, WAG 8 November, the team finals 9, the
+all-around finals 10 and the mixed team's three rounds 11 November.
+
+**Structure** (§4.9). MAG and WAG: Competition I, then a team final (top 8, three a team, two counting
+per apparatus, as in qualification) and an all-around final (top 18); no apparatus finals, so one
+vault each (single-attempt shape in every competition). The mixed team (prefix `…-MIX-JR`, no
+entry list of its own, imported after MAG and WAG): its qualification has no routines of its own,
+ranking each NOC's best men's floor, parallel bars and high bar and women's bars, beam and floor
+score from Competition I (top 12 Q); then three rounds, each pair one man and one woman on one
+apparatus each, scores reset (top 8, top 4 Q; places 9-12 and 5-8 printed in rounds 1 and 2).
+
+| Report | Gives |
+|---|---|
+| Entry List by NOC (`_32A`) | the participants (bibs 1xx men, 2xx women) |
+| Judges Assignments (`_57A`/`_57B` qualification, team final, all-around final; `_57E` the mixed final) | JUDGES. The mixed sheet: the men's panels (FX, PB, HB) on the left, the women's (UB, BB, FX) on the right, each discipline's Superior Jury above; one sheet for the three rounds, written with `Round` blank and `Panel` MAG/WAG |
+| All-around reports (`_73G`/`_73H`, qualification and final) | every Competition I and all-around final routine (D, E, BP/EP lines, as §5.1), with each apparatus's field rank (`Rk`) as the score's `Rank`; RANKING-QUAL-AA and RANKING-FINAL-AA |
+| Team reports (`_73C`/`_73D`, qualification and final) | RANKING-QUAL-TEAM and RANKING-FINAL-TEAM; the team final's routines; the qualification's routines cross-checked against the all-around report |
+| Team scores (`_73A`/`_73B`) | not read (the team reports' totals without D and E) |
+| Mixed team results (`_73K` QUAL, QFNL, SFNL, FNL) | the mixed RANKING files and `SCORES-C4-<MAG\|WAG>-<APP>` |
+| Tie Break Reports (`_77x`) | not read; ranks are as printed |
+
+**Gotchas**
+
+- **No apparatus tables** (`_73I`): Competition I's routines come from the all-around report, which
+  lists every gymnast (partial all-arounders and those who started nothing included).
+- **The mixed pages are read by word coordinates** (`pdftotext -bbox`): their `-layout` text columns
+  shift by page, but a cell's right edge is fixed on every page (men's FX 274, PB 323, HB 372; women's
+  UB 421, BB 470, FX 519; total 559). A gymnast's line tag (`D`, `E`, `EP`, `BP`) sits in its own
+  column, and a bib and name print 2pt below the `D` beside them. The parenthesised apparatus ranks
+  on the qualification are dropped (men's PB and HB print `(0)` for every NOC; competition-models.md
+  §8.4). Rounds 2 and 3 print `CR-1`/`CR-2` (done in round 1/2) in the other cells: checked, not written.
+- **A tie for a mixed team's best score**: GER's men's floor (CSUKA and MIHAI, 12.366 each). Both
+  count (agreed with the user); the importer links every score equal to the total.
+- **Team penalty on a member's line**: WAG qualification MEX, `-0.300` at the end of GARCIA Sophia's
+  D line, taken off the team total (84.097 to 83.797): the team's `SJ Penalty`.
+- **Finalists not from the Q rows**: MAG all-around final, CSUKA Zeno (GER) replaced de SILVA Jaydon
+  (CAN) (REVISED start list); WAG team final, Czechia (9th) in Canada's place, with no reason
+  printed (`FINAL_CHANGES`).
+- **Draft EVENT.csv** (`fig_events.py`): the Games' dates (31 October-13 November) and a slug per
+  discipline. All three rows share FIG event 18178, so they are one event, slug
+  `2026-youth-olympic-games`, with each row's own gymnastics days.
 
 ## 6. Open items
 

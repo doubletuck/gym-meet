@@ -5,12 +5,15 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.Athlete;
 import doubletuck.meet.domain.AthleteNameVariant;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.Participant;
+import doubletuck.meet.domain.Ranking;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
-import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.Team;
 import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.dto.AthleteResponse;
 import doubletuck.meet.dto.AthleteResponse.AllAroundBest;
@@ -18,20 +21,24 @@ import doubletuck.meet.dto.AthleteResponse.ApparatusScore;
 import doubletuck.meet.dto.AthleteResponse.ApparatusStanding;
 import doubletuck.meet.dto.AthleteResponse.Entry;
 import doubletuck.meet.dto.AthleteResponse.EntryCompetition;
-import doubletuck.meet.dto.AthleteResponse.EntryTeam;
 import doubletuck.meet.dto.AthleteResponse.EntryEvent;
+import doubletuck.meet.dto.AthleteResponse.EntryMixedTeam;
+import doubletuck.meet.dto.AthleteResponse.EntryTeam;
+import doubletuck.meet.dto.AthleteResponse.MixedTeamResult;
 import doubletuck.meet.dto.AthleteResponse.PersonalBest;
 import doubletuck.meet.dto.AthleteSummaryResponse;
 import doubletuck.meet.dto.CompetitionSummaryResponse;
+import doubletuck.meet.dto.RankingSummaryResponse;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.AthleteNameVariantRepository;
 import doubletuck.meet.repository.AthleteRepository;
-import doubletuck.meet.repository.ParticipantRepository;
-import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.CompetitionRepository;
+import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.RankingRepository;
+import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.TeamResultRepository;
+import doubletuck.meet.repository.TeamResultScoreRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +51,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,12 +72,14 @@ public class AthleteQueryService {
     private final CompetitionRepository competitionRepository;
     private final TeamResultRepository teamResultRepository;
     private final RankingRepository rankingRepository;
+    private final TeamResultScoreRepository teamResultScoreRepository;
 
     public AthleteQueryService(AthleteRepository athleteRepository,
             AthleteNameVariantRepository nameVariantRepository, ParticipantRepository participantRepository,
             ScoreRepository scoreRepository, AllAroundResultRepository allAroundResultRepository,
             ApparatusResultRepository apparatusResultRepository, CompetitionRepository competitionRepository,
-            TeamResultRepository teamResultRepository, RankingRepository rankingRepository) {
+            TeamResultRepository teamResultRepository, RankingRepository rankingRepository,
+            TeamResultScoreRepository teamResultScoreRepository) {
         this.athleteRepository = athleteRepository;
         this.nameVariantRepository = nameVariantRepository;
         this.participantRepository = participantRepository;
@@ -79,6 +89,7 @@ public class AthleteQueryService {
         this.competitionRepository = competitionRepository;
         this.teamResultRepository = teamResultRepository;
         this.rankingRepository = rankingRepository;
+        this.teamResultScoreRepository = teamResultScoreRepository;
     }
 
     /**
@@ -153,8 +164,8 @@ public class AthleteQueryService {
             scores.forEach(score -> competitions.add(score.getCompetition()));
             allAround.forEach(result -> competitions.addAll(result.getRanking().getCompetitions()));
             List<Competition> eventCompetitions = competitionRepository.findByEvent(event);
-            CompetitionSummaries summaries = new CompetitionSummaries(eventCompetitions,
-                    rankingRepository.findWithCompetitionsByEvent(event));
+            List<Ranking> eventRankings = rankingRepository.findWithCompetitionsByEvent(event);
+            CompetitionSummaries summaries = new CompetitionSummaries(eventCompetitions, eventRankings);
             // A split competition's combined apparatus standings, the only apparatus rankings not
             // shown with the scores they place
             List<ApparatusResult> combinedStandings = apparatusResults.stream()
@@ -182,8 +193,11 @@ public class AthleteQueryService {
                                 competitionAllAround.getRank(), competitionAllAround.getRankStatus(),
                                 competitionAllAround.getTotalScore(), competitionAllAround.getQualificationResult(),
                                 competitionAllAround.getRanking().getPurpose()),
-                        // The country's team in the rankings of the competition's routines
-                        teamResultRepository.findByCompetitionAndNoc(competition, participant.getNoc()).stream()
+                        // The country's team in the competition's own rankings; a mixed team's results are
+                        // the entry's mixed team, apart
+                        competition.getDiscipline() == Discipline.MIX ? null
+                                : teamResultRepository.findByCompetitionAndNoc(competition, participant.getNoc()).stream()
+                                .filter(result -> result.getRanking().getDiscipline() == competition.getDiscipline())
                                 .min(Comparator.comparingInt(result -> CompetitionNaming.preference(
                                         result.getRanking())))
                                 .map(AthleteQueryService::entryTeam)
@@ -210,7 +224,7 @@ public class AthleteQueryService {
             }
             entries.add(new Entry(eventRef, participant.getNoc(),
                     participant.getClub() == null ? null : participant.getClub().getName(),
-                    participant.getEntryStatus(), entryCompetitions));
+                    participant.getEntryStatus(), entryCompetitions, mixedTeam(scores, summaries)));
         }
 
         return new AthleteResponse(athlete.getId(), athlete.getSurname(), athlete.getGivenName(),
@@ -256,6 +270,45 @@ public class AthleteQueryService {
                 CompetitionResultsService.routine(score.getRoutine()),
                 CompetitionResultsService.routine(score.getSecondRoutine()), score.getCombinedBonus(),
                 score.getTotalScore(), ranks.qualificationRank(score), ranks.qualification(score));
+    }
+
+    /**
+     * The mixed team the athlete was a member of: a score of theirs counted toward one of its results
+     * (competition-models.md §8.4). Its every result is listed, so a member who counted in qualification
+     * shares the final round's medal.
+     */
+    private @Nullable EntryMixedTeam mixedTeam(List<Score> scores, CompetitionSummaries summaries) {
+        if (scores.isEmpty()) {
+            return null;
+        }
+        Optional<Team> team = teamResultScoreRepository.findByScoreIn(scores).stream()
+                .map(link -> link.getTeamResult())
+                .filter(result -> result.getRanking().getDiscipline() == Discipline.MIX)
+                .map(TeamResult::getTeam)
+                .findFirst();
+        return team.map(mixed -> new EntryMixedTeam(mixed.getNoc(), teamResultRepository.findByTeam(mixed).stream()
+                .sorted(Comparator.comparing((TeamResult result) -> !RankingSummaries.isOwnPage(result.getRanking()))
+                        .thenComparing(result -> result.getRanking().getCompetitions().stream()
+                                .map(Competition::getRound).filter(Objects::nonNull).findFirst().orElse(0)))
+                .map(result -> mixedTeamResult(result, summaries))
+                .toList())).orElse(null);
+    }
+
+    private static MixedTeamResult mixedTeamResult(TeamResult result, CompetitionSummaries summaries) {
+        Ranking ranking = result.getRanking();
+        String slug;
+        String name;
+        if (RankingSummaries.isOwnPage(ranking)) {
+            RankingSummaryResponse page = RankingSummaries.of(ranking);
+            slug = page.slug();
+            name = page.name();
+        } else {
+            CompetitionSummaryResponse page = summaries.of(ranking.getCompetitions().iterator().next());
+            slug = page.slug();
+            name = page.name();
+        }
+        return new MixedTeamResult(slug, name, ranking.getDiscipline(), ranking.getAgeCategory(), result.getRank(),
+                result.getRankStatus(), result.getTotalScore(), result.getQualificationResult(), ranking.getPurpose());
     }
 
     private static EntryTeam entryTeam(TeamResult result) {

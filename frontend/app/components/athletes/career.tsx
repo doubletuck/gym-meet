@@ -7,6 +7,7 @@ import type {
   AthleteEntry,
   Discipline,
   EntryCompetition,
+  EntryMixedTeam,
   QualificationResult,
   RankStatus,
   Routine,
@@ -151,7 +152,8 @@ function columnsFor(entries: AthleteEntry[]): Columns {
       scores.some((score) => score.qualification) ||
       competitions.some(
         (entryCompetition) => entryCompetition.allAround?.qualification || entryCompetition.team?.qualification,
-      ),
+      ) ||
+      entries.some((entry) => entry.mixedTeam?.results.some((result) => result.qualification)),
   };
 }
 
@@ -269,9 +271,67 @@ function EntryResults({
                 ))}
             </tbody>
           ))}
+          {entry.mixedTeam && (
+            <MixedTeamResults
+              eventSlug={entry.event.slug}
+              mixedTeam={entry.mixedTeam}
+              athleteId={athleteId}
+              columns={columns}
+              columnCount={columnCount}
+            />
+          )}
         </table>
       </div>
     </section>
+  );
+}
+
+/**
+ * The mixed team the athlete was a member of (a score of theirs counted toward it): its place in
+ * qualification and in each final round. Every member shares its medal.
+ */
+function MixedTeamResults({
+  eventSlug,
+  mixedTeam,
+  athleteId,
+  columns,
+  columnCount,
+}: {
+  eventSlug: string;
+  mixedTeam: EntryMixedTeam;
+  athleteId: number;
+  columns: Columns;
+  columnCount: number;
+}) {
+  return (
+    <tbody>
+      <tr>
+        <th
+          scope="colgroup"
+          colSpan={columnCount}
+          className="pt-3 pb-1 text-left text-xs font-semibold text-gray-600 dark:text-gray-400"
+        >
+          Mixed Team <span className="ml-1 font-normal text-gray-500">{mixedTeam.noc}</span>
+        </th>
+      </tr>
+      {mixedTeam.results.map((result) => (
+        <ResultLine
+          key={result.slug}
+          columns={columns}
+          line={{
+            key: `mixed-${result.slug}`,
+            kind: "team",
+            label: result.name,
+            to: resultsPath(eventSlug, result, "teams", athleteId),
+            score: formatScore(result.total),
+            rank: result.rank,
+            rankStatus: result.rankStatus,
+            medal: result.purpose === "FINAL",
+            qualification: result.qualification,
+          }}
+        />
+      ))}
+    </tbody>
   );
 }
 
@@ -294,7 +354,8 @@ type Round = { key: string; label: string; competitions: EntryCompetition[] };
 function roundsOf(entry: AthleteEntry): Round[] {
   const rounds = new Map<string, EntryCompetition[]>();
   for (const entryCompetition of entry.competitions) {
-    const key = `${entryCompetition.competition.type}-${entryCompetition.competition.part ?? ""}`;
+    const { discipline, type, round, part } = entryCompetition.competition;
+    const key = `${discipline}-${type}-${round ?? ""}-${part ?? ""}`;
     rounds.set(key, [...(rounds.get(key) ?? []), entryCompetition]);
   }
   return [...rounds].map(([key, competitions]) => {
@@ -304,7 +365,10 @@ function roundsOf(entry: AthleteEntry): Round[] {
         ? "Qualification"
         : competitions.length > 1
           ? "Apparatus Finals"
-          : competition.name;
+          : // A mixed team's final round, among the athlete's own discipline's competitions
+            competition.discipline === "MIX"
+            ? `Mixed ${competition.name}`
+            : competition.name;
     return { key, label, competitions };
   });
 }
