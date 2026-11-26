@@ -1,9 +1,22 @@
-# Competition models (working draft)
+# Competition models
 
 A design palette for deciding how each way a competition is run should be stored and shown.
-It lists every meet parsed so far, what its first session decided, and how the files store
-it today. The rules aren't settled yet. Once they are, they move into
-`instructions-results-parsing.md` §4.9 and `import-file-model.md`.
+It lists every meet parsed so far, what its first session decided, and how the files stored
+it before the model change. The rules settled here move into
+`instructions-results-parsing.md` §4.9 and `import-file-model.md` as each step lands.
+
+**Rollout** (see §7):
+
+| Step | What | Status |
+|---|---|---|
+| 1 | Schema and domain: `Competition`, `Ranking`, `Team`, `TeamResultScore`, rank status; data rebuilt by re-importing | Done ([data-model.md](data-model.md)) |
+| 2 | Import file standard: `RANKING-*`, `C1`–`C4`, `Rank Status`, format columns, `EventFormat` | |
+| 3 | Reshape the existing files | |
+| 4 | Parsers and the parsing doc | |
+| 5 | API and front end aligned with the model | |
+| 6 | Youth Olympic Games, mixed team included | |
+
+Sections 1–6 describe the model before step 1.
 
 ## 1. Terms
 
@@ -212,8 +225,9 @@ It also accepts Q/R/NR on standings that qualified nobody.
    | `UNPLACED` | the source prints no places (US Part 2 rows) |
 5. **Q/R/NR only on `QUALIFYING` rankings.** On a `FINAL` ranking, NR becomes the `NOC_LIMIT`
    `rankStatus`.
-6. **Teams become entities.** A `Team` has a name and an optional NOC, and `TeamMember` links it
-   to participants.
+6. **Teams become entities.** A `Team` has a name and an optional NOC. Its members aren't
+   stored: they're the gymnasts with a score linked to any of its results (`TeamResultScore`).
+   (A `TeamMember` table was proposed and dropped in step 1, since it would repeat the links.)
    - Today a team is just an NOC string on `TeamResult`, with its members implied by
      `Participant.noc`. That breaks for Europeans' `WG1`/`WG2` and for **mixed teams**.
    - A mixed team has MAG and WAG members, so its ranking ranks routines from sessions of both
@@ -270,8 +284,6 @@ erDiagram
     Competition ||--o{ Judge : "judged by"
     Participant ||--o{ Score : "performs"
     Ranking }o--|{ Competition : "ranks routines of"
-    Team ||--|{ TeamMember : "has"
-    Participant ||--o{ TeamMember : "is"
     Ranking ||--o{ TeamResult : "orders"
     Ranking ||--o{ AllAroundResult : "orders"
     Ranking ||--o{ ApparatusResult : "orders"
@@ -307,10 +319,6 @@ erDiagram
     Team {
         string name
         string noc "optional"
-    }
-    TeamMember {
-        bigint team_id FK
-        bigint participant_id FK
     }
     Score {
         enum apparatus
@@ -512,7 +520,7 @@ Format: team `FINAL`, AA `FINAL`, apparatus `NONE`.
 |---|---|
 | A ranking with no routines of its own, across two disciplines | `Ranking` (type `TEAM`, discipline `MIX`, purpose `QUALIFYING`) over the MAG C1 and WAG C1 competitions. This is the many-to-many from §7.3. |
 | Final rounds | Each round is a `Competition` (type `C4`, discipline `MIX`). Rounds 1 and 2 have a `QUALIFYING` team ranking, round 3 a `FINAL` one. |
-| A team that isn't one discipline | `Team` and `TeamMember` (§7.2, point 6) |
+| A team that isn't one discipline | `Team`, with members derived from its score links (§7.2, point 6) |
 | `DNF` NOCs in qualification | rank status `INCOMPLETE` |
 | A title outside MAG and WAG | an `EventFormat` row for discipline `MIX`: team `FINAL`, AA `NONE`, apparatus `NONE` |
 

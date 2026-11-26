@@ -4,13 +4,13 @@ import doubletuck.meet.domain.AgeCategory;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Competition;
 import doubletuck.meet.dto.EventDetailResponse;
 import doubletuck.meet.dto.EventSummaryResponse;
 import doubletuck.meet.dto.SessionSummaryResponse;
 import doubletuck.meet.repository.EventDivision;
 import doubletuck.meet.repository.EventRepository;
-import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.CompetitionRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,11 +28,11 @@ import java.util.stream.Collectors;
 public class EventQueryService {
 
     private final EventRepository eventRepository;
-    private final SessionRepository sessionRepository;
+    private final CompetitionRepository competitionRepository;
 
-    public EventQueryService(EventRepository eventRepository, SessionRepository sessionRepository) {
+    public EventQueryService(EventRepository eventRepository, CompetitionRepository competitionRepository) {
         this.eventRepository = eventRepository;
-        this.sessionRepository = sessionRepository;
+        this.competitionRepository = competitionRepository;
     }
 
     /**
@@ -43,7 +43,7 @@ public class EventQueryService {
      * @param discipline an event with results in this discipline, or null for any
      */
     public List<EventSummaryResponse> findEvents(Integer year, EventLevel level, Discipline discipline) {
-        Map<Long, List<EventSummaryResponse.Division>> divisions = sessionRepository.findEventDivisions().stream()
+        Map<Long, List<EventSummaryResponse.Division>> divisions = competitionRepository.findEventDivisions().stream()
                 .sorted(Comparator.comparing(EventDivision::discipline).thenComparing(EventDivision::ageCategory))
                 .collect(Collectors.groupingBy(EventDivision::eventId,
                         Collectors.mapping(d -> new EventSummaryResponse.Division(d.discipline(), d.ageCategory()),
@@ -67,10 +67,10 @@ public class EventQueryService {
     }
 
     private EventDetailResponse detail(Event event) {
-        List<Session> all = sessionRepository.findByEvent(event);
+        List<Competition> all = competitionRepository.findByEvent(event);
         Map<DivisionKey, List<SessionSummaryResponse>> sessions = all.stream()
-                .sorted(Comparator.comparing(Session::getDiscipline).thenComparing(Session::getAgeCategory)
-                        .thenComparing(SessionNaming.order()))
+                .sorted(Comparator.comparing(Competition::getDiscipline).thenComparing(Competition::getAgeCategory)
+                        .thenComparing(CompetitionNaming.order()))
                 .collect(Collectors.groupingBy(session -> new DivisionKey(session.getDiscipline(),
                                 session.getAgeCategory()), LinkedHashMap::new,
                         Collectors.mapping(session -> SessionSummaryResponse.from(session, all),

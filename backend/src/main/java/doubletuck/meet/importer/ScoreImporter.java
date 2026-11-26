@@ -1,23 +1,35 @@
 package doubletuck.meet.importer;
 
 import doubletuck.meet.domain.Apparatus;
+import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.BonusDetail;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.QualificationResult;
-import doubletuck.meet.domain.Round;
+import doubletuck.meet.domain.RankStatus;
+import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.RankingPurpose;
+import doubletuck.meet.domain.RankingType;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
-import doubletuck.meet.domain.Session;
 import doubletuck.meet.domain.TeamScoreRole;
+import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.ScoreRepository;
+import doubletuck.meet.service.ApparatusRanks;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
- * Imports {@code SCORES-<ROUND>-<APP>.csv} files, creating each session the
- * first time one of its scores appears.
+ * Imports {@code SCORES-<ROUND>-<APP>.csv} files, creating each competition the
+ * first time one of its scores appears, then ranks the scores on each apparatus as
+ * their rows place them.
  */
 @Component
 class ScoreImporter {
@@ -29,24 +41,27 @@ class ScoreImporter {
             Map.entry("S+", "Stick bonus"));
 
     private final ScoreRepository scoreRepository;
+    private final ApparatusResultRepository apparatusResultRepository;
 
-    ScoreImporter(ScoreRepository scoreRepository) {
+    ScoreImporter(ScoreRepository scoreRepository, ApparatusResultRepository apparatusResultRepository) {
         this.scoreRepository = scoreRepository;
+        this.apparatusResultRepository = apparatusResultRepository;
     }
 
     void importFile(ImportContext context, String fileName) {
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
-            Round round = row.requiredCode("Round", Round::find);
+            CompetitionType type = row.requiredCode("Round", CompetitionType::find);
             Apparatus apparatus = row.requiredCode("Apparatus", Apparatus::find);
             Integer part = row.integer("Part");
             if (row.date("Session Start Date") == null) {
                 throw row.error("'Session Start Date' is required");
             }
-            Session session = context.sessionForScores(round, apparatus, part, row.date("Session Start Date"), row);
+            Competition competition = context.competitionForScores(type, apparatus, part,
+                    row.date("Session Start Date"), row);
 
             Score score = new Score();
             score.setParticipant(context.participant(row));
-            score.setSession(session);
+            score.setCompetition(competition);
             score.setApparatus(apparatus);
             // The two-attempt vault shape suffixes each attempt's columns with 1 or 2
             if (row.hasColumn("Status1")) {
@@ -61,21 +76,76 @@ class ScoreImporter {
                 score.setRoutine(routine(row, ""));
                 score.setTotalScore(score.getRoutine().getScore());
             }
-            score.setRank(row.integer("Rank"));
-            score.setQualificationRank(row.integer("Qualification Rank"));
-            score.setQualificationResult(row.code("Qualification", QualificationResult::find));
+            score = scoreRepository.save(score);
+            context.getScores().add(score);
+            context.getScorePlacings().add(new ImportContext.ScorePlacing(score, row.integer("Rank"),
+                    row.integer("Qualification Rank"), row.code("Qualification", QualificationResult::find)));
             // Optional: where the file states each score's team role, it isn't worked out from the totals
             TeamScoreRole teamRole = row.code("Team Role", TeamScoreRole::find);
             if (teamRole != null) {
-                score.setTeamScoreRole(teamRole);
-            }
-
-            score = scoreRepository.save(score);
-            context.getScores().add(score);
-            if (teamRole != null) {
-                context.getScoresWithTeamRole().add(score);
+                context.getStatedTeamRoles().put(score, teamRole);
             }
             context.getReport().count("scores");
+        }
+    }
+
+    /**
+     * Turns the placings printed with the scores into apparatus rankings, one per
+     * competition, apparatus and purpose ({@link ApparatusRanks#rankPurpose}). In
+     * qualification a non-vault apparatus has one ranking, which decides the final
+     * ({@code Qualification Rank}, equal to {@code Rank}); vault has two, the
+     * single-vault list ({@code Rank}, every vaulter, on the first vault) and the
+     * two-vault list deciding the final ({@code Qualification Rank}, only those who
+     * vaulted twice). A ranking is created only where some row places a score in it.
+     */
+    void rankScores(ImportContext context) {
+        Map<String, List<ImportContext.ScorePlacing>> groups = new LinkedHashMap<>();
+        for (ImportContext.ScorePlacing placing : context.getScorePlacings()) {
+            Score score = placing.score();
+            groups.computeIfAbsent(score.getCompetition().getId() + " " + score.getApparatus(),
+                    key -> new ArrayList<>()).add(placing);
+        }
+        for (List<ImportContext.ScorePlacing> group : groups.values()) {
+            Competition competition = group.getFirst().score().getCompetition();
+            Apparatus apparatus = group.getFirst().score().getApparatus();
+            RankingPurpose purpose = ApparatusRanks.rankPurpose(competition.getType(), apparatus);
+            if (competition.getType() == CompetitionType.C1 && apparatus == Apparatus.VT) {
+                rank(context, group, competition, apparatus, purpose, placing -> true,
+                        ImportContext.ScorePlacing::rank, placing -> null,
+                        placing -> placing.score().getRoutine().getScore());
+                rank(context, group, competition, apparatus, RankingPurpose.QUALIFYING,
+                        placing -> placing.qualificationRank() != null || placing.qualification() != null
+                                || placing.score().getSecondRoutine() != null,
+                        ImportContext.ScorePlacing::qualificationRank, ImportContext.ScorePlacing::qualification,
+                        placing -> placing.score().getTotalScore());
+            } else {
+                rank(context, group, competition, apparatus, purpose, placing -> true,
+                        placing -> purpose == RankingPurpose.QUALIFYING && placing.qualificationRank() != null
+                                ? placing.qualificationRank() : placing.rank(),
+                        ImportContext.ScorePlacing::qualification, placing -> placing.score().getTotalScore());
+            }
+        }
+    }
+
+    private void rank(ImportContext context, List<ImportContext.ScorePlacing> group, Competition competition,
+            Apparatus apparatus, RankingPurpose purpose, Predicate<ImportContext.ScorePlacing> member,
+            Function<ImportContext.ScorePlacing, Integer> rank,
+            Function<ImportContext.ScorePlacing, QualificationResult> qualification,
+            Function<ImportContext.ScorePlacing, Double> total) {
+        List<ImportContext.ScorePlacing> members = group.stream().filter(member).toList();
+        if (members.stream().noneMatch(placing -> rank.apply(placing) != null || qualification.apply(placing) != null)) {
+            return;
+        }
+        Ranking ranking = context.ranking(competition, RankingType.APPARATUS, apparatus, purpose);
+        for (ImportContext.ScorePlacing placing : members) {
+            ApparatusResult result = new ApparatusResult();
+            result.setRanking(ranking);
+            result.setParticipant(placing.score().getParticipant());
+            result.setTotalScore(total.apply(placing));
+            result.setRank(rank.apply(placing));
+            result.setRankStatus(result.getRank() != null ? RankStatus.RANKED : null);
+            result.setQualificationResult(purpose == RankingPurpose.QUALIFYING ? qualification.apply(placing) : null);
+            apparatusResultRepository.save(result);
         }
     }
 

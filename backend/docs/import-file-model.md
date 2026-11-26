@@ -79,11 +79,11 @@ content, so the file is meaningful on its own without its filename intact.
 | Column | Description | Entity Mapping |
 |---|---|---|
 | Event Name | The literal `Event.title` for this specific discipline+age sub-event (e.g. `37th Senior European Championships`) — not a coarser shared label. A single "European Championships" can produce several distinct `Event` rows (one per discipline+age), each with its own title, FIG event number, and date range; this column always matches the specific one this file belongs to. | `Event.title` |
-| Discipline | `MAG` / `WAG`. Present in every file mainly to resolve which `Session` (or, for `PARTICIPANTS`, which `Athlete`) the row belongs to. | `Session.discipline` (also sets `Athlete.discipline` when importing `PARTICIPANTS`) |
-| Age Category | `SR` / `JR` / `JR16` / `JR17`. `Event` itself has no age category field — a single `Event` row in this data set happens to be scoped to one age category, but that's convention, not a schema guarantee. | `Session.ageCategory` |
+| Discipline | `MAG` / `WAG`. Present in every file mainly to resolve which `Competition` (or, for `PARTICIPANTS`, which `Athlete`) the row belongs to. | `Competition.discipline` (also sets `Athlete.discipline` when importing `PARTICIPANTS`) |
+| Age Category | `SR` / `JR` / `JR16` / `JR17`. `Event` itself has no age category field — a single `Event` row in this data set happens to be scoped to one age category, but that's convention, not a schema guarantee. | `Competition.ageCategory` |
 | Event Start Date | `Event.startDate`. Exists to disambiguate one year's edition from another, since `Event Name` alone doesn't carry a year. Present on `PARTICIPANTS`, `JUDGES`, `SUMMARY`. | `Event.startDate` |
-| Session Start Date | The calendar date this specific `Round` (and, for `EVENT`, this specific apparatus; for a round split into parts, this part) was actually competed — sourced from the PDF's Competition Schedule pages, **never** from a page footer's report-generation timestamp (the two can disagree by a day or more). Present on `SCORES` only, in place of `Event Start Date`. Named "Start" because a large-field round can in principle span more than one calendar day. | `Session.date` |
-| Part | Which part of a round split across several sessions this row belongs to (`1`, `2`, … — US Championships' Day 1 and Day 2). Blank for an ordinary single-session round, and on `SUMMARY` rows holding the combined standings of a split round (the whole-round session). Present on `SCORES` and `SUMMARY`, right after `Round`. | `Session.part` |
+| Session Start Date | The calendar date this specific `Round` (and, for `EVENT`, this specific apparatus; for a round split into parts, this part) was actually competed — sourced from the PDF's Competition Schedule pages, **never** from a page footer's report-generation timestamp (the two can disagree by a day or more). Present on `SCORES` only, in place of `Event Start Date`. Named "Start" because a large-field round can in principle span more than one calendar day. | `Competition.date` |
+| Part | Which part of a round split across several sessions this row belongs to (`1`, `2`, … — US Championships' Day 1 and Day 2). Blank for an ordinary single-session round, and on `SUMMARY` rows holding the combined standings of a split round (the whole-round session). Present on `SCORES` and `SUMMARY`, right after `Round`. | `Competition.part` |
 
 ## `EVENT.csv`
 
@@ -152,9 +152,9 @@ round(s) a column actually appears in.
 
 | Column | QUAL | EVENT | TEAM | AA | Description | Entity Mapping |
 |---|:-:|:-:|:-:|:-:|---|---|
-| Round | ✓ | ✓ | ✓ | ✓ | Which round this result is from | `Session.round` |
-| Apparatus | ✓ | ✓ | ✓ | ✓ | Two-letter code | `Score.apparatus` (also `Session.apparatus` for `EVENT` round specifically) |
-| Rank | ✓ | ✓ | ✓ | ✓ | Published apparatus placement. Duplicate values for ties are legitimate, copied as printed. Blank where the source prints no per-apparatus rank (e.g. the 2026 Worlds Team Final) | `Score.rank` |
+| Round | ✓ | ✓ | ✓ | ✓ | Which round this result is from | `Competition.type` (`QUAL` = `C1`, `AA` = `C2`, `EVENT` = `C3`, `TEAM` = `C4`) |
+| Apparatus | ✓ | ✓ | ✓ | ✓ | Two-letter code | `Score.apparatus` (also `Competition.apparatus` for `EVENT` round specifically) |
+| Rank | ✓ | ✓ | ✓ | ✓ | Published apparatus placement. Duplicate values for ties are legitimate, copied as printed. Blank where the source prints no per-apparatus rank (e.g. the 2026 Worlds Team Final) | `ApparatusResult.rank` in the competition's apparatus ranking (data-model.md §5.1) |
 | Bib | ✓ | ✓ | ✓ | ✓ | Identifies the athlete, joins to `PARTICIPANTS.csv` | *(join key to `Participant.bibNumber` — not re-stored on `Score`)* |
 | Name | ✓ | ✓ | ✓ | ✓ | As printed on this report — cross-check against `PARTICIPANTS.csv` by Bib rather than trusting a possibly-truncated column here | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | ✓ | ✓ | | *(not stored — already on `Participant.noc`)* |
@@ -165,9 +165,9 @@ round(s) a column actually appears in.
 | Penalty | ✓ | ✓ | ✓ | ✓ | Blank when no penalty applied — never `0`. Where a source splits penalties into several columns (2026 Szombathely World Challenge Cup: time, line, other), their sum | `Score.routine.penalty` |
 | SJ Penalty | ✓ | ✓ | ✓ | ✓ | Superior Jury Penalty, distinct from `Penalty`. Not observed with a non-blank value on any non-vault apparatus so far | `Score.routine.sjPenalty` |
 | Total | ✓ | ✓ | ✓ | ✓ | Blank when `Status` is `DNS` | `Score.routine.score` (and `Score.totalScore`, which equals it for a single routine) |
-| Qualification | ✓ | | | | `Q`/`R1`–`R4`/`NR`/blank, matching `QualificationResult` exactly. Only meaningful where there's a further round to qualify into. Sources that number the qualifiers (`Q1`…`Q8`, sporttech.io) are written as `Q`. Where the qualification table prints no markers but the final's start list names the finalists and ordered reserves (2026 Cottbus World Cup), they're taken from the start list | `Score.qualificationResult` |
-| Qualification Rank | ✓ | | | | Placement in the ranking that decides the apparatus final. On every non-vault apparatus that's the same ranking as `Rank`, so the value is always equal to `Rank` — written out anyway so every `QUAL` file pairs `Qualification` with its own rank, vault included | `Score.qualificationRank` |
-| Team Role | ✓ | | ✓ | ✓ | **Optional**, last column, on any `SCORES` file (vault's too). What the score did for its country's team: `COUNTING` (one of the scores making up the team's apparatus total), `DROPPED` (a team member's score left out of it) or `INDIVIDUAL` (an athlete competing as an individual on this apparatus, e.g. a team's fifth athlete up for World Championships qualification only). Written where a source says who was up for the team on each apparatus (2026 Oceania Championships, from the Elevien results site). A missing column, or a NOC whose cells are all blank, means the importer works the roles out from the team summary's apparatus totals. Blank on a `DNS` row with no team role known | `Score.teamScoreRole` |
+| Qualification | ✓ | | | | `Q`/`R1`–`R4`/`NR`/blank, matching `QualificationResult` exactly. Only meaningful where there's a further round to qualify into. Sources that number the qualifiers (`Q1`…`Q8`, sporttech.io) are written as `Q`. Where the qualification table prints no markers but the final's start list names the finalists and ordered reserves (2026 Cottbus World Cup), they're taken from the start list | `ApparatusResult.qualificationResult` in the double-vault (`QUALIFYING`) ranking |
+| Qualification Rank | ✓ | | | | Placement in the ranking that decides the apparatus final. On every non-vault apparatus that's the same ranking as `Rank`, so the value is always equal to `Rank` — written out anyway so every `QUAL` file pairs `Qualification` with its own rank, vault included | `ApparatusResult.rank` in the qualification's `QUALIFYING` apparatus ranking |
+| Team Role | ✓ | | ✓ | ✓ | **Optional**, last column, on any `SCORES` file (vault's too). What the score did for its country's team: `COUNTING` (one of the scores making up the team's apparatus total), `DROPPED` (a team member's score left out of it) or `INDIVIDUAL` (an athlete competing as an individual on this apparatus, e.g. a team's fifth athlete up for World Championships qualification only). Written where a source says who was up for the team on each apparatus (2026 Oceania Championships, from the Elevien results site). A missing column, or a NOC whose cells are all blank, means the importer works the roles out from the team summary's apparatus totals. Blank on a `DNS` row with no team role known | `TeamResultScore.role` (`INDIVIDUAL`: no link) |
 
 ### Vault, double-attempt shape (`QUAL` and `EVENT` rounds only)
 
@@ -181,9 +181,9 @@ result, which decides the Vault final.
 
 | Column | QUAL | EVENT | Description | Entity Mapping |
 |---|:-:|:-:|---|---|
-| Round | ✓ | ✓ | | `Session.round` |
+| Round | ✓ | ✓ | | `Competition.type` |
 | Apparatus | ✓ | ✓ | | `Score.apparatus` |
-| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1), or the all-around report's vault rank column where that is the only such ranking (2026 African Championships; at the 2026 Commonwealth Games it ranks only the all-arounders' first vaults against the field, and the other rows are blank); blank where the source has neither (2026 Junior Pan Americans, whose first vaults come from the all-around report; 2026 South American Games MAG, from the team and all-around reports). `EVENT`: the final's placement | `Score.rank` |
+| Rank | ✓ | ✓ | `QUAL`: from the single-vault list (whole field, ranked on vault 1), or the all-around report's vault rank column where that is the only such ranking (2026 African Championships; at the 2026 Commonwealth Games it ranks only the all-arounders' first vaults against the field, and the other rows are blank); blank where the source has neither (2026 Junior Pan Americans, whose first vaults come from the all-around report; 2026 South American Games MAG, from the team and all-around reports). `EVENT`: the final's placement | `ApparatusResult.rank` in the competition's apparatus ranking (data-model.md §5.1) |
 | Bib | ✓ | ✓ | | *(join key)* |
 | Name | ✓ | ✓ | | *(not stored — verification only)* |
 | NOC Code | ✓ | ✓ | | *(not stored)* |
@@ -204,8 +204,8 @@ result, which decides the Vault final.
 | Combined Bonus | ✓ | ✓ | A bonus applied to the *combined* two-vault result, not either attempt — distinct from `B1`/`B2`. Some sources print it as a `*` on the combined `Total` (WAG's +0.2), others as its own `Vault Bonus` column; either way it lands here as a number or blank, with `Total` holding the clean number. Present for MAG too (always blank so far) for column alignment | `Score.combinedBonus` |
 | Combined SJ Penalty | ✓ | ✓ | **Optional.** A Superior Jury penalty on the *combined* two-vault result, not either attempt — distinct from `SJ Penalty1`/`SJ Penalty2`. Written negative, as deducted, though the source prints it unsigned in its `SJ Pen.` column beside the vault score (2026 Baku World Cup WAG qualification: `-0.3`); already deducted from `Total`. A missing column or blank cell means none. Written on every vault file of the 2026 Baku World Cup | `Score.combinedSjPenalty` |
 | Total | ✓ | ✓ | The result the Vault final is decided on — `Total1` alone for a single-vault athlete, the published average plus `Combined Bonus` (and `Combined SJ Penalty`) for a completed two-vault athlete, blank when there's no valid combined result | `Score.totalScore` |
-| Qualification | ✓ | | Only ever set from the double-vault list; blank for single-vault-only athletes | `Score.qualificationResult` |
-| Qualification Rank | ✓ | | Rank **within the double-vault list** — distinct from `Rank`. Blank for single-vault-only athletes | `Score.qualificationRank` |
+| Qualification | ✓ | | Only ever set from the double-vault list; blank for single-vault-only athletes | `ApparatusResult.qualificationResult` in the double-vault (`QUALIFYING`) ranking |
+| Qualification Rank | ✓ | | Rank **within the double-vault list** — distinct from `Rank`. Blank for single-vault-only athletes | `ApparatusResult.rank` in the qualification's `QUALIFYING` apparatus ranking |
 
 ### Vault, single-attempt shape (`TEAM` and `AA` rounds)
 
@@ -256,17 +256,17 @@ publishes no per-part placement.
 
 | Column | Description | Entity Mapping |
 |---|---|---|
-| Round | The round this summary is from: [Round](../src/main/java/doubletuck/meet/domain/Round.java). Note: `SUMMARY-FINAL-TEAM`'s filename segment is `FINAL` while this column's value is `TEAM` | `Session.round` |
-| Part | See the metadata prefix. Blank on combined rows of a split round | `Session.part` (blank → the whole-round session) |
+| Round | The round this summary is from: [Round](../src/main/java/doubletuck/meet/domain/Round.java). Note: `SUMMARY-FINAL-TEAM`'s filename segment is `FINAL` while this column's value is `TEAM` | `Competition.type`, or with `Scores Round` the ranking's purpose only |
+| Part | See the metadata prefix. Blank on combined rows of a split round | `Competition.part` (blank → the whole row; a part row is an `INFORMATIONAL` ranking of the part) |
 | Rank | Placement in the standings | `TeamResult.rank` / `AllAroundResult.rank` |
 | Bib | Identifies the athlete. **All-Around summary only** | |
 | Name | Athlete name as printed. **All-Around summary only** | |
-| NOC Code | Country/federation the row represents | `TeamResult.noc` |
-| `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG. The exceptions, where the source prints no apparatus totals: the 2026 African Championships' are the sums of the member scores its team report prints in bold (the counting ones); the 2026 Oceania Championships' are the sums of the `COUNTING` scores, from the team line-ups. Either way checked against the printed team total | *(not stored — on a team summary, used to check or work out `Score.teamScoreRole`)* |
+| NOC Code | Country/federation the row represents | `Team.noc` (and `Team.name`) of the `TeamResult` |
+| `<APP> Total` (one column per apparatus) | Already the sum/drop-lowest total printed by the source, not recomputed. Apparatus set and column order is discipline-specific: `FX, PH, SR, VT, PB, HB` for MAG, `FX, BB, UB, VT` for WAG. The exceptions, where the source prints no apparatus totals: the 2026 African Championships' are the sums of the member scores its team report prints in bold (the counting ones); the 2026 Oceania Championships' are the sums of the `COUNTING` scores, from the team line-ups. Either way checked against the printed team total | *(not stored — on a team summary, used to check or work out `TeamResultScore.role` (`INDIVIDUAL`: no link))* |
 | SJ Penalty | Penalty on the row as a whole, distinct from an individual routine's `Penalty`, as printed (negative) and already deducted from `Total` — e.g. a team penalty (2026 Senior Pan Americans MAG CUB, `-1.000`). Where a book takes part of a team penalty off an apparatus total (2026 Asian Championships WAG juniors LBN, beam), the whole penalty is written here and the apparatus total as the sum of its counting scores | `TeamResult.sjPenalty` / `AllAroundResult.sjPenalty` |
 | Total | Grand total | `TeamResult.totalScore` / `AllAroundResult.totalScore` |
 | Qualification | [QualificationResult](../src/main/java/doubletuck/meet/domain/QualificationResult.java). Omitted entirely from a `FINAL` summary — no further round to qualify into. The 2026 Worlds All-Around qualification also uses `R4` | `TeamResult.qualificationResult` / `AllAroundResult.qualificationResult` |
-| Scores Round | **Optional.** The round whose routines these standings rank, when the round has no `SCORES` files of its own: the 2026 Asian Championships' team and all-around finals rank the qualification's routines (`QUAL`), re-ranked among the qualifiers, and the 2026 Asian Games' all-around final ranks its qualification's routines too, as do the 2026 South American Games' team and all-around finals; the 2026 Oceania Championships' team final ranks the all-around final's routines (`AA`), the one competition deciding both titles. A missing column or blank cell means the standings rank their own round's scores | `Session.scoresSession` |
+| Scores Round | **Optional.** The round whose routines these standings rank, when the round has no `SCORES` files of its own: the 2026 Asian Championships' team and all-around finals rank the qualification's routines (`QUAL`), re-ranked among the qualifiers, and the 2026 Asian Games' all-around final ranks its qualification's routines too, as do the 2026 South American Games' team and all-around finals; the 2026 Oceania Championships' team final ranks the all-around final's routines (`AA`), the one competition deciding both titles. A missing column or blank cell means the standings rank their own round's scores | the ranking's competition: no competition is created for the round ([import-process.md](import-process.md#competitions)) |
 
 ## `SUMMARY-FINAL-<APP>.csv`
 
@@ -279,8 +279,8 @@ always blank.
 
 | Column | Description | Entity Mapping |
 |---|---|---|
-| Event Name, Discipline, Age Category, Event Start Date, Round, Part | Metadata prefix | `Session` (whole-round: `part` null) |
-| Apparatus | Two-letter code | `ApparatusResult.apparatus` |
+| Event Name, Discipline, Age Category, Event Start Date, Round, Part | Metadata prefix | the whole row `Competition` (`part` null) the ranking belongs to |
+| Apparatus | Two-letter code | `Ranking.apparatus` |
 | Rank | Combined placement, as published | `ApparatusResult.rank` |
 | Bib | Joins to `PARTICIPANTS.csv` | *(join key)* |
 | Name | As printed | *(not stored — verification only)* |

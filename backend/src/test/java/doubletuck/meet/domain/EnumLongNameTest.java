@@ -26,6 +26,28 @@ class EnumLongNameTest {
     }
 
     @Test
+    void testCompetitionType_AcceptsTheFilesRoundCodes() {
+        assertEquals(CompetitionType.C1, CompetitionType.find("C1"));
+        assertEquals(CompetitionType.C4, CompetitionType.find("Competition IV"));
+        assertEquals(CompetitionType.C1, CompetitionType.find("QUAL"));
+        assertEquals(CompetitionType.C3, CompetitionType.find("Apparatus Final"));
+        assertEquals(Round.TEAM, CompetitionType.C4.getLegacyRound());
+        assertEquals(CompetitionType.C2, CompetitionType.of(Round.AA));
+        assertNull(CompetitionType.find("C5"));
+    }
+
+    @Test
+    void testRankingEnums() {
+        assertEquals(RankingType.AA, RankingType.find("All-Around"));
+        assertEquals(RankingPurpose.INFORMATIONAL, RankingPurpose.find("informational"));
+        assertEquals(RankStatus.NOC_LIMIT, RankStatus.find("NOC Limit"));
+        assertEquals(RankStatus.HORS_CONCOURS, RankStatus.find("HORS_CONCOURS"));
+        assertEquals(TeamContributionRole.DROPPED, TeamContributionRole.find("Dropped"));
+        assertNull(TeamContributionRole.find("INDIVIDUAL"));
+        assertEquals(Discipline.MIX, Discipline.find("mix"));
+    }
+
+    @Test
     void testEventLevel() {
         assertEquals(EventLevel.WORLD_CHAMPIONSHIPS, EventLevel.find("WORLD_CHAMPIONSHIPS"));
         assertEquals(EventLevel.WORLD_CHAMPIONSHIPS, EventLevel.find("World Championships"));

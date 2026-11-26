@@ -28,9 +28,9 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "score", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_score", columnNames = { "participant_id", "session_id", "apparatus_code" })
+        @UniqueConstraint(name = "uk_score", columnNames = { "participant_id", "competition_id", "apparatus_code" })
 }, indexes = {
-        @Index(name = "ix_score_session", columnList = "session_id")
+        @Index(name = "ix_score_competition", columnList = "competition_id")
 })
 public class Score extends BaseEntity {
 
@@ -39,10 +39,10 @@ public class Score extends BaseEntity {
     @JoinColumn(name = "participant_id", nullable = false, foreignKey = @ForeignKey(name = "fk_score_participant"))
     private Participant participant;
 
-    @NotNull(message = "Session is required")
+    @NotNull(message = "Competition is required")
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "session_id", nullable = false, foreignKey = @ForeignKey(name = "fk_score_session"))
-    private Session session;
+    @JoinColumn(name = "competition_id", nullable = false, foreignKey = @ForeignKey(name = "fk_score_competition"))
+    private Competition competition;
 
     @NotNull(message = "Apparatus is required")
     @Column(name = "apparatus_code", nullable = false, length = 5)
@@ -78,18 +78,4 @@ public class Score extends BaseEntity {
     @Column(name = "total_score")
     private Double totalScore;
 
-    @Column(name = "rank")
-    private Integer rank;
-
-    @Column(name = "qualification_rank")
-    private Integer qualificationRank;
-
-    @Column(name = "qualification_result_code", length = 10)
-    @Enumerated(EnumType.STRING)
-    private QualificationResult qualificationResult;
-
-    @NotNull(message = "Team score role is required")
-    @Column(name = "team_score_role_code", nullable = false, length = 20)
-    @Enumerated(EnumType.STRING)
-    private TeamScoreRole teamScoreRole = TeamScoreRole.COUNTING;
 }

@@ -6,6 +6,14 @@ A session's results, rebuilt as the official results print them: ranks, ties
 and totals are copied as published, never recalculated. A session's id comes
 from its event's [EventDetailResponse](api-event.md#eventdetailresponse-object).
 
+A session is a `Competition` in the data model ([data-model.md](../data-model.md) §3):
+routines performed on a date. Its standings are the rankings of its routines (§5). A
+title decided in another competition's routines is shown with that competition, not
+as a session of its own: the 2026 Asian Championships' and South American Games' team
+and all-around finals, and the 2026 Asian Games' all-around final, are on the
+qualification; the 2026 Oceania Championships' team final is on the all-around final.
+The API keeps the session names and fields it had until it's realigned with the model.
+
 Public, cached and revalidated like the [Event API](api-event.md)'s `GET`
 endpoints. Responses are gzip-compressed when the client accepts it: a
 championship qualification is about 280 KB of JSON, 28 KB compressed.
@@ -47,11 +55,12 @@ Which parts are filled depends on the round:
 | Apparatus final, or apparatus-format qualification (World Cup) | one apparatus | | | |
 | A split round's part (US Championships' Day 1, Day 2) | every apparatus | ✓ | | |
 | A split round's combined session | | ✓ | | ✓ |
-| Team or All-Around final ranking another session's routines (2026 Asian Championships) | | ✓ (All-Around) | ✓ (Team) | |
 
-A final ranking another session's routines has no score tables of its own; its
-all-around rows' `apparatusScores` and team rows' `apparatusTotals` come from
-the routines it ranks (the qualification's), shown in that session's tables.
+Where a session's routines are ranked more than once for one title, `allAround` and
+`teams` show the ranking that decided the most: the final placings over the
+qualifying standings (2026 Asian Championships' qualification shows the team and
+all-around finals' rankings), the qualifying standings over a ranking that decides
+nothing.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -93,7 +102,7 @@ One athlete's result on one apparatus.
 | total | Double, nullable | The result the apparatus is decided on: for two vaults, their published combination |
 | qualificationRank | Integer, nullable | Placement in the ranking that decides the apparatus final |
 | qualification | String, nullable | `Q`, `R1`–`R4` or `NR` |
-| teamRole | String | What the score does for its team: `COUNTING`, `DROPPED` (a team member's score left out of the team total) or `INDIVIDUAL` (an athlete competing as an individual on the apparatus). `COUNTING` where no team is ranked |
+| teamRole | String | What the score does for its team in the session's team rankings: `COUNTING`, `DROPPED` (a team member's score left out of the team total) or `INDIVIDUAL` (no part of a ranked team: an athlete competing as an individual, a country with no team result, or a did-not-start with no role known). `COUNTING` where no team is ranked |
 
 ### Routine Object
 

@@ -18,12 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * An athlete's published standing on one apparatus across a round split into
- * several parts (e.g. US Championships' two-day combined apparatus results).
- * It belongs to the whole-round {@link Session} (part null), while the judged
- * routines behind it are {@link Score}s on each part's session.
- */
+/** A gymnast's line in an apparatus ranking, as published. The apparatus is the ranking's. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,30 +26,37 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "apparatus_result", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_apparatus_result", columnNames = { "participant_id", "session_id", "apparatus_code" })
+        @UniqueConstraint(name = "uk_apparatus_result", columnNames = { "ranking_id", "participant_id" })
 }, indexes = {
-        @Index(name = "ix_apparatus_result_session", columnList = "session_id")
+        @Index(name = "ix_apparatus_result_participant", columnList = "participant_id")
 })
 public class ApparatusResult extends BaseEntity {
+
+    @NotNull(message = "Ranking is required")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ranking_id", nullable = false, foreignKey = @ForeignKey(name = "fk_apparatus_result_ranking"))
+    @ToString.Exclude
+    private Ranking ranking;
 
     @NotNull(message = "Participant is required")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "participant_id", nullable = false, foreignKey = @ForeignKey(name = "fk_apparatus_result_participant"))
     private Participant participant;
 
-    @NotNull(message = "Session is required")
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "session_id", nullable = false, foreignKey = @ForeignKey(name = "fk_apparatus_result_session"))
-    private Session session;
-
-    @NotNull(message = "Apparatus is required")
-    @Column(name = "apparatus_code", nullable = false, length = 5)
-    @Enumerated(EnumType.STRING)
-    private Apparatus apparatus;
-
+    // What the apparatus is decided on: the routine's score, or for two vaults their combination
     @Column(name = "total_score")
     private Double totalScore;
 
     @Column(name = "rank")
     private Integer rank;
+
+    // Why there is or isn't a rank; null where the source doesn't say
+    @Column(name = "rank_status_code", length = 20)
+    @Enumerated(EnumType.STRING)
+    private RankStatus rankStatus;
+
+    // Only on a QUALIFYING ranking
+    @Column(name = "qualification_result_code", length = 10)
+    @Enumerated(EnumType.STRING)
+    private QualificationResult qualificationResult;
 }

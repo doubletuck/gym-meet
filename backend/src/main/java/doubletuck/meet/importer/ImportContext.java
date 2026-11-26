@@ -4,41 +4,55 @@ import doubletuck.meet.domain.AgeCategory;
 import doubletuck.meet.domain.AllAroundResult;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.Participant;
-import doubletuck.meet.domain.Round;
+import doubletuck.meet.domain.QualificationResult;
+import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.RankingPurpose;
+import doubletuck.meet.domain.RankingType;
 import doubletuck.meet.domain.Score;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Team;
 import doubletuck.meet.domain.TeamResult;
-import doubletuck.meet.service.SessionService;
+import doubletuck.meet.domain.TeamScoreRole;
+import doubletuck.meet.repository.RankingRepository;
+import doubletuck.meet.repository.TeamRepository;
+import doubletuck.meet.service.CompetitionService;
 import lombok.Getter;
 
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * State shared by the steps importing one manifest: the event and slice
- * (discipline + age category) being imported, and the participants, sessions
- * and results created so far.
+ * (discipline + age category) being imported, and the participants,
+ * competitions, rankings and results created so far.
  */
 @Getter
 class ImportContext {
 
-    record PublishedTeamTotal(Session session, String noc, Apparatus apparatus, double total, String location) {
+    record PublishedTeamTotal(TeamResult teamResult, Apparatus apparatus, double total, String location) {
     }
 
-    private record SessionKey(Round round, Apparatus apparatus, Integer part) {
+    /** A score's placings as its SCORES row gives them, turned into apparatus rankings once all are read. */
+    record ScorePlacing(Score score, Integer rank, Integer qualificationRank, QualificationResult qualification) {
+    }
+
+    private record CompetitionKey(CompetitionType type, Apparatus apparatus, Integer part) {
+    }
+
+    private record RankingKey(Competition competition, RankingType type, Apparatus apparatus,
+            RankingPurpose purpose) {
     }
 
     private final Path directory;
@@ -47,36 +61,45 @@ class ImportContext {
     private final Discipline discipline;
     private final AgeCategory ageCategory;
     private final ImportReport report;
-    private final SessionService sessionService;
+    private final CompetitionService competitionService;
+    private final RankingRepository rankingRepository;
+    private final TeamRepository teamRepository;
 
     /**
      * True for an apparatus-format meet (a World Cup), where each apparatus's
-     * qualification is its own competition. Recognised by the absence of any
-     * qualification summary: such meets have no team or all-around ranking.
+     * qualification is its own competition. Recognised by the absence of any team
+     * or all-around ranking.
      */
     private final boolean qualificationByApparatus;
 
     private final Map<String, Participant> participantsByBib = new HashMap<>();
-    private final Map<SessionKey, Session> sessions = new LinkedHashMap<>();
+    private final Map<CompetitionKey, Competition> competitions = new LinkedHashMap<>();
+    private final Map<RankingKey, Ranking> rankings = new LinkedHashMap<>();
+    private final Map<String, Team> teams = new HashMap<>();
     private final List<Score> scores = new ArrayList<>();
-    // Scores whose file states their team role (SCORES' Team Role column)
-    private final Set<Score> scoresWithTeamRole = Collections.newSetFromMap(new IdentityHashMap<>());
+    private final List<ScorePlacing> scorePlacings = new ArrayList<>();
+    // Team roles stated by the scores file (SCORES' Team Role column), by score
+    private final Map<Score, TeamScoreRole> statedTeamRoles = new IdentityHashMap<>();
     private final List<TeamResult> teamResults = new ArrayList<>();
     private final List<AllAroundResult> allAroundResults = new ArrayList<>();
+    // From the SUMMARY files only: a split competition's combined apparatus standings
     private final List<ApparatusResult> apparatusResults = new ArrayList<>();
     private final List<PublishedTeamTotal> publishedTeamTotals = new ArrayList<>();
 
     ImportContext(Path directory, ImportManifest manifest, Event event, Discipline discipline,
-            AgeCategory ageCategory, ImportReport report, SessionService sessionService) {
+            AgeCategory ageCategory, ImportReport report, CompetitionService competitionService,
+            RankingRepository rankingRepository, TeamRepository teamRepository) {
         this.directory = directory;
         this.manifest = manifest;
         this.event = event;
         this.discipline = discipline;
         this.ageCategory = ageCategory;
         this.report = report;
-        this.sessionService = sessionService;
+        this.competitionService = competitionService;
+        this.rankingRepository = rankingRepository;
+        this.teamRepository = teamRepository;
         this.qualificationByApparatus = manifest.summaries().stream()
-                .noneMatch(file -> file.contains("-SUMMARY-QUAL-"));
+                .noneMatch(file -> file.matches(".*-SUMMARY-(QUAL|FINAL)-(TEAM|AA)\\.csv"));
     }
 
     Path file(String name) {
@@ -98,118 +121,136 @@ class ImportContext {
     }
 
     /**
-     * The session a SCORES row was earned in, creating it the first time it's
-     * seen. Scores are what establish a session and its date.
+     * The competition a SCORES row was earned in, creating it the first time it's
+     * seen. Scores are what establish a competition and its date.
      */
-    Session sessionForScores(Round round, Apparatus apparatus, Integer part, LocalDate date, CsvRow row) {
-        SessionKey key = new SessionKey(round, sessionApparatus(round, apparatus), part);
-        Session session = sessions.get(key);
-        if (session == null) {
-            session = create(key, date, null);
-        } else if (session.getScoresSession() != null) {
-            throw row.error("the " + describe(key) + " session ranks the " + session.getScoresSession().getRound()
-                    + " session's scores and can't have scores of its own");
-        } else if (!session.getDate().equals(date)) {
-            report.warn(row.location() + ": session date " + date + " differs from " + session.getDate()
-                    + " already recorded for the " + describe(key) + " session");
+    Competition competitionForScores(CompetitionType type, Apparatus apparatus, Integer part, LocalDate date,
+            CsvRow row) {
+        CompetitionKey key = new CompetitionKey(type, competitionApparatus(type, apparatus), part);
+        Competition competition = competitions.get(key);
+        if (competition == null) {
+            competition = create(key, date);
+        } else if (!competition.getDate().equals(date)) {
+            report.warn(row.location() + ": competition date " + date + " differs from " + competition.getDate()
+                    + " already recorded for the " + describe(key) + " competition");
         }
-        return session;
+        return competition;
     }
 
     /**
-     * The session a SUMMARY row belongs to. It must already exist from the
-     * scores, except a split round's whole-round session (part null), which
-     * holds only combined standings and is created here, dated on its first
-     * part, and a session ranking another round's routines ({@code scoresRound}),
-     * created here on that round's date.
+     * The competition whose routines a SUMMARY row ranks: the one named by its
+     * {@code Scores Round} where it has one (standings published as another round's,
+     * such as a team final decided in qualification), otherwise the row's own round.
+     * It must already exist from the scores, except a split competition's whole row
+     * (part null), which holds only combined standings and is created here, dated on
+     * its first part.
      */
-    Session sessionForResults(Round round, Apparatus apparatus, Integer part, Round scoresRound, CsvRow row) {
-        SessionKey key = new SessionKey(round, sessionApparatus(round, apparatus), part);
-        Session session = sessions.get(key);
-        if (scoresRound != null) {
-            return sessionRankingScoresOf(key, new SessionKey(scoresRound, sessionApparatus(scoresRound, apparatus),
-                    part), session, row);
+    Competition competitionForResults(CompetitionType type, Integer part, CompetitionType scoresType, CsvRow row) {
+        CompetitionKey key = new CompetitionKey(scoresType != null ? scoresType : type, null, part);
+        Competition competition = competitions.get(key);
+        if (competition != null) {
+            return competition;
         }
-        if (session != null) {
-            if (session.getScoresSession() != null) {
-                throw row.error("the " + describe(key) + " session ranks the " + session.getScoresSession().getRound()
-                        + " session's scores, so this row needs that Scores Round too");
-            }
-            return session;
-        }
-        if (part == null) {
-            LocalDate firstPartDate = sessions.entrySet().stream()
-                    .filter(entry -> entry.getKey().round() == key.round()
-                            && Objects.equals(entry.getKey().apparatus(), key.apparatus())
+        if (part == null && scoresType == null) {
+            LocalDate firstPartDate = competitions.entrySet().stream()
+                    .filter(entry -> entry.getKey().type() == key.type() && entry.getKey().apparatus() == null
                             && entry.getKey().part() != null)
                     .map(entry -> entry.getValue().getDate())
                     .min(Comparator.naturalOrder())
                     .orElse(null);
             if (firstPartDate != null) {
-                return create(key, firstPartDate, null);
+                return create(key, firstPartDate);
             }
         }
-        throw row.error("no scores were imported for the " + describe(key) + " session this row belongs to");
-    }
-
-    private Session sessionRankingScoresOf(SessionKey key, SessionKey scoresKey, Session session, CsvRow row) {
-        Session scoresSession = sessions.get(scoresKey);
-        if (scoresSession == null || scoresSession.getScoresSession() != null) {
-            throw row.error("no scores were imported for the " + describe(scoresKey) + " session whose scores "
-                    + "the " + describe(key) + " session ranks");
-        }
-        if (session == null) {
-            return create(key, scoresSession.getDate(), scoresSession);
-        }
-        if (session.getScoresSession() != scoresSession) {
-            throw row.error("the " + describe(key) + " session has scores of its own or ranks another session's");
-        }
-        return session;
+        throw row.error("no scores were imported for the " + describe(key) + " competition this row ranks");
     }
 
     /**
-     * The sessions a judge served on: normally one, but a Superior Jury role
-     * (no apparatus) in a round held as one session per apparatus -- the
-     * apparatus finals -- presides over all of them. Empty when no scores were
-     * imported for the session.
+     * The ranking of one competition's routines of this type, apparatus and purpose,
+     * creating it the first time it's needed.
      */
-    List<Session> sessionsForJudge(Round round, Apparatus apparatus) {
-        if (apparatus == null && isPerApparatus(round)) {
-            return sessions.entrySet().stream()
-                    .filter(entry -> entry.getKey().round() == round && entry.getKey().part() == null)
+    Ranking ranking(Competition competition, RankingType type, Apparatus apparatus, RankingPurpose purpose) {
+        return rankings.computeIfAbsent(new RankingKey(competition, type, apparatus, purpose), key -> {
+            Ranking ranking = new Ranking();
+            ranking.setEvent(event);
+            ranking.setDiscipline(discipline);
+            ranking.setAgeCategory(ageCategory);
+            ranking.setType(type);
+            ranking.setApparatus(apparatus);
+            ranking.setPurpose(purpose);
+            ranking.getCompetitions().add(competition);
+            report.count("rankings");
+            return rankingRepository.save(ranking);
+        });
+    }
+
+    /** The NOC's team in this slice, creating it the first time it's seen. */
+    Team team(String noc) {
+        return teams.computeIfAbsent(noc, name -> {
+            Team team = new Team();
+            team.setEvent(event);
+            team.setDiscipline(discipline);
+            team.setAgeCategory(ageCategory);
+            team.setName(name);
+            team.setNoc(name);
+            report.count("teams");
+            return teamRepository.save(team);
+        });
+    }
+
+    /**
+     * The competitions a judge served on: normally one, but a Superior Jury role
+     * (no apparatus) in a competition held per apparatus -- the apparatus finals --
+     * presides over all of them. Empty when no scores were imported for it.
+     */
+    List<Competition> competitionsForJudge(CompetitionType type, Apparatus apparatus) {
+        if (apparatus == null && isPerApparatus(type)) {
+            return competitions.entrySet().stream()
+                    .filter(entry -> entry.getKey().type() == type && entry.getKey().part() == null)
                     .map(Map.Entry::getValue)
                     .toList();
         }
-        Session session = sessions.get(new SessionKey(round, sessionApparatus(round, apparatus), null));
-        return session == null ? List.of() : List.of(session);
+        Competition competition = competitions.get(new CompetitionKey(type, competitionApparatus(type, apparatus),
+                null));
+        return competition == null ? List.of() : List.of(competition);
     }
 
-    private boolean isPerApparatus(Round round) {
-        return round == Round.EVENT || (round == Round.QUAL && qualificationByApparatus);
+    /** Whether the competition is a split competition's whole row, holding the combined standings of its parts. */
+    boolean isWholeOfParts(Competition competition) {
+        return competition.getPart() == null && competitions.values().stream()
+                .anyMatch(part -> isPartOf(part, competition));
     }
 
-    private Apparatus sessionApparatus(Round round, Apparatus apparatus) {
-        return isPerApparatus(round) ? apparatus : null;
+    static boolean isPartOf(Competition part, Competition whole) {
+        return whole.getPart() == null && part.getPart() != null && part.getType() == whole.getType()
+                && Objects.equals(part.getApparatus(), whole.getApparatus());
     }
 
-    private Session create(SessionKey key, LocalDate date, Session scoresSession) {
-        Session session = new Session();
-        session.setEvent(event);
-        session.setDate(date);
-        session.setRound(key.round());
-        session.setDiscipline(discipline);
-        session.setAgeCategory(ageCategory);
-        session.setApparatus(key.apparatus());
-        session.setPart(key.part());
-        session.setScoresSession(scoresSession);
-        session = sessionService.createSession(session);
-        sessions.put(key, session);
-        report.count("sessions");
-        return session;
+    private boolean isPerApparatus(CompetitionType type) {
+        return type == CompetitionType.C3 || (type == CompetitionType.C1 && qualificationByApparatus);
     }
 
-    private String describe(SessionKey key) {
-        return key.round() + (key.apparatus() != null ? " " + key.apparatus() : "")
+    private Apparatus competitionApparatus(CompetitionType type, Apparatus apparatus) {
+        return isPerApparatus(type) ? apparatus : null;
+    }
+
+    private Competition create(CompetitionKey key, LocalDate date) {
+        Competition competition = new Competition();
+        competition.setEvent(event);
+        competition.setDate(date);
+        competition.setType(key.type());
+        competition.setDiscipline(discipline);
+        competition.setAgeCategory(ageCategory);
+        competition.setApparatus(key.apparatus());
+        competition.setPart(key.part());
+        competition = competitionService.createCompetition(competition);
+        competitions.put(key, competition);
+        report.count("competitions");
+        return competition;
+    }
+
+    private static String describe(CompetitionKey key) {
+        return key.type().getLegacyRound() + (key.apparatus() != null ? " " + key.apparatus() : "")
                 + (key.part() != null ? " part " + key.part() : "");
     }
 }

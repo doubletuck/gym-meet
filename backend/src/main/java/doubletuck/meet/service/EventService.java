@@ -6,7 +6,7 @@ import doubletuck.meet.dto.EventResponse;
 import doubletuck.meet.exception.ConflictException;
 import doubletuck.meet.repository.EventRepository;
 import doubletuck.meet.repository.ParticipantRepository;
-import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.CompetitionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +17,14 @@ import java.util.Optional;
 public class EventService {
 
     private final EventRepository eventRepository;
-    private final SessionRepository sessionRepository;
+    private final CompetitionRepository competitionRepository;
     private final ParticipantRepository participantRepository;
 
     @Autowired
-    public EventService(EventRepository eventRepository, SessionRepository sessionRepository,
+    public EventService(EventRepository eventRepository, CompetitionRepository competitionRepository,
             ParticipantRepository participantRepository) {
         this.eventRepository = eventRepository;
-        this.sessionRepository = sessionRepository;
+        this.competitionRepository = competitionRepository;
         this.participantRepository = participantRepository;
     }
 
@@ -50,7 +50,7 @@ public class EventService {
         if (eventRepository.findById(id).isEmpty()) {
             return false;
         }
-        if (!sessionRepository.findByEventId(id).isEmpty() || !participantRepository.findByEventId(id).isEmpty()) {
+        if (!competitionRepository.findByEventId(id).isEmpty() || !participantRepository.findByEventId(id).isEmpty()) {
             throw new ConflictException(
                     "Event " + id + " has dependent sessions or participants and cannot be deleted");
         }

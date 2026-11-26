@@ -3,6 +3,7 @@ import type { AgeCategory, Apparatus, Discipline, EventLevel, SessionSummary } f
 export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   MAG: "Men's Artistic Gymnastics",
   WAG: "Women's Artistic Gymnastics",
+  MIX: "Mixed Artistic Gymnastics",
 };
 
 export const AGE_CATEGORY_LABELS: Record<AgeCategory, string> = {
@@ -27,6 +28,8 @@ export const APPARATUS_LABELS: Record<Apparatus, string> = {
 export const APPARATUS_ORDER: Record<Discipline, Apparatus[]> = {
   MAG: ["FX", "PH", "SR", "VT", "PB", "HB"],
   WAG: ["VT", "UB", "BB", "FX"],
+  // A mixed team's apparatus belong to both disciplines (men's and women's floor); not shown yet
+  MIX: [],
 };
 
 export const LEVEL_LABELS: Record<EventLevel, string> = {

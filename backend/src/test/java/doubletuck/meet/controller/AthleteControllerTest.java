@@ -123,19 +123,16 @@ class AthleteControllerTest {
     }
 
     @Test
-    void testFindAthlete_FinalsRankingTheQualificationsRoutines_ListedWithoutRepeatingThem() throws Exception {
+    void testFindAthlete_FinalsRankingTheQualificationsRoutines_ShownWithTheQualification() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.ASIAN_WAG);
 
+        // The team and all-around finals ranked the qualification's routines: one entry, with the final placings
         mockMvc.perform(get("/api/athletes/{id}", athleteId("Yeap")))
-                .andExpect(jsonPath("$.entries[0].sessions[*].session.slug",
-                        contains("qualification", "team-final", "all-around-final")))
+                .andExpect(jsonPath("$.entries[0].sessions[*].session.slug", contains("qualification")))
                 .andExpect(jsonPath("$.entries[0].sessions[0].scores", hasSize(4)))
-                .andExpect(jsonPath("$.entries[0].sessions[0].allAround.rank").value(10))
-                .andExpect(jsonPath("$.entries[0].sessions[1].scores", empty()))
-                .andExpect(jsonPath("$.entries[0].sessions[1].team.noc").value("MAS"))
-                .andExpect(jsonPath("$.entries[0].sessions[1].team.rank").value(5))
-                .andExpect(jsonPath("$.entries[0].sessions[2].scores", empty()))
-                .andExpect(jsonPath("$.entries[0].sessions[2].allAround.rank").value(9))
+                .andExpect(jsonPath("$.entries[0].sessions[0].allAround.rank").value(9))
+                .andExpect(jsonPath("$.entries[0].sessions[0].team.noc").value("MAS"))
+                .andExpect(jsonPath("$.entries[0].sessions[0].team.rank").value(5))
                 .andExpect(jsonPath("$.allAroundBest.session.slug").value("qualification"));
     }
 

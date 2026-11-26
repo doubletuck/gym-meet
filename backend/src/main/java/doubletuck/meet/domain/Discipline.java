@@ -3,7 +3,9 @@ package doubletuck.meet.domain;
 public enum Discipline {
 
     MAG,
-    WAG;
+    WAG,
+    // Men and women together: a mixed team's competitions, rankings and teams, never an athlete
+    MIX;
 
     public static Discipline find(String text) {
 

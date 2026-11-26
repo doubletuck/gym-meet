@@ -79,39 +79,64 @@ names the file and line.
    entered into the event. A club is found or created by name within the
    participant's NOC. Some entry lists print a country's NOC only on its first
    row; it carries down to the rows below.
-3. **Scores.** Each row creates a `Score`, and the first score of a session
-   creates the `Session` (see [Sessions](#sessions)). A `!` before a D score is
-   stripped and sets `difficultyInquiry`. The itemized US bonus columns (`D+`,
-   `E+`, `S+`) become `bonusDetail` entries.
-4. **Summaries.** Team, all-around and combined apparatus standings, attached
-   to the session their round and part identify.
-5. **Judges.** Attached to the session their round and apparatus identify.
+3. **Scores.** Each row creates a `Score`, and the first score of a competition
+   creates the `Competition` (see [Competitions](#competitions)). A `!` before a D
+   score is stripped and sets `difficultyInquiry`. The itemized US bonus columns
+   (`D+`, `E+`, `S+`) become `bonusDetail` entries. Once every scores file is read,
+   the placings printed with the scores become apparatus rankings (see
+   [Rankings](#rankings)).
+4. **Summaries.** Team, all-around and combined apparatus standings become
+   rankings of the competition their round and part identify (see
+   [Rankings](#rankings)).
+5. **Judges.** Attached to the competition their round and apparatus identify.
 6. **Reconciling.** The imported scores are checked against the published
    totals (see [Checks](#checks)).
 
-### Sessions
+### Competitions
 
-A score's session is its round and part, plus its apparatus when the round is
-held as one session per apparatus:
+The files still name a competition by its round code: `QUAL` is `C1`, `AA` is
+`C2`, `EVENT` is `C3` and `TEAM` is `C4` ([data-model.md](data-model.md) §2). A
+score's competition is its round and part, plus its apparatus when the competition
+is held one per apparatus:
 
-- **Apparatus finals** (`EVENT`) — always one session per apparatus.
-- **Qualification at an apparatus-format meet** (a World Cup) — one session per
-  apparatus. A meet is treated as apparatus-format when its manifest has no
-  qualification summary, since such meets have no team or all-around ranking.
+- **Apparatus finals** (`EVENT`) — always one competition per apparatus.
+- **Qualification at an apparatus-format meet** (a World Cup) — one competition per
+  apparatus. A meet is treated as apparatus-format when its manifest has no team or
+  all-around summary at all (qualifying or final), since such meets rank neither.
 - **Everything else** (championship qualification, team and all-around finals)
-  — one session covering every apparatus.
+  — one competition covering every apparatus.
 
-The session's date is the `Session Start Date` of its scores. A split round's
-whole-round session (part blank), which holds only combined standings, is
-created from the summaries and dated on its first part. A summary with a
-`Scores Round` (2026 Asian Championships: the team and all-around finals,
-`QUAL`; 2026 Asian Games: the all-around final) creates its session too, linked to that round's session
-(`Session.scoresSession`) and dated on it; that round's scores must already be
-imported, and the session can have no scores of its own.
+The competition's date is the `Session Start Date` of its scores. A split
+competition's whole row (part blank), which holds only combined standings, is
+created from the summaries and dated on its first part. A summary row with a
+`Scores Round` creates no competition: it ranks the routines of that round's
+competition, whose scores must already be imported (2026 Asian Championships and
+South American Games: the team and all-around finals, `QUAL`; 2026 Asian Games: the
+all-around final; 2026 Oceania Championships: the team final, `AA`).
 
-A judge with no apparatus (Superior Jury) in a round held as one session per
-apparatus is attached to each of those sessions: the finals' Superior Jury
-presides over every apparatus final.
+A judge with no apparatus (Superior Jury) in a competition held one per apparatus
+is attached to each of those competitions: the finals' Superior Jury presides over
+every apparatus final.
+
+### Rankings
+
+Each ranking is one competition's routines ranked for one purpose
+([data-model.md](data-model.md) §5), created the first time a row needs it:
+
+| File content | Ranking |
+|---|---|
+| `SUMMARY-QUAL-<X>` rows | `QUALIFYING` team or all-around ranking (Q/R/NR kept) |
+| `SUMMARY-FINAL-<X>` rows | `FINAL` ranking; Q/R/NR on one fails the import |
+| A split competition's part rows (`Part` set) | `INFORMATIONAL`: the day's standings decide nothing |
+| `SUMMARY-FINAL-<APP>` rows (US) | `FINAL` apparatus ranking of the whole row |
+| Score `Rank`/`Qualification Rank`/`Qualification`, qualification, not vault | one `QUALIFYING` apparatus ranking (the two columns always agree) |
+| Same, qualification vault | `Rank`: an `INFORMATIONAL` single-vault list of every vaulter on the first vault; `Qualification Rank` + `Qualification`: a `QUALIFYING` double-vault list of those who vaulted twice |
+| Score `Rank`, apparatus final | `FINAL` apparatus ranking |
+| Score `Rank`, all-around or team final, or a part | `INFORMATIONAL` apparatus ranking |
+
+An apparatus ranking is created only where some row places a score in it. Team rows
+find or create the slice's `Team` for the NOC. A result with a printed rank gets the
+rank status `RANKED`; one without is left unstated until the files state it.
 
 ### Matching athletes
 
@@ -140,44 +165,44 @@ Totals are stored as published, never recomputed
 ([data-model.md](data-model.md) §5), so the importer checks them against the
 scores and reports any that don't agree as a warning:
 
-- **Team totals.** Where a scores file states each score's team role (the
-  optional `Team Role` column: `COUNTING`, `DROPPED`, `INDIVIDUAL`), it's
-  stored as given, and each published team apparatus total is checked against
-  the sum of the NOC's `COUNTING` scores; a NOC with roles stated for only some
-  of its scores is reported too. Otherwise the results files don't say which
+- **Team totals.** How each score figured in each team result is recorded as a
+  `TeamResultScore` link (`COUNTING` or `DROPPED`), per team result, so a score
+  can count for one ranking and be dropped by another. Where a scores file states
+  each score's team role (the optional `Team Role` column: `COUNTING`, `DROPPED`,
+  `INDIVIDUAL`), the links follow it — an `INDIVIDUAL` score gets none, a `DNS`
+  with a stated role is linked too — and each published team apparatus total is
+  checked against the sum of the NOC's `COUNTING` scores; a NOC with roles stated
+  for only some of its scored routines is reported too. Otherwise the results files don't say which
   scores were dropped from a team total, or which of a NOC's athletes were on
   the team — a NOC can enter individual athletes alongside its team (the 2026
   Europeans let teams add a sixth). So the importer works it out from the
   published team apparatus totals: it tries every group of the NOC's athletes,
   and a group is the team if, on every apparatus, some number of its members'
   top scores adds up to the published total. Those top scores counted; every
-  other score of the NOC on that apparatus gets `teamScoreRole = DROPPED`,
-  including the individuals' (the totals can't tell them apart). Groups that
+  other score of the NOC on that apparatus is linked as `DROPPED`, including the
+  individuals' (the totals can't tell them apart). Groups that
   differ only by athletes whose scores never counted agree on what counted. If
-  no group fits, or groups that fit disagree, every score is left as counting
+  no group fits, or groups that fit disagree, every score is linked as counting
   and a warning is reported. This assumes an athlete is on the team for every
   apparatus or none; where the team's line-up changes by apparatus (the 2026
   Oceania Championships' fifth athlete), only stated roles get it right. The
   team total is then checked against the sum of its published apparatus totals
-  plus any team penalty (`SJ Penalty`). Team standings ranking another
-  session's routines are checked against that session's scores the same way,
-  and leave which scores counted to that session's own team standings where it
-  has any.
-- **All-around totals** against the sum of the athlete's scores in that
-  session (or the session it ranks), plus any penalty on the result
-  (`SJ Penalty`); for a split round's
-  whole-round session, against the sum of the parts' totals. A published
+  plus any team penalty (`SJ Penalty`). Each team ranking is worked out on its
+  own, including a final ranking of the qualification's routines.
+- **All-around totals** against the sum of the athlete's scores in the ranked
+  competition, plus any penalty on the result (`SJ Penalty`); for a split
+  competition's whole row, against the sum of the parts' totals. A published
   `0.000` for an athlete with no scores that day is not reported.
-- **Combined apparatus totals** (split rounds) against the sum of the parts'
+- **Combined apparatus totals** (split competitions) against the sum of the parts'
   `Score.totalScore`.
 
-A score's NOC differing from its participant's, a session's scores having
-different dates, and judges for a session with no scores are also reported.
+A score's NOC differing from its participant's, a competition's scores having
+different dates, and judges for a competition with no scores are also reported.
 
 ## Importing again
 
 With `--import.replace`, a discipline and age category already in the event is
-deleted and imported again: its sessions with their scores, results and judges,
-then the event's participants of that discipline left with no results at all.
+deleted and imported again: its rankings with their results and team score links,
+its teams, and its competitions with their scores and judges, then the event's participants of that discipline left with no results at all.
 Athletes and clubs are kept, so the reimport matches them again. Other
 disciplines and age categories sharing the event aren't touched.

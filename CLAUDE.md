@@ -43,6 +43,7 @@ If changes to the code changes, then any documentation that refers to the change
 | document | description |
 | --- | --- |
 | backend/docs/data-model.md | The class structures that form and contain the data. |
+| backend/docs/competition-models.md | How each way a meet is run (what its first competition decided) maps onto competitions and rankings: the design behind the model, and the rollout of its changes. |
 | backend/docs/import-file-model.md | The columns and descriptions of the CSV files (SCORES, JUDGES, PARTICIPANTS, SUMMARY, EVENT) used to import competition data. |
 | backend/docs/import-process.md | How the importer loads those CSV files into the database: running it, session and athlete matching rules, and the checks it reports. |
 | backend/docs/results-sourcing.md | How meets are tracked (meets list, FIG events list, meet folders) and the script that syncs the FIG calendar and downloads results books. |

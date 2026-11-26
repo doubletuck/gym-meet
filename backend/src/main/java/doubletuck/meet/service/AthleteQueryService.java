@@ -10,7 +10,8 @@ import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.Ranking;
 import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.dto.AthleteResponse;
 import doubletuck.meet.dto.AthleteResponse.AllAroundBest;
@@ -29,7 +30,7 @@ import doubletuck.meet.repository.AthleteNameVariantRepository;
 import doubletuck.meet.repository.AthleteRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
-import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.CompetitionRepository;
 import doubletuck.meet.repository.TeamResultRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /** Reads athletes for the public site: search, and an athlete's career. */
@@ -60,13 +62,13 @@ public class AthleteQueryService {
     private final ScoreRepository scoreRepository;
     private final AllAroundResultRepository allAroundResultRepository;
     private final ApparatusResultRepository apparatusResultRepository;
-    private final SessionRepository sessionRepository;
+    private final CompetitionRepository competitionRepository;
     private final TeamResultRepository teamResultRepository;
 
     public AthleteQueryService(AthleteRepository athleteRepository,
             AthleteNameVariantRepository nameVariantRepository, ParticipantRepository participantRepository,
             ScoreRepository scoreRepository, AllAroundResultRepository allAroundResultRepository,
-            ApparatusResultRepository apparatusResultRepository, SessionRepository sessionRepository,
+            ApparatusResultRepository apparatusResultRepository, CompetitionRepository competitionRepository,
             TeamResultRepository teamResultRepository) {
         this.athleteRepository = athleteRepository;
         this.nameVariantRepository = nameVariantRepository;
@@ -74,7 +76,7 @@ public class AthleteQueryService {
         this.scoreRepository = scoreRepository;
         this.allAroundResultRepository = allAroundResultRepository;
         this.apparatusResultRepository = apparatusResultRepository;
-        this.sessionRepository = sessionRepository;
+        this.competitionRepository = competitionRepository;
         this.teamResultRepository = teamResultRepository;
     }
 
@@ -130,7 +132,7 @@ public class AthleteQueryService {
                 .map(variant -> variant.getGivenName() + " " + variant.getSurname())
                 .distinct()
                 .toList();
-        List<Apparatus> order = SessionNaming.apparatusOrder(athlete.getDiscipline());
+        List<Apparatus> order = CompetitionNaming.apparatusOrder(athlete.getDiscipline());
 
         List<Entry> entries = new ArrayList<>();
         List<PersonalBest> bests = new ArrayList<>();
@@ -144,48 +146,54 @@ public class AthleteQueryService {
                     event.getShortName(), event.getStartDate(), event.getEndDate());
             List<Score> scores = scoreRepository.findByParticipant(participant);
             List<AllAroundResult> allAround = allAroundResultRepository.findByParticipant(participant);
-            List<ApparatusResult> standings = apparatusResultRepository.findByParticipant(participant);
+            List<ApparatusResult> apparatusResults = apparatusResultRepository.findByParticipant(participant);
 
-            Set<Session> sessions = new LinkedHashSet<>();
-            scores.forEach(score -> sessions.add(score.getSession()));
-            allAround.forEach(result -> sessions.add(result.getSession()));
-            standings.forEach(result -> sessions.add(result.getSession()));
-            // Team standings ranking the routines of a session they competed in, for their country's team
-            for (Session other : sessionRepository.findByEvent(event)) {
-                if (other.getScoresSession() != null && sessions.contains(other.getScoresSession())
-                        && teamResultRepository.findBySessionAndNoc(other, participant.getNoc()).isPresent()) {
-                    sessions.add(other);
-                }
-            }
-            Map<Session, List<Session>> divisions = new HashMap<>();
+            Set<Competition> competitions = new LinkedHashSet<>();
+            scores.forEach(score -> competitions.add(score.getCompetition()));
+            allAround.forEach(result -> competitions.addAll(result.getRanking().getCompetitions()));
+            Map<Competition, List<Competition>> divisions = new HashMap<>();
+            Function<Competition, List<Competition>> divisionOf = competition -> divisions.computeIfAbsent(
+                    competition, c -> competitionRepository.findByEventAndDisciplineAndAgeCategory(event,
+                            c.getDiscipline(), c.getAgeCategory()));
+            // A split competition's combined apparatus standings, the only apparatus rankings not
+            // shown with the scores they place
+            List<ApparatusResult> combinedStandings = apparatusResults.stream()
+                    .filter(result -> result.getRanking().getCompetitions().stream()
+                            .anyMatch(competition -> !SplitRound.parts(competition, divisionOf.apply(competition))
+                                    .isEmpty()))
+                    .toList();
+            combinedStandings.forEach(result -> competitions.addAll(result.getRanking().getCompetitions()));
 
             List<EntrySession> entrySessions = new ArrayList<>();
-            for (Session session : sessions.stream().sorted(SessionNaming.order()).toList()) {
-                List<Session> division = divisions.computeIfAbsent(session, s -> sessionRepository
-                        .findByEventAndDisciplineAndAgeCategory(event, s.getDiscipline(), s.getAgeCategory()));
-                SessionSummaryResponse summary = SessionSummaryResponse.from(session, division);
+            for (Competition competition : competitions.stream().sorted(CompetitionNaming.order()).toList()) {
+                SessionSummaryResponse summary = SessionSummaryResponse.from(competition, divisionOf.apply(competition));
                 List<Score> sessionScores = scores.stream()
-                        .filter(score -> score.getSession().equals(session))
+                        .filter(score -> score.getCompetition().equals(competition))
                         .sorted(Comparator.comparingInt(score -> order.indexOf(score.getApparatus())))
                         .toList();
+                ApparatusRanks ranks = new ApparatusRanks(competition.getType(), apparatusResults.stream()
+                        .filter(result -> result.getRanking().getCompetitions().contains(competition))
+                        .toList());
                 AllAroundResult sessionAllAround = allAround.stream()
-                        .filter(result -> result.getSession().equals(session))
-                        .findFirst()
+                        .filter(result -> result.getRanking().getCompetitions().contains(competition))
+                        .min(Comparator.comparingInt(result -> preference(result.getRanking())))
                         .orElse(null);
                 entrySessions.add(new EntrySession(summary,
                         sessionAllAround == null ? null : new AthleteResponse.AllAroundResult(
                                 sessionAllAround.getRank(), sessionAllAround.getTotalScore(),
                                 sessionAllAround.getQualificationResult()),
-                        // Teams aren't rostered: a team is the country's entry in the session
-                        teamResultRepository.findBySessionAndNoc(session, participant.getNoc())
+                        // The country's team in the rankings of the competition's routines
+                        teamResultRepository.findByCompetitionAndNoc(competition, participant.getNoc()).stream()
+                                .min(Comparator.comparingInt(result -> preference(result.getRanking())))
                                 .map(AthleteQueryService::entryTeam)
                                 .orElse(null),
-                        sessionScores.stream().map(AthleteQueryService::apparatusScore).toList(),
-                        standings.stream()
-                                .filter(result -> result.getSession().equals(session))
-                                .sorted(Comparator.comparingInt(result -> order.indexOf(result.getApparatus())))
-                                .map(result -> new ApparatusStanding(result.getApparatus(), result.getRank(),
-                                        result.getTotalScore()))
+                        sessionScores.stream().map(score -> apparatusScore(score, ranks)).toList(),
+                        combinedStandings.stream()
+                                .filter(result -> result.getRanking().getCompetitions().contains(competition))
+                                .sorted(Comparator.comparingInt(result -> order.indexOf(
+                                        result.getRanking().getApparatus())))
+                                .map(result -> new ApparatusStanding(result.getRanking().getApparatus(),
+                                        result.getRank(), result.getTotalScore()))
                                 .toList()));
 
                 for (Score score : sessionScores) {
@@ -242,15 +250,24 @@ public class AthleteQueryService {
                         && score.getRoutine().getStatus() == ScoreStatus.COMPLETED));
     }
 
-    private static ApparatusScore apparatusScore(Score score) {
-        return new ApparatusScore(score.getApparatus(), score.getRank(),
+    /** Where one competition's routines are ranked more than once for a title, the ranking deciding the most. */
+    private static int preference(Ranking ranking) {
+        return switch (ranking.getPurpose()) {
+            case FINAL -> 0;
+            case QUALIFYING -> 1;
+            case INFORMATIONAL -> 2;
+        };
+    }
+
+    private static ApparatusScore apparatusScore(Score score, ApparatusRanks ranks) {
+        return new ApparatusScore(score.getApparatus(), ranks.rank(score),
                 SessionResultsService.routine(score.getRoutine()),
                 SessionResultsService.routine(score.getSecondRoutine()), score.getCombinedBonus(),
-                score.getTotalScore(), score.getQualificationRank(), score.getQualificationResult());
+                score.getTotalScore(), ranks.qualificationRank(score), ranks.qualification(score));
     }
 
     private static EntryTeam entryTeam(TeamResult result) {
-        return new EntryTeam(result.getNoc(), result.getRank(), result.getTotalScore(),
+        return new EntryTeam(result.getTeam().getNoc(), result.getRank(), result.getTotalScore(),
                 result.getQualificationResult());
     }
 

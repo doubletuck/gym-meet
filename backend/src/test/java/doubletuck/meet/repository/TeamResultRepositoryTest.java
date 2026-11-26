@@ -1,139 +1,115 @@
 package doubletuck.meet.repository;
 
-import doubletuck.meet.domain.AgeCategory;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
-import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.QualificationResult;
-import doubletuck.meet.domain.Round;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.RankStatus;
+import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.RankingPurpose;
+import doubletuck.meet.domain.RankingType;
+import doubletuck.meet.domain.Team;
 import doubletuck.meet.domain.TeamResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(RankingTestData.class)
 class TeamResultRepositoryTest {
 
     @Autowired
     private TeamResultRepository teamResultRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private RankingTestData data;
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    private Session testSession;
-    private TeamResult testTeamResult;
+    private Event event;
+    private Competition qualification;
+    private Ranking qualifying;
+    private Team usa;
+    private TeamResult usaResult;
 
     @BeforeEach
     void setUp() {
-        Event event = new Event();
-        event.setTitle("2026 European Championships");
-        event.setShortName("Test");
-        event.setSlug("2026-european-championships");
-        event.setStartDate(LocalDate.of(2026, 4, 20));
-        event.setEndDate(LocalDate.of(2026, 4, 26));
-        event.setCity("Stuttgart");
-        event.setCountryCode("GER");
-        event.setLevel(EventLevel.CONTINENTAL_CHAMPIONSHIPS);
-        event = eventRepository.save(event);
-
-        testSession = new Session();
-        testSession.setEvent(event);
-        testSession.setDate(LocalDate.of(2026, 4, 22));
-        testSession.setRound(Round.TEAM);
-        testSession.setDiscipline(Discipline.WAG);
-        testSession.setAgeCategory(AgeCategory.SR);
-        testSession = sessionRepository.save(testSession);
-
-        testTeamResult = new TeamResult();
-        testTeamResult.setSession(testSession);
-        testTeamResult.setNoc("USA");
-        testTeamResult.setTotalScore(168.5);
-        testTeamResult.setRank(1);
-        testTeamResult = teamResultRepository.save(testTeamResult);
+        event = data.event("2026-world-championships");
+        qualification = data.competition(event, CompetitionType.C1, Discipline.WAG);
+        qualifying = data.ranking(RankingType.TEAM, null, RankingPurpose.QUALIFYING, qualification);
+        usa = data.team(event, Discipline.WAG, "USA");
+        usaResult = result(qualifying, usa, 1, QualificationResult.Q);
     }
 
     @Test
     void testSave_PersistsAllFields() {
-        Optional<TeamResult> found = teamResultRepository.findById(testTeamResult.getId());
+        TeamResult found = teamResultRepository.findById(usaResult.getId()).orElseThrow();
 
-        assertTrue(found.isPresent());
-        assertEquals(testSession.getId(), found.get().getSession().getId());
-        assertEquals("USA", found.get().getNoc());
-        assertEquals(168.5, found.get().getTotalScore());
-        assertEquals(1, found.get().getRank());
+        assertEquals(qualifying.getId(), found.getRanking().getId());
+        assertEquals("USA", found.getTeam().getNoc());
+        assertEquals(168.5, found.getTotalScore());
+        assertEquals(-0.3, found.getSjPenalty());
+        assertEquals(1, found.getRank());
+        assertEquals(RankStatus.RANKED, found.getRankStatus());
+        assertEquals(QualificationResult.Q, found.getQualificationResult());
     }
 
     @Test
-    void testFindBySessionAndNoc_Found() {
-        Optional<TeamResult> found = teamResultRepository.findBySessionAndNoc(testSession, "USA");
+    void testFindByRanking_OnlyThatRanking() {
+        Ranking teamFinal = data.ranking(RankingType.TEAM, null, RankingPurpose.FINAL,
+                data.competition(event, CompetitionType.C4, Discipline.WAG));
+        result(teamFinal, usa, 2, null);
 
-        assertTrue(found.isPresent());
-        assertEquals(testTeamResult.getId(), found.get().getId());
+        assertEquals(List.of(usaResult.getId()), teamResultRepository.findByRanking(qualifying).stream()
+                .map(TeamResult::getId).toList());
     }
 
     @Test
-    void testFindBySessionAndNoc_WrongNoc_NotFound() {
-        Optional<TeamResult> found = teamResultRepository.findBySessionAndNoc(testSession, "GBR");
+    void testFindByCompetitionAndNoc_EveryRankingOfTheCompetitionsRoutines() {
+        Ranking finalRanking = data.ranking(RankingType.TEAM, null, RankingPurpose.FINAL, qualification);
+        TeamResult usaFinal = result(finalRanking, usa, 1, null);
+        result(qualifying, data.team(event, Discipline.WAG, "CHN"), 2, QualificationResult.Q);
 
-        assertTrue(found.isEmpty());
-    }
-
-    @Test
-    void testFindBySession_ReturnsAllTeamsInSession() {
-        TeamResult secondTeam = new TeamResult();
-        secondTeam.setSession(testSession);
-        secondTeam.setNoc("GBR");
-        secondTeam.setTotalScore(165.0);
-        secondTeam.setRank(2);
-        teamResultRepository.save(secondTeam);
-
-        List<TeamResult> found = teamResultRepository.findBySession(testSession);
+        List<Long> found = teamResultRepository.findByCompetitionAndNoc(qualification, "USA").stream()
+                .map(TeamResult::getId).toList();
 
         assertEquals(2, found.size());
+        assertTrue(found.containsAll(List.of(usaResult.getId(), usaFinal.getId())));
     }
 
     @Test
-    void testFindBySessionId_MatchesFindBySession() {
-        List<TeamResult> found = teamResultRepository.findBySessionId(testSession.getId());
+    void testDeleteByRankingIn_RemovesThoseRankingsResults() {
+        teamResultRepository.deleteByRankingIn(List.of(qualifying));
 
-        assertEquals(1, found.size());
-        assertEquals(testTeamResult.getId(), found.get(0).getId());
+        assertTrue(teamResultRepository.findByRanking(qualifying).isEmpty());
     }
 
     @Test
-    void testSave_WithQualificationResult() {
-        TeamResult qualified = new TeamResult();
-        qualified.setSession(testSession);
-        qualified.setNoc("FRA");
-        qualified.setQualificationResult(QualificationResult.Q);
-        qualified = teamResultRepository.save(qualified);
-
-        TeamResult found = teamResultRepository.findById(qualified.getId()).orElseThrow();
-
-        assertEquals(QualificationResult.Q, found.getQualificationResult());
-        assertNull(found.getTotalScore());
-    }
-
-    @Test
-    void testCreate_FailsBecauseDuplicateSessionAndNoc() {
+    void testCreate_FailsBecauseDuplicateRankingAndTeam() {
         TeamResult duplicate = new TeamResult();
-        duplicate.setSession(testSession);
-        duplicate.setNoc("USA");
+        duplicate.setRanking(qualifying);
+        duplicate.setTeam(usa);
 
         assertThrows(DataIntegrityViolationException.class, () -> teamResultRepository.saveAndFlush(duplicate));
+    }
+
+    private TeamResult result(Ranking ranking, Team team, int rank, QualificationResult qualification) {
+        TeamResult result = new TeamResult();
+        result.setRanking(ranking);
+        result.setTeam(team);
+        result.setTotalScore(168.5);
+        result.setSjPenalty(-0.3);
+        result.setRank(rank);
+        result.setRankStatus(RankStatus.RANKED);
+        result.setQualificationResult(qualification);
+        return teamResultRepository.save(result);
     }
 }

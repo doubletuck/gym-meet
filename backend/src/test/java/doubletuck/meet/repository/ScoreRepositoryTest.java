@@ -8,13 +8,11 @@ import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.Participant;
-import doubletuck.meet.domain.QualificationResult;
-import doubletuck.meet.domain.Round;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
-import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.domain.ScoreStatus;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import jakarta.validation.ConstraintViolationException;
@@ -37,7 +35,7 @@ class ScoreRepositoryTest {
     private ScoreRepository scoreRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CompetitionRepository competitionRepository;
 
     @Autowired
     private ParticipantRepository participantRepository;
@@ -49,7 +47,7 @@ class ScoreRepositoryTest {
     private AthleteRepository athleteRepository;
 
     private Event testEvent;
-    private Session testSession;
+    private Competition testCompetition;
     private Participant testParticipant;
     private Score testScore;
 
@@ -57,13 +55,13 @@ class ScoreRepositoryTest {
     void setUp() {
         testEvent = savedEvent();
 
-        testSession = new Session();
-        testSession.setEvent(testEvent);
-        testSession.setDate(LocalDate.of(2026, 4, 21));
-        testSession.setRound(Round.QUAL);
-        testSession.setDiscipline(Discipline.WAG);
-        testSession.setAgeCategory(AgeCategory.SR);
-        testSession = sessionRepository.save(testSession);
+        testCompetition = new Competition();
+        testCompetition.setEvent(testEvent);
+        testCompetition.setDate(LocalDate.of(2026, 4, 21));
+        testCompetition.setType(CompetitionType.C1);
+        testCompetition.setDiscipline(Discipline.WAG);
+        testCompetition.setAgeCategory(AgeCategory.SR);
+        testCompetition = competitionRepository.save(testCompetition);
 
         Athlete athlete = new Athlete();
         athlete.setDiscipline(Discipline.WAG);
@@ -80,7 +78,7 @@ class ScoreRepositoryTest {
 
         testScore = new Score();
         testScore.setParticipant(testParticipant);
-        testScore.setSession(testSession);
+        testScore.setCompetition(testCompetition);
         testScore.setApparatus(Apparatus.VT);
         Routine vault = new Routine(ScoreStatus.COMPLETED);
         vault.setDifficulty(5.0);
@@ -97,7 +95,7 @@ class ScoreRepositoryTest {
 
         assertTrue(found.isPresent());
         assertEquals(testParticipant.getId(), found.get().getParticipant().getId());
-        assertEquals(testSession.getId(), found.get().getSession().getId());
+        assertEquals(testCompetition.getId(), found.get().getCompetition().getId());
         assertEquals(Apparatus.VT, found.get().getApparatus());
         assertEquals(5.0, found.get().getRoutine().getDifficulty());
         assertEquals(9.033, found.get().getRoutine().getExecution());
@@ -106,7 +104,6 @@ class ScoreRepositoryTest {
         assertEquals(14.033, found.get().getTotalScore());
         assertFalse(found.get().getRoutine().getDifficultyInquiry());
         assertNull(found.get().getSecondRoutine());
-        assertEquals(TeamScoreRole.COUNTING, found.get().getTeamScoreRole());
     }
 
     @Test
@@ -123,7 +120,7 @@ class ScoreRepositoryTest {
     void testSave_PersistsBonusDetailAsJson() {
         Score beamScore = new Score();
         beamScore.setParticipant(testParticipant);
-        beamScore.setSession(testSession);
+        beamScore.setCompetition(testCompetition);
         beamScore.setApparatus(Apparatus.BB);
         Routine beam = new Routine(ScoreStatus.COMPLETED);
         beam.addBonusDetail(new BonusDetail(0.1, "Difficulty bonus"));
@@ -145,7 +142,7 @@ class ScoreRepositoryTest {
 
         Score twoVaults = new Score();
         twoVaults.setParticipant(testParticipant);
-        twoVaults.setSession(testSession);
+        twoVaults.setCompetition(testCompetition);
         twoVaults.setApparatus(Apparatus.VT);
 
         Routine first = new Routine(ScoreStatus.COMPLETED);
@@ -166,9 +163,6 @@ class ScoreRepositoryTest {
         twoVaults.setCombinedBonus(0.2);
         twoVaults.setCombinedSjPenalty(-0.3);
         twoVaults.setTotalScore(14.033);
-        twoVaults.setRank(14);
-        twoVaults.setQualificationRank(3);
-        twoVaults.setQualificationResult(QualificationResult.Q);
         twoVaults = scoreRepository.saveAndFlush(twoVaults);
 
         Score found = scoreRepository.findById(twoVaults.getId()).orElseThrow();
@@ -184,9 +178,6 @@ class ScoreRepositoryTest {
         assertEquals("Landing bonus", found.getSecondRoutine().getBonusDetail().get(0).getDescription());
         assertEquals(0.2, found.getCombinedBonus());
         assertEquals(-0.3, found.getCombinedSjPenalty());
-        assertEquals(14, found.getRank());
-        assertEquals(3, found.getQualificationRank());
-        assertEquals(QualificationResult.Q, found.getQualificationResult());
     }
 
     @Test
@@ -205,7 +196,7 @@ class ScoreRepositoryTest {
     void testCreate_FailsBecauseRoutineMissing() {
         Score noRoutine = new Score();
         noRoutine.setParticipant(testParticipant);
-        noRoutine.setSession(testSession);
+        noRoutine.setCompetition(testCompetition);
         noRoutine.setApparatus(Apparatus.BB);
 
         assertThrows(ConstraintViolationException.class, () -> scoreRepository.saveAndFlush(noRoutine));
@@ -221,57 +212,57 @@ class ScoreRepositoryTest {
     }
 
     @Test
-    void testFindByParticipantSessionAndApparatus_Found() {
-        Optional<Score> found = scoreRepository.findByParticipantAndSessionAndApparatus(
-                testParticipant, testSession, Apparatus.VT);
+    void testFindByParticipantCompetitionAndApparatus_Found() {
+        Optional<Score> found = scoreRepository.findByParticipantAndCompetitionAndApparatus(
+                testParticipant, testCompetition, Apparatus.VT);
 
         assertTrue(found.isPresent());
         assertEquals(testScore.getId(), found.get().getId());
     }
 
     @Test
-    void testFindByParticipantSessionAndApparatus_WrongApparatus_NotFound() {
-        Optional<Score> found = scoreRepository.findByParticipantAndSessionAndApparatus(
-                testParticipant, testSession, Apparatus.BB);
+    void testFindByParticipantCompetitionAndApparatus_WrongApparatus_NotFound() {
+        Optional<Score> found = scoreRepository.findByParticipantAndCompetitionAndApparatus(
+                testParticipant, testCompetition, Apparatus.BB);
 
         assertTrue(found.isEmpty());
     }
 
     @Test
-    void testFindBySession_ReturnsAllApparatusScoresInSession() {
+    void testFindByCompetition_ReturnsAllApparatusScoresInCompetition() {
         Score beamScore = new Score();
         beamScore.setParticipant(testParticipant);
-        beamScore.setSession(testSession);
+        beamScore.setCompetition(testCompetition);
         beamScore.setApparatus(Apparatus.BB);
         beamScore.setRoutine(new Routine(ScoreStatus.COMPLETED));
         scoreRepository.save(beamScore);
 
-        List<Score> found = scoreRepository.findBySession(testSession);
+        List<Score> found = scoreRepository.findByCompetition(testCompetition);
 
         assertEquals(2, found.size());
     }
 
     @Test
-    void testFindBySessionId_MatchesFindBySession() {
-        List<Score> found = scoreRepository.findBySessionId(testSession.getId());
+    void testFindByCompetitionId_MatchesFindByCompetition() {
+        List<Score> found = scoreRepository.findByCompetitionId(testCompetition.getId());
 
         assertEquals(1, found.size());
         assertEquals(testScore.getId(), found.get(0).getId());
     }
 
     @Test
-    void testFindByParticipant_ReturnsScoresAcrossSessions() {
-        Session aaFinal = new Session();
+    void testFindByParticipant_ReturnsScoresAcrossCompetitions() {
+        Competition aaFinal = new Competition();
         aaFinal.setEvent(testEvent);
         aaFinal.setDate(LocalDate.of(2026, 4, 23));
-        aaFinal.setRound(Round.AA);
+        aaFinal.setType(CompetitionType.C2);
         aaFinal.setDiscipline(Discipline.WAG);
         aaFinal.setAgeCategory(AgeCategory.SR);
-        aaFinal = sessionRepository.save(aaFinal);
+        aaFinal = competitionRepository.save(aaFinal);
 
         Score aaVaultScore = new Score();
         aaVaultScore.setParticipant(testParticipant);
-        aaVaultScore.setSession(aaFinal);
+        aaVaultScore.setCompetition(aaFinal);
         aaVaultScore.setApparatus(Apparatus.VT);
         aaVaultScore.setRoutine(new Routine(ScoreStatus.COMPLETED));
         scoreRepository.save(aaVaultScore);
@@ -282,10 +273,10 @@ class ScoreRepositoryTest {
     }
 
     @Test
-    void testCreate_FailsBecauseDuplicateParticipantSessionAndApparatus() {
+    void testCreate_FailsBecauseDuplicateParticipantCompetitionAndApparatus() {
         Score duplicate = new Score();
         duplicate.setParticipant(testParticipant);
-        duplicate.setSession(testSession);
+        duplicate.setCompetition(testCompetition);
         duplicate.setApparatus(Apparatus.VT);
         duplicate.setRoutine(new Routine(ScoreStatus.COMPLETED));
 

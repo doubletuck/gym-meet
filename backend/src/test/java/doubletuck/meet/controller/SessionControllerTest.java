@@ -1,11 +1,12 @@
 package doubletuck.meet.controller;
 
 import doubletuck.meet.domain.Apparatus;
+import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.importer.EventImporter;
 import doubletuck.meet.repository.ScoreRepository;
-import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.CompetitionRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,9 +15,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -36,7 +39,7 @@ class SessionControllerTest {
     private EventImporter eventImporter;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CompetitionRepository competitionRepository;
 
     @Autowired
     private ScoreRepository scoreRepository;
@@ -44,7 +47,7 @@ class SessionControllerTest {
     @Test
     void testFindResults_ApparatusFinalRankedAsPublished() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_WAG);
-        Long beamFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.EVENT, Apparatus.BB, null);
+        Long beamFinal = ApiTestFixtures.sessionId(competitionRepository, Discipline.WAG, Round.EVENT, Apparatus.BB, null);
 
         mockMvc.perform(get("/api/sessions/{id}/results", beamFinal))
                 .andExpect(status().isOk())
@@ -66,7 +69,7 @@ class SessionControllerTest {
     @Test
     void testFindResults_QualificationHasEveryApparatusAllAroundAndTeams() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_WAG);
-        Long qualification = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.QUAL, null, null);
+        Long qualification = ApiTestFixtures.sessionId(competitionRepository, Discipline.WAG, Round.QUAL, null, null);
 
         mockMvc.perform(get("/api/sessions/{id}/results", qualification))
                 .andExpect(jsonPath("$.apparatus[*].apparatus", contains("VT", "UB", "BB", "FX")))
@@ -89,7 +92,7 @@ class SessionControllerTest {
     @Test
     void testFindResults_TwoVaultEntryAndDidNotStart() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_MAG);
-        Long qualification = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.QUAL, null, null);
+        Long qualification = ApiTestFixtures.sessionId(competitionRepository, Discipline.MAG, Round.QUAL, null, null);
 
         // MAG apparatus order: FX, PH, SR, VT, PB, HB
         mockMvc.perform(get("/api/sessions/{id}/results", qualification))
@@ -108,7 +111,7 @@ class SessionControllerTest {
     @Test
     void testFindResults_SplitRoundCombinedStandings() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
-        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
+        Long wholeRound = ApiTestFixtures.sessionId(competitionRepository, Discipline.MAG, Round.AA, null, null);
 
         mockMvc.perform(get("/api/sessions/{id}/results", wholeRound))
                 .andExpect(jsonPath("$.session.slug").value("all-around-final"))
@@ -122,7 +125,7 @@ class SessionControllerTest {
     @Test
     void testFindResults_SplitRoundCombinedSession_HasEachPart() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
-        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
+        Long wholeRound = ApiTestFixtures.sessionId(competitionRepository, Discipline.MAG, Round.AA, null, null);
 
         mockMvc.perform(get("/api/sessions/{id}/results", wholeRound))
                 .andExpect(jsonPath("$.session.date").value("2026-08-06"))
@@ -145,10 +148,10 @@ class SessionControllerTest {
     void testFindResults_SplitRoundCombinedSession_ApparatusSkippedInAPart_ShowsTheOtherPartAlone()
             throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
-        Long wholeRound = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, null);
-        Long partTwo = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, 2);
+        Long wholeRound = ApiTestFixtures.sessionId(competitionRepository, Discipline.MAG, Round.AA, null, null);
+        Long partTwo = ApiTestFixtures.sessionId(competitionRepository, Discipline.MAG, Round.AA, null, 2);
         // As if Moldauer hadn't vaulted on day 2
-        scoreRepository.delete(scoreRepository.findBySessionId(partTwo).stream()
+        scoreRepository.delete(scoreRepository.findByCompetitionId(partTwo).stream()
                 .filter(score -> score.getApparatus() == Apparatus.VT
                         && score.getParticipant().getAthlete().getSurname().equals("Moldauer"))
                 .findFirst().orElseThrow());
@@ -162,7 +165,7 @@ class SessionControllerTest {
     @Test
     void testFindResults_SplitRoundPart_HasNoParts() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
-        Long partOne = ApiTestFixtures.sessionId(sessionRepository, Discipline.MAG, Round.AA, null, 1);
+        Long partOne = ApiTestFixtures.sessionId(competitionRepository, Discipline.MAG, Round.AA, null, 1);
 
         mockMvc.perform(get("/api/sessions/{id}/results", partOne))
                 .andExpect(jsonPath("$.session.endDate").value(nullValue()))
@@ -174,22 +177,23 @@ class SessionControllerTest {
     }
 
     @Test
-    void testFindResults_FinalRankingTheQualificationsRoutines_ShowsThemWithoutScoreTables() throws Exception {
+    void testFindResults_FinalRankingsOfTheQualificationsRoutines_ShownWithTheQualification() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.ASIAN_WAG);
-        Long allAroundFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.AA, null, null);
-        Long teamFinal = ApiTestFixtures.sessionId(sessionRepository, Discipline.WAG, Round.TEAM, null, null);
+        Long qualification = ApiTestFixtures.sessionId(competitionRepository, Discipline.WAG, Round.QUAL, null,
+                null);
+        // The team and all-around finals had no routines of their own, so they're rankings, not competitions
+        assertThat(competitionRepository.findAll()).noneMatch(competition -> competition.getType() == CompetitionType.C2
+                || competition.getType() == CompetitionType.C4);
 
-        mockMvc.perform(get("/api/sessions/{id}/results", allAroundFinal))
+        mockMvc.perform(get("/api/sessions/{id}/results", qualification))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.session.slug").value("all-around-final"))
-                .andExpect(jsonPath("$.apparatus", empty()))
+                .andExpect(jsonPath("$.session.slug").value("qualification"))
+                .andExpect(jsonPath("$.apparatus", not(empty())))
                 .andExpect(jsonPath("$.allAround", hasSize(6)))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Yeap')].rank").value(9))
                 .andExpect(jsonPath("$.allAround[0].athlete.surname").value("Ke"))
                 .andExpect(jsonPath("$.allAround[0].apparatusScores.BB").value(14.933))
-                .andExpect(jsonPath("$.allAround[0].qualification").value(nullValue()));
-        mockMvc.perform(get("/api/sessions/{id}/results", teamFinal))
-                .andExpect(jsonPath("$.apparatus", empty()))
+                .andExpect(jsonPath("$.allAround[0].qualification").value(nullValue()))
                 .andExpect(jsonPath("$.teams[0].noc").value("CHN"))
                 .andExpect(jsonPath("$.teams[0].total").value(168.498))
                 .andExpect(jsonPath("$.teams[0].apparatusTotals.BB").value(44.899));

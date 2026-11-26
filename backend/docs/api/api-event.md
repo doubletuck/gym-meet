@@ -4,7 +4,7 @@ Base path: `/api/events`
 
 Gymnastics competitions, where `Event` is the named competition (e.g.
 "54th Artistic Gymnastics World Championships"). An `Event` is the primary
-record to which `Participant`s and `Session`s are related. Its results are
+record to which `Participant`s and `Competition`s (the API's sessions) are related. Its results are
 read through the [Session API](api-session.md).
 
 The `GET` endpoints are public. Their responses may be cached for 5 minutes
@@ -130,7 +130,7 @@ Deletes an event by ID. Requires a login.
 | 204 No Content | Event deleted |
 | 401 Unauthorized | Not logged in |
 | 404 Not Found | No event with the given ID |
-| 409 Conflict | The event still has dependent `Session` or `Participant` records and cannot be deleted |
+| 409 Conflict | The event still has dependent `Competition` or `Participant` records and cannot be deleted |
 
 ---
 

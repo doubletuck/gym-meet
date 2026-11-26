@@ -100,3 +100,10 @@ Competition results are loaded from the files under `data/` (at the repository r
 mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=../data/2026/2026-WORLD-CHAMPIONSHIPS"
 ```
 See [import-process.md](import-process.md) for the arguments and what an import does. Add `--import.status` to check which manifests are imported and up to date, without importing.
+
+### After a migration that rebuilds the results
+
+Some migrations clear the imported data rather than converting it, because every row comes from the files: `V9__competitions_and_rankings.sql` drops the competitions, scores, judges, rankings and results, and deletes the participants and the import log (events, athletes, their name variants and clubs are kept). After it, import everything again:
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=../data/2026 --import.replace"
+```

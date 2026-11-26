@@ -3,9 +3,9 @@ package doubletuck.meet.dto;
 import doubletuck.meet.domain.AgeCategory;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
+import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.Round;
-import doubletuck.meet.domain.Session;
-import doubletuck.meet.service.SessionNaming;
+import doubletuck.meet.service.CompetitionNaming;
 import doubletuck.meet.service.SplitRound;
 import org.jspecify.annotations.Nullable;
 
@@ -30,15 +30,15 @@ public record SessionSummaryResponse(
         LocalDate date,
         @Nullable LocalDate endDate) {
 
-    /** @param sessions the sessions of the event's discipline and age category */
-    public static SessionSummaryResponse from(Session session, Collection<Session> sessions) {
-        LocalDate endDate = SplitRound.parts(session, sessions).stream()
-                .map(Session::getDate)
-                .filter(date -> date.isAfter(session.getDate()))
+    /** @param competitions the competitions of the event's discipline and age category */
+    public static SessionSummaryResponse from(Competition competition, Collection<Competition> competitions) {
+        LocalDate endDate = SplitRound.parts(competition, competitions).stream()
+                .map(Competition::getDate)
+                .filter(date -> date.isAfter(competition.getDate()))
                 .max(Comparator.naturalOrder())
                 .orElse(null);
-        return new SessionSummaryResponse(session.getId(), SessionNaming.slug(session), session.getDiscipline(),
-                session.getAgeCategory(), session.getRound(), session.getApparatus(), session.getPart(),
-                session.getDate(), endDate);
+        return new SessionSummaryResponse(competition.getId(), CompetitionNaming.slug(competition),
+                competition.getDiscipline(), competition.getAgeCategory(), competition.getType().getLegacyRound(),
+                competition.getApparatus(), competition.getPart(), competition.getDate(), endDate);
     }
 }

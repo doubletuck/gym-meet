@@ -1,25 +1,29 @@
 package doubletuck.meet.importer;
 
 import doubletuck.meet.domain.AgeCategory;
+import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.Participant;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
+import doubletuck.meet.repository.CompetitionRepository;
 import doubletuck.meet.repository.EventRepository;
 import doubletuck.meet.repository.JudgeRepository;
 import doubletuck.meet.repository.ParticipantRepository;
+import doubletuck.meet.repository.RankingRepository;
 import doubletuck.meet.repository.ScoreRepository;
-import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.TeamRepository;
 import doubletuck.meet.repository.TeamResultRepository;
-import doubletuck.meet.service.SessionService;
+import doubletuck.meet.repository.TeamResultScoreRepository;
+import doubletuck.meet.service.CompetitionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -31,14 +35,17 @@ import java.util.List;
 public class EventImporter {
 
     private final EventRepository eventRepository;
-    private final SessionRepository sessionRepository;
+    private final CompetitionRepository competitionRepository;
+    private final RankingRepository rankingRepository;
+    private final TeamRepository teamRepository;
     private final ParticipantRepository participantRepository;
     private final ScoreRepository scoreRepository;
     private final JudgeRepository judgeRepository;
     private final TeamResultRepository teamResultRepository;
+    private final TeamResultScoreRepository teamResultScoreRepository;
     private final AllAroundResultRepository allAroundResultRepository;
     private final ApparatusResultRepository apparatusResultRepository;
-    private final SessionService sessionService;
+    private final CompetitionService competitionService;
     private final ParticipantImporter participantImporter;
     private final ScoreImporter scoreImporter;
     private final SummaryImporter summaryImporter;
@@ -46,22 +53,26 @@ public class EventImporter {
     private final ResultReconciler resultReconciler;
     private final ImportLog importLog;
 
-    EventImporter(EventRepository eventRepository, SessionRepository sessionRepository,
+    EventImporter(EventRepository eventRepository, CompetitionRepository competitionRepository,
+            RankingRepository rankingRepository, TeamRepository teamRepository,
             ParticipantRepository participantRepository, ScoreRepository scoreRepository,
             JudgeRepository judgeRepository, TeamResultRepository teamResultRepository,
-            AllAroundResultRepository allAroundResultRepository,
-            ApparatusResultRepository apparatusResultRepository, SessionService sessionService,
+            TeamResultScoreRepository teamResultScoreRepository, AllAroundResultRepository allAroundResultRepository,
+            ApparatusResultRepository apparatusResultRepository, CompetitionService competitionService,
             ParticipantImporter participantImporter, ScoreImporter scoreImporter, SummaryImporter summaryImporter,
             JudgeImporter judgeImporter, ResultReconciler resultReconciler, ImportLog importLog) {
         this.eventRepository = eventRepository;
-        this.sessionRepository = sessionRepository;
+        this.competitionRepository = competitionRepository;
+        this.rankingRepository = rankingRepository;
+        this.teamRepository = teamRepository;
         this.participantRepository = participantRepository;
         this.scoreRepository = scoreRepository;
         this.judgeRepository = judgeRepository;
         this.teamResultRepository = teamResultRepository;
+        this.teamResultScoreRepository = teamResultScoreRepository;
         this.allAroundResultRepository = allAroundResultRepository;
         this.apparatusResultRepository = apparatusResultRepository;
-        this.sessionService = sessionService;
+        this.competitionService = competitionService;
         this.participantImporter = participantImporter;
         this.scoreImporter = scoreImporter;
         this.summaryImporter = summaryImporter;
@@ -71,7 +82,7 @@ public class EventImporter {
     }
 
     /**
-     * @param replace when the event already has sessions for this discipline
+     * @param replace when the event already has competitions for this discipline
      *                and age category, delete them (and their results) and
      *                import again; otherwise that is an error
      */
@@ -88,21 +99,22 @@ public class EventImporter {
         }
         Event event = resolveEvent(manifest.event(), manifestFile, discipline, ageCategory, report);
 
-        List<Session> existing = sessionRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
-                ageCategory);
+        List<Competition> existing = competitionRepository.findByEventAndDisciplineAndAgeCategory(event,
+                discipline, ageCategory);
         boolean replaced = !existing.isEmpty();
         if (replaced) {
             if (!replace) {
                 throw new ImportException(manifestFile.getFileName() + ": " + event.getTitle() + " " + discipline
                         + " " + ageCategory + " is already imported; import with replace to load it again");
             }
-            deleteSlice(event, discipline, existing, report);
+            deleteSlice(event, discipline, ageCategory, existing, report);
         }
 
         ImportContext context = new ImportContext(manifestFile.getParent(), manifest, event, discipline,
-                ageCategory, report, sessionService);
+                ageCategory, report, competitionService, rankingRepository, teamRepository);
         manifest.participants().forEach(file -> participantImporter.importFile(context, file));
         manifest.scores().forEach(file -> scoreImporter.importFile(context, file));
+        scoreImporter.rankScores(context);
         manifest.summaries().forEach(file -> summaryImporter.importFile(context, file));
         manifest.judges().forEach(file -> judgeImporter.importFile(context, file));
         resultReconciler.reconcile(context);
@@ -213,25 +225,30 @@ public class EventImporter {
     }
 
     /**
-     * Deletes the slice's sessions and everything on them, then the event's
-     * participants in this discipline left with no results at all -- which
-     * includes this slice's entries, since participants aren't tied to an age
-     * category.
+     * Deletes the slice's rankings (with their results and team score links), teams,
+     * and competitions with everything on them, then the event's participants in
+     * this discipline left with no results at all -- which includes this slice's
+     * entries, since participants aren't tied to an age category.
      */
-    private void deleteSlice(Event event, Discipline discipline, List<Session> sessions, ImportReport report) {
-        for (Session session : sessions) {
-            scoreRepository.deleteBySession(session);
-            judgeRepository.deleteBySession(session);
-            teamResultRepository.deleteBySession(session);
-            allAroundResultRepository.deleteBySession(session);
-            apparatusResultRepository.deleteBySession(session);
+    private void deleteSlice(Event event, Discipline discipline, AgeCategory ageCategory,
+            List<Competition> competitions, ImportReport report) {
+        List<Ranking> rankings = rankingRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
+                ageCategory);
+        List<TeamResult> teamResults = teamResultRepository.findByRankingIn(rankings);
+        teamResultScoreRepository.deleteByTeamResultIn(teamResults);
+        teamResultRepository.deleteByRankingIn(rankings);
+        allAroundResultRepository.deleteByRankingIn(rankings);
+        apparatusResultRepository.deleteByRankingIn(rankings);
+        rankingRepository.deleteAll(rankings);
+        teamRepository.deleteAll(teamRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
+                ageCategory));
+        for (Competition competition : competitions) {
+            scoreRepository.deleteByCompetition(competition);
+            judgeRepository.deleteByCompetition(competition);
         }
-        // A session ranking another's scores goes first, as it refers to that one
-        sessionRepository.deleteAll(sessions.stream()
-                .sorted(Comparator.comparing((Session session) -> session.getScoresSession() == null))
-                .toList());
-        sessionRepository.flush();
-        report.count("sessions replaced", sessions.size());
+        competitionRepository.deleteAll(competitions);
+        competitionRepository.flush();
+        report.count("competitions replaced", competitions.size());
 
         for (Participant participant : participantRepository.findByEvent(event)) {
             if (participant.getAthlete().getDiscipline() == discipline

@@ -7,8 +7,8 @@ import doubletuck.meet.domain.Event;
 import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.Judge;
 import doubletuck.meet.domain.JudgeFunction;
-import doubletuck.meet.domain.Round;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +30,12 @@ class JudgeRepositoryTest {
     private JudgeRepository judgeRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CompetitionRepository competitionRepository;
 
     @Autowired
     private EventRepository eventRepository;
 
-    private Session testSession;
+    private Competition testCompetition;
     private Judge testJudge;
 
     @BeforeEach
@@ -51,16 +51,16 @@ class JudgeRepositoryTest {
         event.setLevel(EventLevel.CONTINENTAL_CHAMPIONSHIPS);
         event = eventRepository.save(event);
 
-        testSession = new Session();
-        testSession.setEvent(event);
-        testSession.setDate(LocalDate.of(2026, 8, 13));
-        testSession.setRound(Round.QUAL);
-        testSession.setDiscipline(Discipline.WAG);
-        testSession.setAgeCategory(AgeCategory.SR);
-        testSession = sessionRepository.save(testSession);
+        testCompetition = new Competition();
+        testCompetition.setEvent(event);
+        testCompetition.setDate(LocalDate.of(2026, 8, 13));
+        testCompetition.setType(CompetitionType.C1);
+        testCompetition.setDiscipline(Discipline.WAG);
+        testCompetition.setAgeCategory(AgeCategory.SR);
+        testCompetition = competitionRepository.save(testCompetition);
 
         testJudge = new Judge();
-        testJudge.setSession(testSession);
+        testJudge.setCompetition(testCompetition);
         testJudge.setApparatus(Apparatus.VT);
         testJudge.setFunction(JudgeFunction.D1);
         testJudge.setGivenName("Anca");
@@ -74,7 +74,7 @@ class JudgeRepositoryTest {
         Optional<Judge> found = judgeRepository.findById(testJudge.getId());
 
         assertTrue(found.isPresent());
-        assertEquals(testSession.getId(), found.get().getSession().getId());
+        assertEquals(testCompetition.getId(), found.get().getCompetition().getId());
         assertEquals(Apparatus.VT, found.get().getApparatus());
         assertEquals(JudgeFunction.D1, found.get().getFunction());
         assertEquals("Anca", found.get().getGivenName());
@@ -86,7 +86,7 @@ class JudgeRepositoryTest {
     @Test
     void testSave_NocCodeNotThreeLetters_Succeeds() {
         Judge presidentJudge = new Judge();
-        presidentJudge.setSession(testSession);
+        presidentJudge.setCompetition(testCompetition);
         presidentJudge.setFunction(JudgeFunction.PRESIDENT);
         presidentJudge.setGivenName("Mairead Geraldine");
         presidentJudge.setSurname("KAVANAGH");
@@ -103,7 +103,7 @@ class JudgeRepositoryTest {
     @Test
     void testSave_WithoutNocCode_Succeeds() {
         Judge supervisor = new Judge();
-        supervisor.setSession(testSession);
+        supervisor.setCompetition(testCompetition);
         supervisor.setApparatus(Apparatus.FX);
         supervisor.setFunction(JudgeFunction.SV);
         supervisor.setGivenName("Yoon Soo");
@@ -117,9 +117,9 @@ class JudgeRepositoryTest {
     }
 
     @Test
-    void testFindBySession_ReturnsAllJudgesForSession() {
+    void testFindByCompetition_ReturnsAllJudgesForCompetition() {
         Judge secondJudge = new Judge();
-        secondJudge.setSession(testSession);
+        secondJudge.setCompetition(testCompetition);
         secondJudge.setApparatus(Apparatus.UB);
         secondJudge.setFunction(JudgeFunction.D1);
         secondJudge.setGivenName("Christine");
@@ -127,23 +127,23 @@ class JudgeRepositoryTest {
         secondJudge.setNocCode("LIE");
         judgeRepository.save(secondJudge);
 
-        List<Judge> found = judgeRepository.findBySession(testSession);
+        List<Judge> found = judgeRepository.findByCompetition(testCompetition);
 
         assertEquals(2, found.size());
     }
 
     @Test
-    void testFindBySessionId_MatchesFindBySession() {
-        List<Judge> found = judgeRepository.findBySessionId(testSession.getId());
+    void testFindByCompetitionId_MatchesFindByCompetition() {
+        List<Judge> found = judgeRepository.findByCompetitionId(testCompetition.getId());
 
         assertEquals(1, found.size());
         assertEquals(testJudge.getId(), found.get(0).getId());
     }
 
     @Test
-    void testFindBySession_MultipleMembersShareFunctionAndNullApparatus() {
+    void testFindByCompetition_MultipleMembersShareFunctionAndNullApparatus() {
         Judge member1 = new Judge();
-        member1.setSession(testSession);
+        member1.setCompetition(testCompetition);
         member1.setFunction(JudgeFunction.MEMBER);
         member1.setGivenName("Maria");
         member1.setSurname("COCUZZA");
@@ -151,29 +151,29 @@ class JudgeRepositoryTest {
         judgeRepository.save(member1);
 
         Judge member2 = new Judge();
-        member2.setSession(testSession);
+        member2.setCompetition(testCompetition);
         member2.setFunction(JudgeFunction.MEMBER);
         member2.setGivenName("Fabienne");
         member2.setSurname("RINGLER");
         member2.setNocCode("EG");
         judgeRepository.save(member2);
 
-        List<Judge> found = judgeRepository.findBySession(testSession);
+        List<Judge> found = judgeRepository.findByCompetition(testCompetition);
 
         assertEquals(3, found.size());
     }
 
     @Test
-    void testCreate_FailsBecauseDuplicateSessionWideJudge() {
+    void testCreate_FailsBecauseDuplicateCompetitionWideJudge() {
         Judge president = new Judge();
-        president.setSession(testSession);
+        president.setCompetition(testCompetition);
         president.setFunction(JudgeFunction.PRESIDENT);
         president.setGivenName("Donatella");
         president.setSurname("SACCHI");
         judgeRepository.saveAndFlush(president);
 
         Judge duplicate = new Judge();
-        duplicate.setSession(testSession);
+        duplicate.setCompetition(testCompetition);
         duplicate.setFunction(JudgeFunction.PRESIDENT);
         duplicate.setGivenName("Donatella");
         duplicate.setSurname("SACCHI");
@@ -182,9 +182,9 @@ class JudgeRepositoryTest {
     }
 
     @Test
-    void testCreate_FailsBecauseDuplicateSessionApparatusFunctionAndName() {
+    void testCreate_FailsBecauseDuplicateCompetitionApparatusFunctionAndName() {
         Judge duplicate = new Judge();
-        duplicate.setSession(testSession);
+        duplicate.setCompetition(testCompetition);
         duplicate.setApparatus(Apparatus.VT);
         duplicate.setFunction(JudgeFunction.D1);
         duplicate.setGivenName("Anca");

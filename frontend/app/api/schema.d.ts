@@ -288,7 +288,7 @@ export interface components {
       id: number;
       slug: string;
       /** @enum {string} */
-      discipline: "MAG" | "WAG";
+      discipline: "MAG" | "WAG" | "MIX";
       /** @enum {string} */
       ageCategory: "SR" | "JR" | "JR16" | "JR17";
       /** @enum {string} */
@@ -318,7 +318,7 @@ export interface components {
     };
     Division: {
       /** @enum {string} */
-      discipline: "MAG" | "WAG";
+      discipline: "MAG" | "WAG" | "MIX";
       /** @enum {string} */
       ageCategory: "SR" | "JR" | "JR16" | "JR17";
     };
@@ -350,7 +350,7 @@ export interface components {
     };
     DivisionSessions: {
       /** @enum {string} */
-      discipline: "MAG" | "WAG";
+      discipline: "MAG" | "WAG" | "MIX";
       /** @enum {string} */
       ageCategory: "SR" | "JR" | "JR16" | "JR17";
       sessions: components["schemas"]["SessionSummaryResponse"][];
@@ -390,7 +390,7 @@ export interface components {
       surname: string;
       givenName: string;
       /** @enum {string} */
-      discipline: "MAG" | "WAG";
+      discipline: "MAG" | "WAG" | "MIX";
       noc: string | null;
     };
     AllAroundBest: {
@@ -437,7 +437,7 @@ export interface components {
       surname: string;
       givenName: string;
       /** @enum {string} */
-      discipline: "MAG" | "WAG";
+      discipline: "MAG" | "WAG" | "MIX";
       /** Format: int32 */
       birthYear: number | null;
       otherNames: string[];
@@ -562,7 +562,7 @@ export interface operations {
           | "NATIONAL_CHAMPIONSHIPS"
           | "DOMESTIC_COMPETITION"
           | "UNKNOWN";
-        discipline?: "MAG" | "WAG";
+        discipline?: "MAG" | "WAG" | "MIX";
       };
       header?: never;
       path?: never;

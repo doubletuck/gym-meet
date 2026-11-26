@@ -3,8 +3,8 @@ package doubletuck.meet.importer;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Judge;
 import doubletuck.meet.domain.JudgeFunction;
-import doubletuck.meet.domain.Round;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.repository.JudgeRepository;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Imports {@code JUDGES.csv}, attaching each judge to the session(s) their round and apparatus identify. */
+/** Imports {@code JUDGES.csv}, attaching each judge to the competition(s) their round and apparatus identify. */
 @Component
 class JudgeImporter {
 
@@ -23,22 +23,22 @@ class JudgeImporter {
     }
 
     void importFile(ImportContext context, String fileName) {
-        Set<String> sessionsWithoutScores = new LinkedHashSet<>();
+        Set<String> competitionsWithoutScores = new LinkedHashSet<>();
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
-            Round round = row.requiredCode("Round", Round::find);
+            CompetitionType type = row.requiredCode("Round", CompetitionType::find);
             Apparatus apparatus = row.code("Apparatus", Apparatus::find);
-            List<Session> sessions = context.sessionsForJudge(round, apparatus);
-            if (sessions.isEmpty()) {
-                sessionsWithoutScores.add(round + (apparatus != null ? " " + apparatus : ""));
+            List<Competition> competitions = context.competitionsForJudge(type, apparatus);
+            if (competitions.isEmpty()) {
+                competitionsWithoutScores.add(type.getLegacyRound() + (apparatus != null ? " " + apparatus : ""));
                 continue;
             }
 
             JudgeFunction function = row.requiredCode("Function", JudgeFunction::find);
             String surname = row.requiredText("Surname");
             String givenName = row.requiredText("Given Name");
-            for (Session session : sessions) {
+            for (Competition competition : competitions) {
                 Judge judge = new Judge();
-                judge.setSession(session);
+                judge.setCompetition(competition);
                 judge.setApparatus(apparatus);
                 judge.setFunction(function);
                 judge.setSurname(surname);
@@ -48,7 +48,7 @@ class JudgeImporter {
                 context.getReport().count("judges");
             }
         }
-        sessionsWithoutScores.forEach(session -> context.getReport().warn(fileName + ": judges for " + session
-                + " were skipped because no scores were imported for that session"));
+        competitionsWithoutScores.forEach(competition -> context.getReport().warn(fileName + ": judges for "
+                + competition + " were skipped because no scores were imported for that competition"));
     }
 }

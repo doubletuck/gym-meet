@@ -1,7 +1,7 @@
 package doubletuck.meet.repository;
 
 import doubletuck.meet.domain.Judge;
-import doubletuck.meet.domain.Session;
+import doubletuck.meet.domain.Competition;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -10,9 +10,9 @@ import java.util.List;
 @Repository
 public interface JudgeRepository extends JpaRepository<Judge, Long> {
 
-    List<Judge> findBySession(Session session);
+    List<Judge> findByCompetition(Competition competition);
 
-    List<Judge> findBySessionId(Long sessionId);
+    List<Judge> findByCompetitionId(Long competitionId);
 
-    void deleteBySession(Session session);
+    void deleteByCompetition(Competition competition);
 }

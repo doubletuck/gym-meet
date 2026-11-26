@@ -23,8 +23,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 /**
- * A judge is not necessarily unique within a session by {@code apparatus}
- * and {@code function} alone -- e.g. a {@code QUAL} session's Superior Jury
+ * A judge is not necessarily unique within a competition by {@code apparatus}
+ * and {@code function} alone -- e.g. a qualification's Superior Jury
  * typically has several {@code MEMBER} judges sharing that same function
  * with no apparatus. The unique key adds the judge's name to distinguish
  * those rather than assuming a business rule (one judge per apparatus/
@@ -32,16 +32,16 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "judge", uniqueConstraints = {
-        // V1 declares this NULLS NOT DISTINCT, which JPA can't express, so that null apparatus
+        // V9 declares this NULLS NOT DISTINCT, which JPA can't express, so that null apparatus
         // values count as equal and a duplicate is rejected
-        @UniqueConstraint(name = "uk_judge", columnNames = { "session_id", "apparatus_code", "function_code", "surname", "given_name" })
+        @UniqueConstraint(name = "uk_judge", columnNames = { "competition_id", "apparatus_code", "function_code", "surname", "given_name" })
 })
 public class Judge extends BaseEntity {
 
-    @NotNull(message = "Session is required")
+    @NotNull(message = "Competition is required")
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "session_id", nullable = false, foreignKey = @ForeignKey(name = "fk_judge_session"))
-    private Session session;
+    @JoinColumn(name = "competition_id", nullable = false, foreignKey = @ForeignKey(name = "fk_judge_competition"))
+    private Competition competition;
 
     @Column(name = "apparatus_code", length = 5)
     @Enumerated(EnumType.STRING)

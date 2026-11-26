@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-
+/** A gymnast's line in an all-around ranking, as published. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,21 +26,22 @@ import lombok.ToString;
 @ToString
 @Entity
 @Table(name = "all_around_result", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_all_around_result", columnNames = { "participant_id", "session_id" })
+        @UniqueConstraint(name = "uk_all_around_result", columnNames = { "ranking_id", "participant_id" })
 }, indexes = {
-        @Index(name = "ix_all_around_result_session", columnList = "session_id")
+        @Index(name = "ix_all_around_result_participant", columnList = "participant_id")
 })
 public class AllAroundResult extends BaseEntity {
+
+    @NotNull(message = "Ranking is required")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "ranking_id", nullable = false, foreignKey = @ForeignKey(name = "fk_all_around_result_ranking"))
+    @ToString.Exclude
+    private Ranking ranking;
 
     @NotNull(message = "Participant is required")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "participant_id", nullable = false, foreignKey = @ForeignKey(name = "fk_all_around_result_participant"))
     private Participant participant;
-
-    @NotNull(message = "Session is required")
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "session_id", nullable = false, foreignKey = @ForeignKey(name = "fk_all_around_result_session"))
-    private Session session;
 
     @Column(name = "total_score")
     private Double totalScore;
@@ -52,6 +53,12 @@ public class AllAroundResult extends BaseEntity {
     @Column(name = "rank")
     private Integer rank;
 
+    // Why there is or isn't a rank; null where the source doesn't say
+    @Column(name = "rank_status_code", length = 20)
+    @Enumerated(EnumType.STRING)
+    private RankStatus rankStatus;
+
+    // Only on a QUALIFYING ranking
     @Column(name = "qualification_result_code", length = 10)
     @Enumerated(EnumType.STRING)
     private QualificationResult qualificationResult;

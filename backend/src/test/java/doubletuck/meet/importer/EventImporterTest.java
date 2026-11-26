@@ -4,6 +4,8 @@ import doubletuck.meet.domain.AllAroundResult;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.BonusDetail;
+import doubletuck.meet.domain.Competition;
+import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.EntryStatus;
 import doubletuck.meet.domain.Event;
@@ -13,11 +15,16 @@ import doubletuck.meet.domain.Judge;
 import doubletuck.meet.domain.JudgeFunction;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.QualificationResult;
+import doubletuck.meet.domain.RankStatus;
+import doubletuck.meet.domain.Ranking;
+import doubletuck.meet.domain.RankingPurpose;
+import doubletuck.meet.domain.RankingType;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
-import doubletuck.meet.domain.Session;
 import doubletuck.meet.domain.TeamResult;
+import doubletuck.meet.domain.TeamContributionRole;
+import doubletuck.meet.domain.TeamResultScore;
 import doubletuck.meet.domain.TeamScoreRole;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
@@ -26,9 +33,13 @@ import doubletuck.meet.repository.ImportRunRepository;
 import doubletuck.meet.repository.JudgeRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
-import doubletuck.meet.repository.SessionRepository;
+import doubletuck.meet.repository.CompetitionRepository;
+import doubletuck.meet.repository.RankingRepository;
+import doubletuck.meet.repository.TeamRepository;
 import doubletuck.meet.repository.TeamResultRepository;
-import doubletuck.meet.service.SessionService;
+import doubletuck.meet.repository.TeamResultScoreRepository;
+import doubletuck.meet.service.ApparatusRanks;
+import doubletuck.meet.service.CompetitionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +54,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,7 +66,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @ActiveProfiles("test")
 @Import({ EventImporter.class, ParticipantImporter.class, ScoreImporter.class, SummaryImporter.class,
-        JudgeImporter.class, ResultReconciler.class, AthleteMatcher.class, SessionService.class, ImportLog.class })
+        JudgeImporter.class, ResultReconciler.class, AthleteMatcher.class, CompetitionService.class, ImportLog.class })
 class EventImporterTest {
 
     private static final String WORLDS_WAG = "worlds/2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json";
@@ -74,7 +86,16 @@ class EventImporterTest {
     private EventRepository eventRepository;
 
     @Autowired
-    private SessionRepository sessionRepository;
+    private CompetitionRepository competitionRepository;
+
+    @Autowired
+    private RankingRepository rankingRepository;
+
+    @Autowired
+    private TeamResultScoreRepository teamResultScoreRepository;
+
+    @Autowired
+    private TeamRepository teamRepository;
 
     @Autowired
     private ParticipantRepository participantRepository;
@@ -114,8 +135,8 @@ class EventImporterTest {
         assertEquals("NED", worlds.getCountryCode());
         assertEquals("Spieth", worlds.getApparatusSuppliers());
         assertEquals(EventLevel.WORLD_CHAMPIONSHIPS, worlds.getLevel());
-        assertTrue(sessionRepository.findByEvent(worlds).stream().anyMatch(s -> s.getDiscipline() == Discipline.WAG));
-        assertTrue(sessionRepository.findByEvent(worlds).stream().anyMatch(s -> s.getDiscipline() == Discipline.MAG));
+        assertTrue(competitionRepository.findByEvent(worlds).stream().anyMatch(s -> s.getDiscipline() == Discipline.WAG));
+        assertTrue(competitionRepository.findByEvent(worlds).stream().anyMatch(s -> s.getDiscipline() == Discipline.MAG));
     }
 
     @Test
@@ -273,11 +294,11 @@ class EventImporterTest {
     void testImport_CreatesOneSessionPerRoundAndPerApparatusFinal() {
         importFixture(WORLDS_WAG);
 
-        List<Session> sessions = sessionRepository.findAll();
-        assertEquals(LocalDate.of(2026, 10, 18), session(sessions, Round.QUAL, null).getDate());
-        assertEquals(LocalDate.of(2026, 10, 21), session(sessions, Round.TEAM, null).getDate());
-        assertEquals(LocalDate.of(2026, 10, 23), session(sessions, Round.AA, null).getDate());
-        assertEquals(LocalDate.of(2026, 10, 25), session(sessions, Round.EVENT, Apparatus.BB).getDate());
+        List<Competition> sessions = competitionRepository.findAll();
+        assertEquals(LocalDate.of(2026, 10, 18), competition(sessions, Round.QUAL, null).getDate());
+        assertEquals(LocalDate.of(2026, 10, 21), competition(sessions, Round.TEAM, null).getDate());
+        assertEquals(LocalDate.of(2026, 10, 23), competition(sessions, Round.AA, null).getDate());
+        assertEquals(LocalDate.of(2026, 10, 25), competition(sessions, Round.EVENT, Apparatus.BB).getDate());
         assertTrue(sessions.stream().allMatch(s -> s.getPart() == null));
     }
 
@@ -292,12 +313,12 @@ class EventImporterTest {
         assertEquals(15.1, zhang.getTotalScore());
         assertEquals(ScoreStatus.COMPLETED, zhang.getRoutine().getStatus());
         assertFalse(zhang.getRoutine().getDifficultyInquiry());
-        assertEquals(1, zhang.getRank());
-        assertEquals(1, zhang.getQualificationRank());
-        assertEquals(QualificationResult.Q, zhang.getQualificationResult());
+        assertEquals(1, rank(zhang));
+        assertEquals(1, qualificationRank(zhang));
+        assertEquals(QualificationResult.Q, qualification(zhang));
         assertNull(zhang.getSecondRoutine());
 
-        assertEquals(QualificationResult.NR, score("Ke", "Qinqin", Round.QUAL, Apparatus.BB).getQualificationResult());
+        assertEquals(QualificationResult.NR, qualification(score("Ke", "Qinqin", Round.QUAL, Apparatus.BB)));
     }
 
     @Test
@@ -311,9 +332,40 @@ class EventImporterTest {
         assertEquals(14.366, jarman.getSecondRoutine().getScore());
         assertEquals(ScoreStatus.COMPLETED, jarman.getSecondRoutine().getStatus());
         assertEquals(14.633, jarman.getTotalScore());
-        assertEquals(1, jarman.getRank());
-        assertEquals(1, jarman.getQualificationRank());
-        assertEquals(QualificationResult.Q, jarman.getQualificationResult());
+        assertEquals(1, rank(jarman));
+        assertEquals(1, qualificationRank(jarman));
+        assertEquals(QualificationResult.Q, qualification(jarman));
+    }
+
+    @Test
+    void testImport_QualificationVault_RankedTwice() {
+        importFixture(WORLDS_MAG);
+
+        Competition qualification = competition(competitionRepository.findAll(), Round.QUAL, null);
+        List<Ranking> vault = rankingRepository.findByCompetition(qualification).stream()
+                .filter(ranking -> ranking.getApparatus() == Apparatus.VT).toList();
+        // The single-vault list (every vaulter, on the first vault) decides nothing; the two-vault list the final
+        assertEquals(List.of(RankingPurpose.QUALIFYING, RankingPurpose.INFORMATIONAL),
+                vault.stream().map(Ranking::getPurpose).sorted().toList());
+        Ranking twoVaults = vault.stream().filter(ranking -> ranking.getPurpose() == RankingPurpose.QUALIFYING)
+                .findFirst().orElseThrow();
+        ApparatusResult jarman = apparatusResultRepository.findByRanking(twoVaults).stream()
+                .filter(result -> result.getParticipant().getAthlete().getSurname().equals("Jarman"))
+                .findFirst().orElseThrow();
+        assertEquals(14.633, jarman.getTotalScore());
+        assertEquals(RankStatus.RANKED, jarman.getRankStatus());
+        assertTrue(apparatusResultRepository.findByRanking(twoVaults).size()
+                < scoreRepository.findByCompetition(qualification).stream()
+                        .filter(score -> score.getApparatus() == Apparatus.VT).count());
+    }
+
+    @Test
+    void testImport_ApparatusFinalPlacings_AreFinalRankings() {
+        importFixture(WORLDS_WAG);
+
+        Competition beamFinal = competition(competitionRepository.findAll(), Round.EVENT, Apparatus.BB);
+        assertEquals(List.of(RankingPurpose.FINAL), rankingRepository.findByCompetition(beamFinal).stream()
+                .map(Ranking::getPurpose).toList());
     }
 
     @Test
@@ -324,17 +376,17 @@ class EventImporterTest {
         assertEquals(ScoreStatus.DNS, tulloch.getRoutine().getStatus());
         assertNull(tulloch.getRoutine().getScore());
         assertNull(tulloch.getTotalScore());
-        assertNull(tulloch.getRank());
+        assertNull(rank(tulloch));
     }
 
     @Test
     void testImport_MarksScoresDroppedFromTeamTotal() {
         importFixture(WORLDS_WAG);
 
-        assertEquals(TeamScoreRole.COUNTING, score("Zhang", "Qingying", Round.QUAL, Apparatus.BB).getTeamScoreRole());
-        assertEquals(TeamScoreRole.COUNTING, score("Qiu", "Qiyuan", Round.QUAL, Apparatus.BB).getTeamScoreRole());
-        assertEquals(TeamScoreRole.COUNTING, score("Ke", "Qinqin", Round.QUAL, Apparatus.BB).getTeamScoreRole());
-        assertEquals(TeamScoreRole.DROPPED, score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Zhang", "Qingying", Round.QUAL, Apparatus.BB)));
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Qiu", "Qiyuan", Round.QUAL, Apparatus.BB)));
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Ke", "Qinqin", Round.QUAL, Apparatus.BB)));
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Zhang", "Yihan", Round.QUAL, Apparatus.BB)));
     }
 
     @Test
@@ -343,8 +395,8 @@ class EventImporterTest {
 
         // MURABITO competed as an individual: the best floor score, but not the team's. Worked out from the
         // totals, a score left out can't be told apart from a team member's dropped one
-        assertEquals(TeamScoreRole.DROPPED, score("Murabito", "Luca", Round.QUAL, Apparatus.FX).getTeamScoreRole());
-        assertEquals(TeamScoreRole.COUNTING, score("Langenegger", "Florian", Round.QUAL, Apparatus.FX).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Murabito", "Luca", Round.QUAL, Apparatus.FX)));
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Langenegger", "Florian", Round.QUAL, Apparatus.FX)));
         assertEquals(List.of(), report.getWarnings());
     }
 
@@ -354,13 +406,13 @@ class EventImporterTest {
 
         assertEquals(List.of(), report.getWarnings());
         // A team member on some apparatus and the country's individual on others
-        assertEquals(TeamScoreRole.INDIVIDUAL, score("Malik", "Ritam", Round.AA, Apparatus.FX).getTeamScoreRole());
-        assertEquals(TeamScoreRole.COUNTING, score("Malik", "Ritam", Round.AA, Apparatus.VT).getTeamScoreRole());
-        assertEquals(TeamScoreRole.DROPPED, score("Malik", "Ritam", Round.AA, Apparatus.PB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.INDIVIDUAL, teamRole(score("Malik", "Ritam", Round.AA, Apparatus.FX)));
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Malik", "Ritam", Round.AA, Apparatus.VT)));
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Malik", "Ritam", Round.AA, Apparatus.PB)));
         // Out-scoring a team member doesn't make an individual's score count
-        assertEquals(TeamScoreRole.DROPPED, score("Hardy", "James", Round.AA, Apparatus.FX).getTeamScoreRole());
-        assertEquals(TeamScoreRole.DROPPED, score("Greene", "Keegan", Round.AA, Apparatus.FX).getTeamScoreRole());
-        assertEquals(TeamScoreRole.INDIVIDUAL, score("Greene", "Keegan", Round.AA, Apparatus.HB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Hardy", "James", Round.AA, Apparatus.FX)));
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Greene", "Keegan", Round.AA, Apparatus.FX)));
+        assertEquals(TeamScoreRole.INDIVIDUAL, teamRole(score("Greene", "Keegan", Round.AA, Apparatus.HB)));
     }
 
     @Test
@@ -374,7 +426,7 @@ class EventImporterTest {
         assertEquals(1, report.getWarnings().size(), report.getWarnings().toString());
         assertTrue(report.getWarnings().get(0).contains("AUS team: its counting FX scores add up to 53.399, not "
                 + "the published 40.399"), report.getWarnings().get(0));
-        assertEquals(TeamScoreRole.COUNTING, score("Malik", "Ritam", Round.AA, Apparatus.FX).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Malik", "Ritam", Round.AA, Apparatus.FX)));
     }
 
     @Test
@@ -383,9 +435,9 @@ class EventImporterTest {
 
         assertEquals(List.of(), report.getWarnings());
         // The fifth vaulter scored below every team member, and was still no part of the team
-        assertEquals(TeamScoreRole.INDIVIDUAL, score("Stewart", "Lucy", Round.AA, Apparatus.VT).getTeamScoreRole());
-        assertEquals(TeamScoreRole.DROPPED, score("Bayles", "Asher", Round.AA, Apparatus.UB).getTeamScoreRole());
-        assertEquals(TeamScoreRole.INDIVIDUAL, score("Bayles", "Asher", Round.AA, Apparatus.BB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.INDIVIDUAL, teamRole(score("Stewart", "Lucy", Round.AA, Apparatus.VT)));
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Bayles", "Asher", Round.AA, Apparatus.UB)));
+        assertEquals(TeamScoreRole.INDIVIDUAL, teamRole(score("Bayles", "Asher", Round.AA, Apparatus.BB)));
         assertEquals(ScoreStatus.DNS, score("Bayles", "Asher", Round.AA, Apparatus.BB).getRoutine().getStatus());
     }
 
@@ -402,11 +454,14 @@ class EventImporterTest {
         ImportReport report = eventImporter.importManifest(manifest, false);
 
         assertEquals(List.of(), report.getWarnings());
-        Session team = session(sessionRepository.findAll(), Round.TEAM, null);
-        assertEquals(Round.AA, team.getScoresSession().getRound());
-        assertEquals(TeamScoreRole.COUNTING, score("Whitehead", "Emily", Round.AA, Apparatus.VT).getTeamScoreRole());
+        // The team final had no routines of its own: its ranking is of the all-around final's routines
+        assertTrue(competitionRepository.findAll().stream().noneMatch(c -> c.getType() == CompetitionType.C4));
+        Competition allAroundFinal = competition(competitionRepository.findAll(), Round.AA, null);
+        assertTrue(rankingRepository.findByCompetition(allAroundFinal).stream().anyMatch(ranking ->
+                ranking.getType() == RankingType.TEAM && ranking.getPurpose() == RankingPurpose.FINAL));
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Whitehead", "Emily", Round.AA, Apparatus.VT)));
         // Worked out from the totals, the fifth vaulter can't be told from a dropped team member
-        assertEquals(TeamScoreRole.DROPPED, score("Stewart", "Lucy", Round.AA, Apparatus.VT).getTeamScoreRole());
+        assertEquals(TeamScoreRole.DROPPED, teamRole(score("Stewart", "Lucy", Round.AA, Apparatus.VT)));
     }
 
     @Test
@@ -421,15 +476,15 @@ class EventImporterTest {
     @Test
     void testImport_TeamAndAllAroundResults() {
         importFixture(WORLDS_WAG);
-        List<Session> sessions = sessionRepository.findAll();
+        List<Competition> sessions = competitionRepository.findAll();
 
-        TeamResult china = teamResultRepository.findBySessionAndNoc(session(sessions, Round.QUAL, null), "CHN")
+        TeamResult china = teamResult(competition(sessions, Round.QUAL, null), "CHN")
                 .orElseThrow();
         assertEquals(1, china.getRank());
         assertEquals(164.996, china.getTotalScore());
         assertEquals(QualificationResult.Q, china.getQualificationResult());
 
-        AllAroundResult ke = allAroundResultRepository.findBySession(session(sessions, Round.AA, null)).stream()
+        AllAroundResult ke = allAroundResults(competition(sessions, Round.AA, null)).stream()
                 .filter(result -> result.getParticipant().getAthlete().getSurname().equals("Ke"))
                 .findFirst().orElseThrow();
         assertEquals(3, ke.getRank());
@@ -440,10 +495,10 @@ class EventImporterTest {
     void testImport_FinalsSuperiorJuryServesEveryApparatusFinal() {
         importFixture(WORLDS_WAG);
 
-        List<Session> finals = sessionRepository.findAll().stream().filter(s -> s.getRound() == Round.EVENT).toList();
+        List<Competition> finals = competitionRepository.findAll().stream().filter(s -> s.getType().getLegacyRound() == Round.EVENT).toList();
         assertFalse(finals.isEmpty());
-        for (Session apparatusFinal : finals) {
-            List<Judge> judges = judgeRepository.findBySession(apparatusFinal);
+        for (Competition apparatusFinal : finals) {
+            List<Judge> judges = judgeRepository.findByCompetition(apparatusFinal);
             assertTrue(judges.stream().anyMatch(judge -> judge.getFunction() == JudgeFunction.VICE_PRESIDENT
                     && judge.getApparatus() == null), "no Vice-President on " + apparatusFinal.getApparatus());
         }
@@ -453,12 +508,12 @@ class EventImporterTest {
     void testImport_ApparatusFormatQualificationHasOneSessionPerApparatus() {
         importFixture(COTTBUS_WAG);
 
-        List<Session> qualifications = sessionRepository.findAll().stream()
-                .filter(s -> s.getRound() == Round.QUAL).toList();
+        List<Competition> qualifications = competitionRepository.findAll().stream()
+                .filter(s -> s.getType().getLegacyRound() == Round.QUAL).toList();
         assertEquals(4, qualifications.size());
         assertTrue(qualifications.stream().allMatch(s -> s.getApparatus() != null));
-        assertEquals(LocalDate.of(2026, 2, 19), session(qualifications, Round.QUAL, Apparatus.UB).getDate());
-        assertEquals(LocalDate.of(2026, 2, 20), session(qualifications, Round.QUAL, Apparatus.BB).getDate());
+        assertEquals(LocalDate.of(2026, 2, 19), competition(qualifications, Round.QUAL, Apparatus.UB).getDate());
+        assertEquals(LocalDate.of(2026, 2, 20), competition(qualifications, Round.QUAL, Apparatus.BB).getDate());
     }
 
     @Test
@@ -474,30 +529,30 @@ class EventImporterTest {
         assertEquals(12.483, makovickova.getTotalScore());
         assertNull(score("Kalmykova", "Anna", Round.QUAL, Apparatus.VT).getCombinedSjPenalty());
 
-        for (Session session : sessionRepository.findAll()) {
-            assertTrue(judgeRepository.findBySession(session).stream().anyMatch(judge ->
+        for (Competition competition : competitionRepository.findAll()) {
+            assertTrue(judgeRepository.findByCompetition(competition).stream().anyMatch(judge ->
                     judge.getFunction() == JudgeFunction.TD && judge.getApparatus() == null
-                            && judge.getNocCode() == null), "no Technical Delegate on " + session.getRound());
+                            && judge.getNocCode() == null), "no Technical Delegate on " + competition.getType());
         }
     }
 
     @Test
     void testImport_SplitRoundHasPartSessionsAndWholeRoundSession() {
         ImportReport report = importFixture(US_MAG);
-        List<Session> sessions = sessionRepository.findAll();
+        List<Competition> sessions = competitionRepository.findAll();
 
         assertEquals(3, sessions.size());
-        Session wholeRound = sessions.stream().filter(s -> s.getPart() == null).findFirst().orElseThrow();
+        Competition wholeRound = sessions.stream().filter(s -> s.getPart() == null).findFirst().orElseThrow();
         assertEquals(LocalDate.of(2026, 8, 6), wholeRound.getDate());
-        assertTrue(scoreRepository.findBySession(wholeRound).isEmpty());
+        assertTrue(scoreRepository.findByCompetition(wholeRound).isEmpty());
 
-        AllAroundResult moldauer = allAroundResultRepository.findBySession(wholeRound).stream()
+        AllAroundResult moldauer = allAroundResults(wholeRound).stream()
                 .filter(result -> result.getParticipant().getAthlete().getSurname().equals("Moldauer"))
                 .findFirst().orElseThrow();
         assertEquals(5, moldauer.getRank());
         assertEquals(163.896, moldauer.getTotalScore());
 
-        ApparatusResult hoopes = apparatusResultRepository.findBySessionAndApparatus(wholeRound, Apparatus.PH)
+        ApparatusResult hoopes = apparatusResults(wholeRound, Apparatus.PH)
                 .stream().filter(result -> result.getParticipant().getAthlete().getSurname().equals("Hoopes"))
                 .findFirst().orElseThrow();
         assertEquals(30.816, hoopes.getTotalScore());
@@ -560,7 +615,7 @@ class EventImporterTest {
 
         Score burkhart = scoreRepository.findAll().stream()
                 .filter(s -> s.getParticipant().getAthlete().getSurname().equals("Burkhart")
-                        && s.getApparatus() == Apparatus.VT && s.getSession().getPart() == 1)
+                        && s.getApparatus() == Apparatus.VT && s.getCompetition().getPart() == 1)
                 .findFirst().orElseThrow();
         assertEquals(0.217, burkhart.getRoutine().getBonus());
         List<BonusDetail> details = burkhart.getRoutine().getBonusDetail();
@@ -582,13 +637,19 @@ class EventImporterTest {
         importFixture(WORLDS_WAG);
         long scores = scoreRepository.count();
         long participants = participantRepository.count();
-        long sessions = sessionRepository.count();
+        long competitions = competitionRepository.count();
+        long rankings = rankingRepository.count();
+        long teams = teamRepository.count();
+        long links = teamResultScoreRepository.count();
 
         eventImporter.importManifest(fixture(WORLDS_WAG), true);
 
         assertEquals(scores, scoreRepository.count());
         assertEquals(participants, participantRepository.count());
-        assertEquals(sessions, sessionRepository.count());
+        assertEquals(competitions, competitionRepository.count());
+        assertEquals(rankings, rankingRepository.count());
+        assertEquals(teams, teamRepository.count());
+        assertEquals(links, teamResultScoreRepository.count());
     }
 
     @Test
@@ -600,7 +661,7 @@ class EventImporterTest {
         eventImporter.importManifest(fixture(WORLDS_WAG), true);
 
         assertEquals(magScores, scoreRepository.findAll().stream()
-                .filter(s -> s.getSession().getDiscipline() == Discipline.MAG).count());
+                .filter(s -> s.getCompetition().getDiscipline() == Discipline.MAG).count());
     }
 
     @Test
@@ -617,7 +678,7 @@ class EventImporterTest {
                 report.getWarnings().get(0));
         assertTrue(report.getWarnings().get(0).contains("BB 43.0"), report.getWarnings().get(0));
         assertTrue(report.getWarnings().get(1).contains("CHN team total 164.996 differs"), report.getWarnings().get(1));
-        assertEquals(TeamScoreRole.COUNTING, score("Zhang", "Yihan", Round.QUAL, Apparatus.BB).getTeamScoreRole());
+        assertEquals(TeamScoreRole.COUNTING, teamRole(score("Zhang", "Yihan", Round.QUAL, Apparatus.BB)));
     }
 
     @Test
@@ -629,8 +690,7 @@ class EventImporterTest {
         ImportReport report = eventImporter.importManifest(manifest, false);
 
         assertEquals(List.of(), report.getWarnings());
-        TeamResult china = teamResultRepository
-                .findBySessionAndNoc(session(sessionRepository.findAll(), Round.QUAL, null), "CHN").orElseThrow();
+        TeamResult china = teamResult(competition(competitionRepository.findAll(), Round.QUAL, null), "CHN").orElseThrow();
         assertEquals(-1.0, china.getSjPenalty());
         assertEquals(163.996, china.getTotalScore());
     }
@@ -657,8 +717,7 @@ class EventImporterTest {
         ImportReport report = eventImporter.importManifest(manifest, false);
 
         assertEquals(List.of(), report.getWarnings());
-        AllAroundResult ke = allAroundResultRepository
-                .findBySession(session(sessionRepository.findAll(), Round.AA, null)).stream()
+        AllAroundResult ke = allAroundResults(competition(competitionRepository.findAll(), Round.AA, null)).stream()
                 .filter(result -> result.getParticipant().getAthlete().getSurname().equals("Ke"))
                 .findFirst().orElseThrow();
         assertEquals(-0.3, ke.getSjPenalty());
@@ -677,28 +736,44 @@ class EventImporterTest {
     }
 
     @Test
-    void testImport_FinalsRankingTheQualificationsRoutines_HaveNoScoresOfTheirOwn() {
+    void testImport_FinalsRankingTheQualificationsRoutines_AreRankingsOfTheQualification() {
         ImportReport report = importFixture(ASIAN_WAG);
 
         assertEquals(List.of(), report.getWarnings());
-        List<Session> sessions = sessionRepository.findAll();
-        Session qualification = session(sessions, Round.QUAL, null);
-        for (Round round : List.of(Round.TEAM, Round.AA)) {
-            Session finals = session(sessions, round, null);
-            assertEquals(qualification.getId(), finals.getScoresSession().getId());
-            assertEquals(LocalDate.of(2026, 6, 25), finals.getDate());
-            assertTrue(scoreRepository.findAll().stream().noneMatch(score -> score.getSession().equals(finals)));
-        }
-        assertEquals(qualification, qualification.sessionWithScores());
-        assertEquals(qualification, session(sessions, Round.AA, null).sessionWithScores());
+        List<Competition> competitions = competitionRepository.findAll();
+        assertEquals(List.of(CompetitionType.C1), competitions.stream().map(Competition::getType).distinct().toList());
+        Competition qualification = competition(competitions, Round.QUAL, null);
+        List<Ranking> rankings = rankingRepository.findByCompetition(qualification);
+        assertTrue(rankings.stream().anyMatch(r -> r.getType() == RankingType.AA
+                && r.getPurpose() == RankingPurpose.FINAL));
+        assertTrue(rankings.stream().anyMatch(r -> r.getType() == RankingType.TEAM
+                && r.getPurpose() == RankingPurpose.FINAL));
         // Re-ranked two per country: 10th in qualification, 9th in the final
-        assertEquals(10, allAround("Yeap", Round.QUAL).getRank());
-        assertEquals(QualificationResult.Q, allAround("Yeap", Round.QUAL).getQualificationResult());
-        assertEquals(9, allAround("Yeap", Round.AA).getRank());
-        TeamResult china = teamResultRepository.findBySessionAndNoc(session(sessions, Round.TEAM, null), "CHN")
-                .orElseThrow();
+        assertEquals(10, allAround("Yeap", RankingPurpose.QUALIFYING).getRank());
+        assertEquals(QualificationResult.Q, allAround("Yeap", RankingPurpose.QUALIFYING).getQualificationResult());
+        assertEquals(9, allAround("Yeap", RankingPurpose.FINAL).getRank());
+        assertEquals(RankStatus.RANKED, allAround("Yeap", RankingPurpose.FINAL).getRankStatus());
+        TeamResult china = teamResultRepository.findByCompetitionAndNoc(qualification, "CHN").stream()
+                .filter(result -> result.getRanking().getPurpose() == RankingPurpose.FINAL).findFirst().orElseThrow();
         assertEquals(1, china.getRank());
         assertEquals(168.498, china.getTotalScore());
+    }
+
+    @Test
+    void testImport_FinalsRankingTheQualificationsRoutines_NoQualificationSummaries_OneQualification(
+            @TempDir Path dir) throws IOException {
+        // As at the 2026 South American Games: the qualification published only as the team and all-around finals
+        Path manifest = copyFixture(ASIAN_WAG, dir);
+        Files.writeString(manifest, Files.readString(manifest)
+                .replace("\"2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-AA.csv\",", "")
+                .replace("\"2026-ASIAN-CHAMPIONSHIPS-WAG-SR-SUMMARY-QUAL-TEAM.csv\",", ""));
+
+        ImportReport report = eventImporter.importManifest(manifest, false);
+
+        assertEquals(List.of(), report.getWarnings());
+        List<Competition> competitions = competitionRepository.findAll();
+        assertEquals(1, competitions.size());
+        assertNull(competitions.get(0).getApparatus());
     }
 
     @Test
@@ -711,7 +786,7 @@ class EventImporterTest {
         ImportReport report = eventImporter.importManifest(manifest, false);
 
         assertEquals(1, report.getWarnings().size(), report.getWarnings().toString());
-        assertTrue(report.getWarnings().get(0).contains("bib 502 AA all-around total 56.3 differs from the sum of "
+        assertTrue(report.getWarnings().get(0).contains("bib 502 QUAL all-around total 56.3 differs from the sum of "
                 + "its scores, 56.299"), report.getWarnings().get(0));
     }
 
@@ -722,19 +797,19 @@ class EventImporterTest {
         Files.writeString(summary, Files.readString(summary).replace(",QUAL\n", ",TEAM\n"));
 
         ImportException e = assertThrows(ImportException.class, () -> eventImporter.importManifest(manifest, false));
-        assertTrue(e.getMessage().contains("no scores were imported for the TEAM session whose scores the AA "
-                + "session ranks"), e.getMessage());
+        assertTrue(e.getMessage().contains("no scores were imported for the TEAM competition this row ranks"),
+                e.getMessage());
     }
 
     @Test
     void testImport_FinalsRankingTheQualificationsRoutines_ReplaceReimports() {
         importFixture(ASIAN_WAG);
-        long sessions = sessionRepository.count();
+        long competitions = competitionRepository.count();
 
         eventImporter.importManifest(fixture(ASIAN_WAG), true);
-        sessionRepository.flush();
+        competitionRepository.flush();
 
-        assertEquals(sessions, sessionRepository.count());
+        assertEquals(competitions, competitionRepository.count());
     }
 
     @Test
@@ -790,24 +865,75 @@ class EventImporterTest {
                 .mapToLong(file -> CsvRow.read(path.getParent().resolve(file)).size()).sum();
     }
 
-    private AllAroundResult allAround(String surname, Round round) {
+    private AllAroundResult allAround(String surname, RankingPurpose purpose) {
         return allAroundResultRepository.findAll().stream()
                 .filter(result -> result.getParticipant().getAthlete().getSurname().equals(surname)
-                        && result.getSession().getRound() == round)
-                .findFirst().orElseThrow(() -> new AssertionError("no " + round + " result for " + surname));
+                        && result.getRanking().getPurpose() == purpose)
+                .findFirst().orElseThrow(() -> new AssertionError("no " + purpose + " result for " + surname));
     }
 
     private Score score(String surname, String givenName, Round round, Apparatus apparatus) {
         return scoreRepository.findAll().stream()
                 .filter(s -> s.getParticipant().getAthlete().getSurname().equals(surname)
                         && s.getParticipant().getAthlete().getGivenName().equals(givenName)
-                        && s.getSession().getRound() == round && s.getApparatus() == apparatus)
+                        && s.getCompetition().getType() == CompetitionType.of(round) && s.getApparatus() == apparatus)
                 .findFirst().orElseThrow(() -> new AssertionError("no score for " + surname + " " + givenName));
     }
 
-    private static Session session(List<Session> sessions, Round round, Apparatus apparatus) {
-        return sessions.stream().filter(s -> s.getRound() == round && s.getApparatus() == apparatus).findFirst()
-                .orElseThrow(() -> new AssertionError("no " + round + " " + apparatus + " session"));
+    /** The score's placings in its competition's apparatus rankings. */
+    private ApparatusRanks ranks(Score score) {
+        return new ApparatusRanks(score.getCompetition().getType(), apparatusResultRepository.findAll().stream()
+                .filter(result -> ranks(result.getRanking(), score.getCompetition()))
+                .toList());
+    }
+
+    private Integer rank(Score score) {
+        return ranks(score).rank(score);
+    }
+
+    private Integer qualificationRank(Score score) {
+        return ranks(score).qualificationRank(score);
+    }
+
+    private QualificationResult qualification(Score score) {
+        return ranks(score).qualification(score);
+    }
+
+    /** How the score figured in its team's result: counting, dropped, or no part of a team (individual). */
+    private TeamScoreRole teamRole(Score score) {
+        List<TeamResultScore> links = teamResultScoreRepository.findByScoreIn(List.of(score));
+        if (links.isEmpty()) {
+            return TeamScoreRole.INDIVIDUAL;
+        }
+        return links.get(0).getRole() == TeamContributionRole.COUNTING ? TeamScoreRole.COUNTING
+                : TeamScoreRole.DROPPED;
+    }
+
+    private Optional<TeamResult> teamResult(Competition competition, String noc) {
+        return teamResultRepository.findByCompetitionAndNoc(competition, noc).stream().findFirst();
+    }
+
+    private List<AllAroundResult> allAroundResults(Competition competition) {
+        return allAroundResultRepository.findAll().stream()
+                .filter(result -> ranks(result.getRanking(), competition)).toList();
+    }
+
+    private Optional<ApparatusResult> apparatusResults(Competition competition, Apparatus apparatus) {
+        return apparatusResultRepository.findAll().stream()
+                .filter(result -> ranks(result.getRanking(), competition)
+                        && result.getRanking().getApparatus() == apparatus)
+                .findFirst();
+    }
+
+    private static boolean ranks(Ranking ranking, Competition competition) {
+        return ranking.getCompetitions().stream().anyMatch(c -> c.getId().equals(competition.getId()));
+    }
+
+    private static Competition competition(List<Competition> competitions, Round round, Apparatus apparatus) {
+        return competitions.stream()
+                .filter(c -> c.getType() == CompetitionType.of(round) && c.getApparatus() == apparatus)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("no " + round + " " + apparatus + " competition"));
     }
 
     private static void giveSlug(Path manifest, String slug) throws IOException {
