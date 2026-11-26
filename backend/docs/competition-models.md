@@ -320,6 +320,36 @@ erDiagram
     }
 ```
 
+**How to read the lines.** Each line joins two entities. The marks at each end say how many of
+the entity at *that* end go with one of the other.
+
+| Mark | Meaning |
+|---|---|
+| `\|\|` | exactly one |
+| `\|o` / `o\|` | zero or one |
+| `\|{` / `}\|` | one or more |
+| `o{` / `}o` | zero or more |
+
+For example:
+
+- `Event ||--o{ Session`: one event holds zero or more sessions, and each session belongs to
+  exactly one event.
+- `Ranking }o--|{ Session`: a ranking ranks the routines of one or more sessions (two for a
+  mixed team), and a session can be ranked by zero or more rankings.
+
+**Which table holds which row.** These are the rows for one apparatus in a qualification
+(Worlds MAG C1, floor, 100 gymnasts), under §7.6 decision 4:
+
+| Table | Rows | One row is |
+|---|---|---|
+| `Score` | 100 | one gymnast's routine: D, E, penalties, total (for vault, both vaults) |
+| `Ranking` | 1 | "C1 floor, `QUALIFYING`" |
+| `ApparatusResult` | 100 | one gymnast's place in that ranking: rank, standing, Q/R/NR, total |
+
+The all-around works the same way already: `Score` holds the routines, and `AllAroundResult`
+holds each gymnast's place in the all-around ranking. "One extra row per score" means the
+`ApparatusResult` row. `Score` doesn't change in number.
+
 ### 7.4 The models as sessions and rankings
 
 | Model | Example | Sessions | Rankings |
@@ -361,17 +391,15 @@ Decided:
    - Athletes the book marked `NR` get the `NOC_LIMIT` standing.
    - The Q/R/NR markers are dropped, since they qualified no one to a later round.
 
-Open:
+4. **Places outside the final ranking.** Where the final ranking printed fewer places than the
+   field (Asian Championships: 24 athletes, 8 teams), the rest are unranked with `UNPLACED`.
+   Places from the qualifying ranking aren't borrowed.
+5. **Apparatus rankings are rankings.** Every standing has the same shape: a `Ranking` with
+   result rows (`TeamResult`, `AllAroundResult`, `ApparatusResult`).
+   - `Score` keeps only the routine values.
+   - Its `rank`, `qualificationRank` and `qualificationResult` move to `ApparatusResult`.
 
-1. **Places outside the final ranking.** At the Asian Championships the final AA ranking lists
-   only 24 athletes and the team ranking 8 teams. Places 25 and on (9 and on for teams) were
-   printed only in the qualifying ranking, whose numbers include the `NR` athletes.
-   - **Option A:** leave those rows unranked with `UNPLACED`.
-   - **Option B:** take the qualifying ranking's places, which would make up final places the
-     book never printed.
-
-   Recommend A.
-2. **Apparatus rankings.** Today an apparatus's standings are kept on the scores themselves:
+   The previous wording, kept for reference: Today an apparatus's standings are kept on the scores themselves:
    - an apparatus final's places are `Score.rank` in the EVENT session;
    - a qualification's per-apparatus places, the vault two-vault ranking and the Q/R/NR
      markers are `Score.rank`, `Score.qualificationRank` and `Score.qualificationResult`.
@@ -388,6 +416,12 @@ Open:
      scores would then hold only routine values.
 
    Recommend making them rankings, for uniformity, unless the duplication bothers you.
+Open:
+
+1. **Vault's two lists.** Qualification prints a single-vault list (the first vault, which
+   counts for the all-around) and a two-vault list (the average, which qualifies to the final).
+   Is the single-vault list a ranking to store, or only the two-vault one?
+2. **Terminology** (§9).
 3. **Mixed teams.** Next, once the base model is settled (§8).
 
 ## 8. Next: mixed teams (Youth Olympic Games, Dakar 2026)
@@ -416,3 +450,22 @@ Notes for when we look at it. Rules:
   - **Round 2:** a different apparatus; the top 4 advance.
   - **Round 3:** the remaining apparatus; the highest total wins.
 - A team's score in a round is the sum of its two routines, scored under the normal codes.
+
+## 9. Terminology (to align)
+
+A first pass at a glossary. Renames would land together with the model change, in one
+migration.
+
+| Today | Proposed | Why |
+|---|---|---|
+| `Event` (a meet) | `Meet`? | In gymnastics "event" usually means an apparatus ("event finals"), and `Round.EVENT` uses it that way. |
+| `Session` | `Competition` | FIG numbers them Competition I–IV. A session is also a timetable slot, and one competition can span several (subdivisions, US Part 1/2). |
+| `Session.part` | `part` | A competition held over two days and decided on the combined total (US). |
+| `Round` | `CompetitionType`? `C1` (Competition I), then `AA`, `EVENT`, `TEAM`, or `C2`, `C3`, `C4` throughout | Codes all from one system, rather than half FIG and half ours. |
+| `Round.EVENT` | `APPARATUS`? | Same clash as `Event`. |
+| (new) `Ranking` | `Ranking` | Standings over one or more competitions' routines. |
+| (new) `purpose` | `QUALIFYING` / `FINAL` | |
+| (new) `EventFormat` | `MeetFormat`? | Follows the `Event` rename. |
+| `Score` | `Score` | One performance: a routine, or vault's two. |
+| `SUMMARY-*` files | `RANKING-*`? | They'd hold rankings. |
+
