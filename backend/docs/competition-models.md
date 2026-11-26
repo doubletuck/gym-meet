@@ -285,8 +285,8 @@ erDiagram
         string noc "optional"
     }
     TeamMember {
-        FK team
-        FK participant
+        bigint team_id FK
+        bigint participant_id FK
     }
     Score {
         enum apparatus
@@ -328,7 +328,7 @@ erDiagram
 | C | Asian Games | C1, TEAM, EVENT×n | C1: team `QUALIFYING`, **AA `FINAL`**. TEAM: team `FINAL` |
 | D | Commonwealth | C1, AA, EVENT×n | C1: **team `FINAL`**, AA `QUALIFYING`. AA: AA `FINAL` |
 | E | SA Games, African | C1, EVENT×n | C1: **team `FINAL`, AA `FINAL`** |
-| E | Asian Championships | C1, EVENT×n | C1: team and AA `FINAL`, possibly also `QUALIFYING` (§7.6, question 2) |
+| E | Asian Championships | C1, EVENT×n | C1: team and AA `FINAL` only; the printed qualifying rankings aren't stored (§7.6) |
 | F | Oceania | C1 | C1: team `FINAL`, AA `FINAL` |
 | G | US | C1 part 1, C1 part 2, C1 | C1 parts: AA per day. C1 whole: AA `FINAL`, apparatus `FINAL` (combined) |
 | H | World Cups | C1, EVENT×n | none beyond the scores' own ranks |
@@ -348,14 +348,71 @@ erDiagram
   - Oceania and US `AA` become `C1`;
   - `QUAL` becomes `C1` everywhere.
 
-### 7.6 Open questions
+### 7.6 Decisions and open questions
 
-1. **Format values.** Are `C1` / `FINAL` / `NONE` right, or do you want other wording?
-2. **Asian Championships.** It printed two AA rankings over the same routines:
-   - a qualifying one, ranking the whole field with Q/NR marking the 24 who count;
-   - a final one, with only those 24 and the medals.
+Decided:
 
-   Should we store both, or only the final one with `NOC_LIMIT` standings for those left out?
-3. **Mixed teams.** Should we model them once we see a book?
-4. **Apparatus rankings.** Should every apparatus ranking become a `Ranking` row, or only
-   combined ones?
+1. **The `Ranking` entity.** Yes.
+2. **Format values.** `C1` / `FINAL` / `NONE`.
+3. **One ranking per title and purpose.** Where a book prints a qualifying ranking and a final
+   ranking over the same routines for a title Competition I decided (Asian Championships),
+   only the `FINAL` ranking is stored.
+   - It holds the whole field, as the Asian Games and SA Games summaries do.
+   - Athletes the book marked `NR` get the `NOC_LIMIT` standing.
+   - The Q/R/NR markers are dropped, since they qualified no one to a later round.
+
+Open:
+
+1. **Places outside the final ranking.** At the Asian Championships the final AA ranking lists
+   only 24 athletes and the team ranking 8 teams. Places 25 and on (9 and on for teams) were
+   printed only in the qualifying ranking, whose numbers include the `NR` athletes.
+   - **Option A:** leave those rows unranked with `UNPLACED`.
+   - **Option B:** take the qualifying ranking's places, which would make up final places the
+     book never printed.
+
+   Recommend A.
+2. **Apparatus rankings.** Today an apparatus's standings are kept on the scores themselves:
+   - an apparatus final's places are `Score.rank` in the EVENT session;
+   - a qualification's per-apparatus places, the vault two-vault ranking and the Q/R/NR
+     markers are `Score.rank`, `Score.qualificationRank` and `Score.qualificationResult`.
+
+   Team and all-around standings are separate rows (`TeamResult`, `AllAroundResult`), because
+   they sum several scores. The question is whether apparatus standings should also become
+   `Ranking` + `ApparatusResult` rows, so that every standing has the same shape:
+   - **For:**
+     - one way to ask "who won what, and where was it decided";
+     - a `standing` on apparatus results (`NOC_LIMIT` for apparatus two-per-country, now an
+       `NR` marker on a score);
+     - the vault qualifying ranking stops needing its own `qualificationRank` column.
+   - **Against:** one extra row per score in every session, repeating the score's total. The
+     scores would then hold only routine values.
+
+   Recommend making them rankings, for uniformity, unless the duplication bothers you.
+3. **Mixed teams.** Next, once the base model is settled (§8).
+
+## 8. Next: mixed teams (Youth Olympic Games, Dakar 2026)
+
+Notes for when we look at it. Rules:
+[Rules for the Youth Olympic Games 2026](https://www.gymnastics.sport/publicdir/rules/files/en_1.7%20-%20Rules%20for%20the%20Youth%20Olympic%20Games%202026.pdf).
+
+**Teams**
+- Each NOC enters one man and one woman, the same pair in every round.
+- An NOC needs at least one man and one woman in qualification to enter.
+
+**Apparatus**
+- Only MAG FX, PB, HB and WAG UB, BB, FX count.
+- Both members of a pair can't do FX in the same round.
+
+**Getting into the final**
+- There's no separate qualification round. A mixed team qualifying ranking is built from each
+  NOC's best single score per counting apparatus on the regular qualification day (both
+  disciplines' C1 sessions).
+- The top 12 advance.
+- Ties are broken by the sum of counting scores, then total E, then total D.
+
+**Final**
+- Three elimination rounds, with scores reset each round:
+  - **Round 1:** each pair picks one men's and one women's apparatus; the top 8 advance.
+  - **Round 2:** a different apparatus; the top 4 advance.
+  - **Round 3:** the remaining apparatus; the highest total wins.
+- A team's score in a round is the sum of its two routines, scored under the normal codes.
