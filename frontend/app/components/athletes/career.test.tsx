@@ -3,7 +3,17 @@ import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import type { Apparatus, ApparatusScore, AthleteDetail, AthleteEntry, EntrySession, Routine } from "~/api/types";
+import type {
+  Apparatus,
+  ApparatusScore,
+  AthleteDetail,
+  AthleteEntry,
+  CompetitionSummary,
+  CompetitionType,
+  EntryCompetition,
+  Routine,
+} from "~/api/types";
+import { APPARATUS_LABELS } from "~/lib/labels";
 import { CareerResults, PersonalBests } from "./career";
 
 const render = (ui: ReactElement) => renderInPage(<MemoryRouter>{ui}</MemoryRouter>);
@@ -16,17 +26,44 @@ const worlds = {
   endDate: "2026-10-25",
 };
 
-function session(slug: string, round: "QUAL" | "TEAM" | "AA" | "EVENT", apparatus: Apparatus | null = null) {
+const NAMES: Record<CompetitionType, [name: string, shortName: string]> = {
+  C1: ["Qualification", "Qualification"],
+  C2: ["All-Around Final", "AA Final"],
+  C3: ["Final", "Final"],
+  C4: ["Team Final", "Team Final"],
+};
+
+// What each kind of competition's rankings are for at a championship like Worlds
+const PURPOSES: Record<CompetitionType, CompetitionSummary["purposes"]> = {
+  C1: { team: "QUALIFYING", allAround: "QUALIFYING", apparatus: "QUALIFYING" },
+  C2: { team: null, allAround: "FINAL", apparatus: "INFORMATIONAL" },
+  C3: { team: null, allAround: null, apparatus: "FINAL" },
+  C4: { team: "FINAL", allAround: null, apparatus: "INFORMATIONAL" },
+};
+
+function competition(
+  slug: string,
+  type: CompetitionType,
+  apparatus: Apparatus | null = null,
+  overrides: Partial<CompetitionSummary> = {},
+): CompetitionSummary {
+  const [name, shortName] =
+    type === "C3" && apparatus ? [`${APPARATUS_LABELS[apparatus]} Final`, "Final"] : NAMES[type];
   return {
-    id: slug.length * 10 + (apparatus?.length ?? 0) + round.length,
+    id: slug.length * 10 + (apparatus?.length ?? 0) + Number(type[1]),
     slug,
-    discipline: "WAG" as const,
-    ageCategory: "SR" as const,
-    round,
+    name,
+    shortName,
+    discipline: "WAG",
+    ageCategory: "SR",
+    type,
     apparatus,
+    round: null,
     part: null,
+    purposes: PURPOSES[type],
     date: "2026-10-18",
     endDate: null,
+    ...overrides,
   };
 }
 
@@ -71,10 +108,10 @@ describe("PersonalBests", () => {
               routine: routine(7.0, 8.333, 15.333),
               vault: null,
               event: worlds,
-              session: session("uneven-bars-final", "EVENT", "UB"),
+              competition: competition("uneven-bars-final", "C3", "UB"),
             },
           ],
-          allAroundBest: { total: 55.999, event: worlds, session: session("qualification", "QUAL") },
+          allAroundBest: { total: 55.999, event: worlds, competition: competition("qualification", "C1") },
         })}
       />,
     );
@@ -104,7 +141,7 @@ describe("PersonalBests", () => {
               routine: { ...routine(5.3, 7.9, 12.9), bonus: 0, penalty: -0.3 },
               vault: null,
               event: worlds,
-              session: session("qualification", "QUAL"),
+              competition: competition("qualification", "C1"),
             },
           ],
         })}
@@ -127,7 +164,7 @@ describe("PersonalBests", () => {
               routine: routine(5.2, 9.2, 14.4),
               vault: 2,
               event: worlds,
-              session: session("qualification", "QUAL"),
+              competition: competition("qualification", "C1"),
             },
           ],
         })}
@@ -172,8 +209,8 @@ describe("CareerResults", () => {
     };
   }
 
-  function entry(sessions: EntrySession[], overrides: Partial<AthleteEntry> = {}): AthleteEntry {
-    return { event: worlds, noc: "KOR", club: null, entryStatus: "COMPETITOR", sessions, ...overrides };
+  function entry(competitions: EntryCompetition[], overrides: Partial<AthleteEntry> = {}): AthleteEntry {
+    return { event: worlds, noc: "KOR", club: null, entryStatus: "COMPETITOR", competitions, ...overrides };
   }
 
   const row = (name: RegExp) => screen.getByRole("row", { name });
@@ -190,8 +227,8 @@ describe("CareerResults", () => {
         athlete={athlete([
           entry([
             {
-              session: session("qualification", "QUAL"),
-              allAround: { rank: 3, total: 55.1, qualification: "Q" },
+              competition: competition("qualification", "C1"),
+              allAround: { rank: 3, rankStatus: "RANKED", total: 55.1, qualification: "Q", purpose: "QUALIFYING" },
               team: null,
               scores: [
                 score("VT", {
@@ -237,28 +274,28 @@ describe("CareerResults", () => {
           entry(
             [
               {
-                session: session("vault-qualification", "QUAL", "VT"),
+                competition: competition("vault-qualification", "C1", "VT"),
                 allAround: null,
                 team: null,
                 scores: [score("VT", { rank: 2 })],
                 apparatusStandings: [],
               },
               {
-                session: session("uneven-bars-qualification", "QUAL", "UB"),
+                competition: competition("uneven-bars-qualification", "C1", "UB"),
                 allAround: null,
                 team: null,
                 scores: [score("UB", { rank: 3, qualification: "Q" })],
                 apparatusStandings: [],
               },
               {
-                session: session("vault-final", "EVENT", "VT"),
+                competition: competition("vault-final", "C3", "VT"),
                 allAround: null,
                 team: null,
                 scores: [score("VT", { rank: 4 })],
                 apparatusStandings: [],
               },
               {
-                session: session("uneven-bars-final", "EVENT", "UB"),
+                competition: competition("uneven-bars-final", "C3", "UB"),
                 allAround: null,
                 team: null,
                 scores: [score("UB", { rank: 1 })],
@@ -285,22 +322,36 @@ describe("CareerResults", () => {
         athlete={athlete([
           entry([
             {
-              session: session("qualification", "QUAL"),
-              allAround: { rank: 2, total: 84.632, qualification: "Q" },
-              team: { noc: "JPN", rank: 1, total: 254.529, qualification: "Q" },
+              competition: competition("qualification", "C1"),
+              allAround: { rank: 2, rankStatus: "RANKED", total: 84.632, qualification: "Q", purpose: "QUALIFYING" },
+              team: {
+                noc: "JPN",
+                rank: 1,
+                rankStatus: "RANKED",
+                total: 254.529,
+                qualification: "Q",
+                purpose: "QUALIFYING",
+              },
               scores: [sixth("UB", 1)],
               apparatusStandings: [],
             },
             {
-              session: session("team-final", "TEAM"),
+              competition: competition("team-final", "C4"),
               allAround: null,
-              team: { noc: "JPN", rank: 1, total: 251.928, qualification: null },
+              team: {
+                noc: "JPN",
+                rank: 1,
+                rankStatus: "RANKED",
+                total: 251.928,
+                qualification: null,
+                purpose: "FINAL",
+              },
               scores: [score("UB")],
               apparatusStandings: [],
             },
             {
-              session: session("all-around-final", "AA"),
-              allAround: { rank: 1, total: 85.998, qualification: null },
+              competition: competition("all-around-final", "C2"),
+              allAround: { rank: 1, rankStatus: "RANKED", total: 85.998, qualification: null, purpose: "FINAL" },
               team: null,
               scores: [sixth("UB", 1), sixth("BB", 3)],
               apparatusStandings: [],
@@ -334,7 +385,7 @@ describe("CareerResults", () => {
         athlete={athlete([
           entry([
             {
-              session: session("qualification", "QUAL"),
+              competition: competition("qualification", "C1"),
               allAround: null,
               team: null,
               scores: [
@@ -368,7 +419,7 @@ describe("CareerResults", () => {
         athlete={athlete([
           entry([
             {
-              session: session("qualification", "QUAL"),
+              competition: competition("qualification", "C1"),
               allAround: null,
               team: null,
               scores: [score("UB")],
@@ -384,7 +435,7 @@ describe("CareerResults", () => {
 
   it("names who they competed for only where it differs from their current country", () => {
     const qualification = {
-      session: session("qualification", "QUAL"),
+      competition: competition("qualification", "C1"),
       allAround: null,
       team: null,
       scores: [score("UB")],
@@ -404,15 +455,20 @@ describe("CareerResults", () => {
     expect(earlier).toHaveTextContent(/AIN|Individual Neutral/);
   });
 
-  it("shows a split round's combined apparatus standings", () => {
+  it("shows a split competition's combined apparatus standings", () => {
     render(
       <CareerResults
         athlete={athlete([
           entry(
             [
               {
-                session: { ...session("all-around-final", "AA"), discipline: "MAG" },
-                allAround: { rank: 5, total: 163.896, qualification: null },
+                competition: competition("all-around-and-apparatus-final", "C1", null, {
+                  name: "All-Around and Apparatus Final",
+                  shortName: "Final",
+                  discipline: "MAG",
+                  purposes: { team: null, allAround: "FINAL", apparatus: "FINAL" },
+                }),
+                allAround: { rank: 5, rankStatus: "RANKED", total: 163.896, qualification: null, purpose: "FINAL" },
                 team: null,
                 scores: [],
                 apparatusStandings: [{ apparatus: "VT", rank: 12, total: 26.35 }],
@@ -432,7 +488,36 @@ describe("CareerResults", () => {
     expect(row(/^Vault/)).toHaveTextContent("26.35012");
     expect(within(row(/^Vault/)).getByRole("link")).toHaveAttribute(
       "href",
-      "/events/2026-us-championships/mag/sr/all-around-final?view=combined-VT&athlete=7",
+      "/events/2026-us-championships/mag/sr/all-around-and-apparatus-final?view=combined-VT&athlete=7",
     );
+  });
+
+  it("gives medals for titles Competition I decided, and says why a result has no rank", () => {
+    render(
+      <CareerResults
+        athlete={athlete([
+          entry([
+            {
+              competition: competition("qualification", "C1", null, {
+                name: "Team and All-Around Final · Apparatus Qualification",
+                purposes: { team: "FINAL", allAround: "FINAL", apparatus: "QUALIFYING" },
+              }),
+              allAround: { rank: null, rankStatus: "NOC_LIMIT", total: 52.1, qualification: null, purpose: "FINAL" },
+              team: { noc: "ALG", rank: 2, rankStatus: "RANKED", total: 150.2, qualification: null, purpose: "FINAL" },
+              scores: [score("UB", { rank: 1, qualification: "Q" })],
+              apparatusStandings: [],
+            },
+          ]),
+        ])}
+      />,
+    );
+
+    expect(roundHeaders().map((header) => header.textContent)).toEqual([
+      "Team and All-Around Final · Apparatus QualificationSun 18 Oct",
+    ]);
+    expect(within(row(/Team ALG/)).getByTitle("Silver medal")).toBeInTheDocument();
+    // First on bars qualifies for the final, which awards the medal
+    expect(within(row(/Uneven Bars/)).queryByTitle(/medal/)).not.toBeInTheDocument();
+    expect(within(row(/^All-Around/)).getByTitle(/over the limit per country/)).toHaveTextContent("NR");
   });
 });

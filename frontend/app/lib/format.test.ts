@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { countryName } from "./countries";
-import { formatDateRange, formatScore, formatSessionDate, formatValue } from "./format";
-import { sessionLabel } from "./labels";
+import { formatDateRange, formatScore, formatCompetitionDate, formatValue } from "./format";
 
 describe("formatScore", () => {
   it("prints three decimals", () => {
@@ -24,17 +23,8 @@ describe("dates", () => {
   it("formats a range and a day without shifting time zones", () => {
     // Intl sets the dash between thin spaces
     expect(formatDateRange("2026-10-17", "2026-10-25")).toBe("17\u2009–\u200925 Oct 2026");
-    expect(formatSessionDate("2026-10-17")).toBe("Sat 17 Oct");
-    expect(formatSessionDate("2026-08-06", "2026-08-08")).toBe("Thu 6 Aug\u2009–\u2009Sat 8 Aug");
-  });
-});
-
-describe("sessionLabel", () => {
-  it("names sessions as a results book heads them", () => {
-    expect(sessionLabel({ round: "QUAL", apparatus: null, part: null })).toBe("Qualification");
-    expect(sessionLabel({ round: "QUAL", apparatus: "VT", part: null })).toBe("Vault Qualification");
-    expect(sessionLabel({ round: "EVENT", apparatus: "BB", part: null })).toBe("Balance Beam Final");
-    expect(sessionLabel({ round: "AA", apparatus: null, part: 2 })).toBe("All-Around Final, Part 2");
+    expect(formatCompetitionDate("2026-10-17")).toBe("Sat 17 Oct");
+    expect(formatCompetitionDate("2026-08-06", "2026-08-08")).toBe("Thu 6 Aug\u2009–\u2009Sat 8 Aug");
   });
 });
 

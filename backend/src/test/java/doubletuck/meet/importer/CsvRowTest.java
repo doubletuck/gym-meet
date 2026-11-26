@@ -1,6 +1,6 @@
 package doubletuck.meet.importer;
 
-import doubletuck.meet.domain.Round;
+import doubletuck.meet.domain.CompetitionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,8 +24,8 @@ class CsvRowTest {
     void setUp() throws IOException {
         Path file = dir.resolve("SCORES.csv");
         Files.writeString(file, """
-                Round,Rank,Name,D,Penalty,Date
-                QUAL, 3 , SMITH Anna ,5.5,,2026-10-18
+                Competition,Rank,Name,D,Penalty,Date
+                C1, 3 , SMITH Anna ,5.5,,2026-10-18
                 """);
         List<CsvRow> rows = CsvRow.read(file);
         assertEquals(1, rows.size());
@@ -45,7 +45,7 @@ class CsvRowTest {
         assertEquals(5.5, row.decimal("D"));
         assertNull(row.decimal("Penalty"));
         assertEquals(LocalDate.of(2026, 10, 18), row.date("Date"));
-        assertEquals(Round.QUAL, row.code("Round", Round::find));
+        assertEquals(CompetitionType.C1, row.code("Competition", CompetitionType::find));
     }
 
     @Test
@@ -62,7 +62,7 @@ class CsvRowTest {
 
     @Test
     void testUnrecognisedCode_Fails() {
-        ImportException e = assertThrows(ImportException.class, () -> row.code("Name", Round::find));
+        ImportException e = assertThrows(ImportException.class, () -> row.code("Name", CompetitionType::find));
         assertTrue(e.getMessage().contains("unrecognised Name 'SMITH Anna'"), e.getMessage());
     }
 

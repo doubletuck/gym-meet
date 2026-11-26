@@ -52,7 +52,7 @@ public class EventService {
         }
         if (!competitionRepository.findByEventId(id).isEmpty() || !participantRepository.findByEventId(id).isEmpty()) {
             throw new ConflictException(
-                    "Event " + id + " has dependent sessions or participants and cannot be deleted");
+                    "Event " + id + " has dependent competitions or participants and cannot be deleted");
         }
         eventRepository.deleteById(id);
         return true;

@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import type { AllAroundRow, ApparatusStandingRow, Routine, ScoreRow, SessionResults, TeamRow } from "~/api/types";
+import type { AllAroundRow, ApparatusStandingRow, Routine, ScoreRow, CompetitionResults, TeamRow } from "~/api/types";
 import {
   AllAroundTable,
   firstVaults,
@@ -338,6 +338,7 @@ describe("AllAroundTable", () => {
   function allAround(rank: number | null, surname: string, VT: number, total: number | null): AllAroundRow {
     return {
       rank,
+      rankStatus: rank == null ? "INCOMPLETE" : "RANKED",
       bib: surname,
       athlete: { id: rank ?? 0, surname, givenName: "A" },
       noc: "USA",
@@ -362,6 +363,13 @@ describe("AllAroundTable", () => {
     const cell = screen.getByText("A First").closest("td")!;
     expect(within(cell).getByTitle("Vault").parentElement).toHaveTextContent(/ 13\.500$/);
     expect(screen.queryByRole("button", { name: "Show details" })).not.toBeInTheDocument();
+  });
+
+  it("says why an unranked gymnast has no rank", () => {
+    render(<AllAroundTable rows={rows} apparatus={["VT"]} qualification={false} />);
+
+    const unranked = screen.getByText("A Unranked").closest("tr")!;
+    expect(within(unranked).getByTitle(/^Incomplete/)).toHaveTextContent("INC");
   });
 
   it("is ranked as published until a header is tapped", () => {
@@ -396,7 +404,7 @@ describe("AllAroundTable", () => {
     expect(order()).toEqual(["A First", "A Second", "A Unranked"]);
   });
 
-  it("lists each part's scores under the combined ones for a round held in parts", () => {
+  it("lists each part's scores under the combined ones for a competition held in parts", () => {
     const combined: AllAroundRow = {
       ...allAround(5, "Moldauer", 26.7, 163.896),
       parts: [
@@ -437,6 +445,7 @@ describe("TeamTable", () => {
   it("lists apparatus totals under the team for a phone, leaving out blanks", () => {
     const team: TeamRow = {
       rank: 1,
+      rankStatus: "RANKED",
       noc: "JPN",
       total: 252.0,
       sjPenalty: null,
@@ -454,6 +463,7 @@ describe("TeamTable", () => {
   it("shows a penalty column only when a team has a penalty", () => {
     const team = (noc: string, total: number, sjPenalty: number | null): TeamRow => ({
       rank: null,
+      rankStatus: "UNPLACED",
       noc,
       total,
       sjPenalty,
@@ -481,16 +491,20 @@ describe("TeamTable", () => {
 });
 
 describe("standingsApparatus", () => {
-  const results = (overrides: Partial<SessionResults>): SessionResults => ({
+  const results = (overrides: Partial<CompetitionResults>): CompetitionResults => ({
     event: { slug: "2026-asian-championships-wag-sr", title: "13th Senior Asian Championships" },
-    session: {
+    competition: {
       id: 1,
-      slug: "all-around-final",
+      slug: "qualification",
+      name: "Team and All-Around Final · Apparatus Qualification",
+      shortName: "Qualification",
       discipline: "WAG",
       ageCategory: "SR",
-      round: "AA",
+      type: "C1",
       apparatus: null,
+      round: null,
       part: null,
+      purposes: { team: "FINAL", allAround: "FINAL", apparatus: "QUALIFYING" },
       date: "2026-06-25",
       endDate: null,
     },
@@ -508,6 +522,7 @@ describe("standingsApparatus", () => {
   it("without score tables, takes the apparatus the standings have scores on, in Olympic order", () => {
     const row: AllAroundRow = {
       rank: 1,
+      rankStatus: "RANKED",
       bib: "502",
       athlete: { id: 1, surname: "Ke", givenName: "Qinqin" },
       noc: "CHN",

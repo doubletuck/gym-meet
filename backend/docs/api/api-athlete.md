@@ -72,7 +72,7 @@ Fields marked nullable may be `null`; every field is always present.
 | birthYear | Integer, nullable | |
 | otherNames | List | Other spellings sources have printed, as `Given Surname` |
 | personalBests | List | [PersonalBest](#personalbest-object) objects: their best routine score on each apparatus they have one on, in Olympic order |
-| allAroundBest | Object, nullable | `{total, event, session}`: their best all-around total from a whole all-around in one session — a score on every apparatus. A split round's combined total (e.g. two days added together) and a partial total some national results print don't count. `event` and `session` as on [PersonalBest](#personalbest-object) |
+| allAroundBest | Object, nullable | `{total, event, competition}`: their best all-around total from a whole all-around in one competition — a score on every apparatus. A split competition's combined total (e.g. two days added together) and a partial total some national results print don't count. `event` and `competition` as on [PersonalBest](#personalbest-object) |
 | entries | List | [Entry](#entry-object) objects, one per meet entered, newest first |
 
 ### PersonalBest Object
@@ -85,10 +85,10 @@ earlier.
 |-------|------|-------------|
 | apparatus | String | Apparatus code |
 | score | Double | The routine's score |
-| routine | [Routine](api-session.md#routine-object) | Its breakdown: D, E, bonus and penalties, as on the session's results |
-| vault | Integer, nullable | Which of the session's two vaults it was, `1` or `2`; `null` on other apparatus, or where only one vault was expected |
+| routine | [Routine](api-competition.md#routine-object) | Its breakdown: D, E, bonus and penalties, as on the competition's results |
+| vault | Integer, nullable | Which of the competition's two vaults it was, `1` or `2`; `null` on other apparatus, or where only one vault was expected |
 | event | Object | `{slug, title, shortName, startDate, endDate}` of the meet; `shortName` is a few words for it, e.g. `Euros 2026` |
-| session | [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) | Where it was scored, for a link to its results page |
+| competition | [CompetitionSummaryResponse](api-competition.md#competitionsummaryresponse-object) | Where it was scored, for a link to its results page |
 
 ### Entry Object
 
@@ -97,5 +97,5 @@ earlier.
 | event | Object | `{slug, title, shortName, startDate, endDate}`, as on [PersonalBest](#personalbest-object) |
 | noc | String | The country they competed for (IOC code) |
 | club | String, nullable | The club they entered for, where the entry list names one (national meets) |
-| entryStatus | String | `COMPETITOR`, `RESERVE`, `WITHDRAWN` or `HORS_CONCOURS`, as the entry list shows them; a reserve, withdrawn or hors concours athlete usually has no sessions |
-| sessions | List | The sessions they have results in, in competition order (including a team final ranking the routines of a session they competed in, where their country's team is ranked), each `{session, allAround, team, scores, apparatusStandings}`: `session` a [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object); `allAround` their `{rank, total, qualification}` in it, nullable; `team` the `{noc, rank, total, qualification}` of the team they competed for, where the session ranks teams (a team being their country's entry, as teams aren't rostered), nullable; `scores` their scores in Olympic order (empty in a final ranking another session's routines: they're listed under that session), each a [ScoreRow](api-session.md#scorerow-object) without `bib`, `athlete`, `noc`, `club` and `teamRole` but with `apparatus`; `apparatusStandings` for a split round's combined session, their `{apparatus, rank, total}` on each apparatus |
+| entryStatus | String | `COMPETITOR`, `RESERVE`, `WITHDRAWN` or `HORS_CONCOURS`, as the entry list shows them; a reserve, withdrawn or hors concours athlete usually has no competitions |
+| competitions | List | The competitions they have results in, in the order they're held, each `{competition, allAround, team, scores, apparatusStandings}`: `competition` a [CompetitionSummaryResponse](api-competition.md#competitionsummaryresponse-object); `allAround` their `{rank, rankStatus, total, qualification, purpose}` in it, nullable; `team` the `{noc, rank, rankStatus, total, qualification, purpose}` of the team they competed for, where the competition ranks teams (a team being their country's entry, as teams aren't rostered), nullable; `scores` their scores in Olympic order, each a [ScoreRow](api-competition.md#scorerow-object) without `bib`, `athlete`, `noc`, `club` and `teamRole` but with `apparatus`; `apparatusStandings` for a split competition's combined row, their `{apparatus, rank, total}` on each apparatus. `rankStatus` is as on [AllAroundRow](api-competition.md#allaroundrow-object), and `purpose` is what the ranking the result comes from is for (`QUALIFYING`, `FINAL` or `INFORMATIONAL`): a top-three place in a `FINAL` ranking is a medal, including where Competition I decided the title |

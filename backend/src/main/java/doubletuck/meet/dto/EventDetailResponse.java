@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
-/** An event and its sessions, grouped by discipline and age category. */
+/** An event and its competitions, grouped by discipline and age category. */
 public record EventDetailResponse(
         String slug,
         String title,
@@ -21,14 +21,14 @@ public record EventDetailResponse(
         EventLevel level,
         @Nullable String figEventNumber,
         @Nullable String apparatusSuppliers,
-        List<DivisionSessions> divisions) {
+        List<DivisionCompetitions> divisions) {
 
-    /** One discipline and age category's sessions, in competition order. */
-    public record DivisionSessions(Discipline discipline, AgeCategory ageCategory,
-            List<SessionSummaryResponse> sessions) {
+    /** One discipline and age category's competitions, in the order they're held. */
+    public record DivisionCompetitions(Discipline discipline, AgeCategory ageCategory,
+            List<CompetitionSummaryResponse> competitions) {
     }
 
-    public static EventDetailResponse from(Event event, List<DivisionSessions> divisions) {
+    public static EventDetailResponse from(Event event, List<DivisionCompetitions> divisions) {
         return new EventDetailResponse(event.getSlug(), event.getTitle(), event.getStartDate(), event.getEndDate(),
                 event.getCity(), event.getCountryCode(), event.getVenue(), event.getLevel(),
                 event.getFigEventNumber(), event.getApparatusSuppliers(), divisions);

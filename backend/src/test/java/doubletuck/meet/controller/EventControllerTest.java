@@ -56,16 +56,19 @@ class EventControllerTest {
     }
 
     @Test
-    void testFindEvent_SessionsGroupedByDivisionInCompetitionOrder() throws Exception {
+    void testFindEvent_CompetitionsGroupedByDivisionInTheOrderHeld() throws Exception {
         mockMvc.perform(get("/api/events/2026-world-championships"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("54th Artistic Gymnastics World Championships"))
                 .andExpect(jsonPath("$.apparatusSuppliers").value("Spieth"))
                 .andExpect(jsonPath("$.divisions[1].discipline").value("WAG"))
-                .andExpect(jsonPath("$.divisions[1].sessions[*].slug",
+                .andExpect(jsonPath("$.divisions[1].competitions[*].slug",
                         contains("qualification", "team-final", "all-around-final", "uneven-bars-final",
                                 "beam-final")))
-                .andExpect(jsonPath("$.divisions[1].sessions[0].date").value("2026-10-18"));
+                .andExpect(jsonPath("$.divisions[1].competitions[*].name",
+                        contains("Qualification", "Team Final", "All-Around Final", "Uneven Bars Final",
+                                "Balance Beam Final")))
+                .andExpect(jsonPath("$.divisions[1].competitions[0].date").value("2026-10-18"));
     }
 
     @Test

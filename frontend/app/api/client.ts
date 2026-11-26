@@ -45,8 +45,8 @@ export const athleteQuery = (id: number) =>
     queryFn: async () => orThrow(await api.GET("/api/athletes/{id}", { params: { path: { id } } })),
   });
 
-export const sessionResultsQuery = (id: number) =>
+export const competitionResultsQuery = (id: number) =>
   queryOptions({
-    queryKey: ["sessions", id, "results"],
-    queryFn: async () => orThrow(await api.GET("/api/sessions/{id}/results", { params: { path: { id } } })),
+    queryKey: ["competitions", id, "results"],
+    queryFn: async () => orThrow(await api.GET("/api/competitions/{id}/results", { params: { path: { id } } })),
   });

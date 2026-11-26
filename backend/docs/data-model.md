@@ -97,24 +97,10 @@ General Judges' Rules); how events are classified is still to be settled.
 | C4 | Competition IV | The team final. |
 
 FIG's own numbering (Technical Regulations). The code says which competition it was, not
-what it decided: what a competition decided is in its rankings (§5). An apparatus final's
+what it decided: what a competition decided is in its rankings (§5), and the site names it
+from them ([api-competition.md](api/api-competition.md#names-and-slugs)). An apparatus final's
 apparatus lives on `Competition.apparatus`, matching how `Score` carries its own
 `apparatus`. The import files use these codes too.
-
-#### `Round`
-
-| Value | Long Name | `CompetitionType` |
-|---|---|---|
-| QUAL | Qualification | C1 |
-| EVENT | Apparatus Final | C3 |
-| AA | All-Around Final | C2 |
-| TEAM | Team Final | C4 |
-
-The round codes the API still names a competition by (`CompetitionType.legacyRound`),
-until it moves to `C1`–`C4` (rollout step 5). A `C1` that is the only competition of its
-discipline and age category (Oceania, US Championships) decided everything, so the API
-calls it `AA`, the all-around final, as the files did before the competition codes
-(`CompetitionNaming.legacyRound`).
 
 #### `TitleFormat`
 

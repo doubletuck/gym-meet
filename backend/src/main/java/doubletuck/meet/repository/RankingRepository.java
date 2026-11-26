@@ -18,5 +18,9 @@ public interface RankingRepository extends JpaRepository<Ranking, Long> {
     @Query("select r from Ranking r join r.competitions c where c = :competition")
     List<Ranking> findByCompetition(Competition competition);
 
+    /** The event's rankings, with the competitions each ranks. */
+    @Query("select distinct r from Ranking r left join fetch r.competitions where r.event = :event")
+    List<Ranking> findWithCompetitionsByEvent(Event event);
+
     List<Ranking> findByEventAndDisciplineAndAgeCategory(Event event, Discipline discipline, AgeCategory ageCategory);
 }

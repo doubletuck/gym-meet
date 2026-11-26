@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A competition held in parts (e.g. a two-day all-around decided on the combined
@@ -30,6 +31,14 @@ public final class SplitRound {
                 .filter(other -> isPartOf(other, competition))
                 .sorted(Comparator.comparing(Competition::getPart))
                 .toList();
+    }
+
+    /**
+     * @param competitions the competitions of the event's discipline and age category (or the whole event's)
+     * @return the whole competition a part belongs to; empty when it isn't a part, or its whole wasn't imported
+     */
+    public static Optional<Competition> whole(Competition part, Collection<Competition> competitions) {
+        return competitions.stream().filter(other -> isPartOf(part, other)).findFirst();
     }
 
     public static boolean isPartOf(Competition part, Competition whole) {

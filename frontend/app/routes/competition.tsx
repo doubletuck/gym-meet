@@ -2,9 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { data, Link, useSearchParams } from "react-router";
 
-import type { Route } from "./+types/session";
-import { eventQuery, queryClient, sessionResultsQuery } from "~/api/client";
-import type { SessionResults } from "~/api/types";
+import type { Route } from "./+types/competition";
+import { eventQuery, queryClient, competitionResultsQuery } from "~/api/client";
+import type { CompetitionResults } from "~/api/types";
 import {
   AllAroundTable,
   ScoreTable,
@@ -15,25 +15,25 @@ import {
   standingsApparatus,
   vaultFinalQualifying,
 } from "~/components/results/tables";
-import { formatSessionDate } from "~/lib/format";
-import { sessionLabel, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
+import { formatCompetitionDate } from "~/lib/format";
+import { ranksFirstVault, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
 import { Abbreviation, ApparatusCode, Division } from "~/components/Abbreviation";
 
-/** Finds the session the address names, then loads its results. */
+/** Finds the competition the address names, then loads its results. */
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const event = await queryClient.ensureQueryData(eventQuery(params.eventSlug));
-  const session = event.divisions
+  const competition = event.divisions
     .find(
       (division) =>
         division.discipline.toLowerCase() === params.discipline &&
         division.ageCategory.toLowerCase() === params.ageCategory,
     )
-    ?.sessions.find((candidate) => candidate.slug === params.sessionSlug);
-  if (!session) {
+    ?.competitions.find((candidate) => candidate.slug === params.competitionSlug);
+  if (!competition) {
     throw data(null, { status: 404 });
   }
-  await queryClient.ensureQueryData(sessionResultsQuery(session.id));
-  return { sessionId: session.id, eventTitle: event.title, title: sessionLabel(session) };
+  await queryClient.ensureQueryData(competitionResultsQuery(competition.id));
+  return { competitionId: competition.id, eventTitle: event.title, title: competition.name };
 }
 
 export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
@@ -43,12 +43,12 @@ export function meta({ loaderData }: Route.MetaArgs): Route.MetaDescriptors {
 type View = { key: string; label: ReactNode };
 
 /**
- * The views a session's results offer, in the order a results book prints
+ * The views a competition's results offer, in the order a results book prints
  * them. A championship qualification's vault is two views: the first vault,
  * which counts for team and all-around, and the two-vault ranking for the
  * vault final.
  */
-function viewsOf(results: SessionResults, rankedOnFirstVault: boolean): View[] {
+function viewsOf(results: CompetitionResults, rankedOnFirstVault: boolean): View[] {
   return [
     ...(results.teams.length ? [{ key: "teams", label: "Team" }] : []),
     ...(results.allAround.length
@@ -76,14 +76,19 @@ function viewsOf(results: SessionResults, rankedOnFirstVault: boolean): View[] {
   ];
 }
 
-export default function Session({ loaderData, params }: Route.ComponentProps) {
-  const { data: results } = useSuspenseQuery(sessionResultsQuery(loaderData.sessionId));
+export default function Competition({ loaderData, params }: Route.ComponentProps) {
+  const { data: results } = useSuspenseQuery(competitionResultsQuery(loaderData.competitionId));
   const [searchParams] = useSearchParams();
-  const { session } = results;
+  const { competition } = results;
 
-  const qualification = session.round === "QUAL";
-  // A championship qualification ranks vault on the first vault; elsewhere vault is decided on two
-  const rankedOnFirstVault = qualification && session.apparatus == null;
+  // Q columns only where the standings qualify to a later competition, not where they decided a title
+  const { purposes } = competition;
+  const qualifying = {
+    teams: purposes.team === "QUALIFYING",
+    allAround: purposes.allAround === "QUALIFYING",
+    apparatus: purposes.apparatus === "QUALIFYING",
+  };
+  const rankedOnFirstVault = ranksFirstVault(competition);
   const views = viewsOf(results, rankedOnFirstVault);
   const current = views.find((view) => view.key === searchParams.get("view")) ?? views[0];
   // A link from an athlete's page highlights their rows, kept as the views change
@@ -102,8 +107,8 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
       </nav>
       <h1 className="mt-2 text-2xl font-semibold">{loaderData.title}</h1>
       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        <Division discipline={session.discipline} ageCategory={session.ageCategory} /> ·{" "}
-        {formatSessionDate(session.date, session.endDate)}
+        <Division discipline={competition.discipline} ageCategory={competition.ageCategory} /> ·{" "}
+        {formatCompetitionDate(competition.date, competition.endDate)}
       </p>
 
       {views.length > 1 && (
@@ -132,16 +137,16 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
 
       <div className="mt-4">
         {!current && (
-          <p className="text-gray-600 dark:text-gray-400">No results have been published for this session.</p>
+          <p className="text-gray-600 dark:text-gray-400">No results have been published for this competition.</p>
         )}
         {current?.key === "teams" && (
-          <TeamTable rows={results.teams} apparatus={columns} qualification={qualification} />
+          <TeamTable rows={results.teams} apparatus={columns} qualification={qualifying.teams} />
         )}
         {current?.key === "all-around" && (
           <AllAroundTable
             rows={results.allAround}
             apparatus={columns}
-            qualification={qualification}
+            qualification={qualifying.allAround}
             athleteId={athleteId}
           />
         )}
@@ -153,7 +158,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 key={apparatus}
                 apparatus={apparatus}
                 scores={scores}
-                qualification={qualification}
+                qualification={qualifying.apparatus}
                 athleteId={athleteId}
               />
             ) : rankedOnFirstVault ? (
@@ -166,7 +171,7 @@ export default function Session({ loaderData, params }: Route.ComponentProps) {
                 athleteId={athleteId}
               />
             ) : (
-              <VaultTable key={apparatus} scores={scores} qualification={qualification} athleteId={athleteId} />
+              <VaultTable key={apparatus} scores={scores} qualification={qualifying.apparatus} athleteId={athleteId} />
             ),
           )}
         {current?.key === VAULT_FINAL_QUALIFYING &&

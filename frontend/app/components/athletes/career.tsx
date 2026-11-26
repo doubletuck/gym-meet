@@ -6,19 +6,13 @@ import type {
   AthleteDetail,
   AthleteEntry,
   Discipline,
-  EntrySession,
+  EntryCompetition,
   QualificationResult,
+  RankStatus,
   Routine,
 } from "~/api/types";
-import { formatDateRange, formatScore, formatSessionDate, formatValue } from "~/lib/format";
-import {
-  APPARATUS_ORDER,
-  resultsPath,
-  sessionLabel,
-  sessionPath,
-  shortSessionLabel,
-  VAULT_FINAL_QUALIFYING,
-} from "~/lib/labels";
+import { formatCompetitionDate, formatDateRange, formatScore, formatValue } from "~/lib/format";
+import { APPARATUS_ORDER, competitionPath, ranksFirstVault, resultsPath, VAULT_FINAL_QUALIFYING } from "~/lib/labels";
 import { Abbreviation, ApparatusCode } from "../Abbreviation";
 import { ApparatusIcon } from "../ApparatusIcon";
 import { Country, difficultyText, Placing, QualificationBadge, RoutineScore } from "../results/parts";
@@ -30,7 +24,7 @@ type Best = {
   score: number;
   breakdown?: Routine;
   event: AthleteEntry["event"];
-  session: EntrySession["session"];
+  competition: EntryCompetition["competition"];
   view: string;
 };
 
@@ -48,7 +42,7 @@ export function PersonalBests({ athlete }: { athlete: AthleteDetail }) {
     score: best.score,
     breakdown: best.routine,
     event: best.event,
-    session: best.session,
+    competition: best.competition,
     view: bestView(best),
   }));
   if (allAroundBest) {
@@ -57,7 +51,7 @@ export function PersonalBests({ athlete }: { athlete: AthleteDetail }) {
       code: <Abbreviation short="AA" label="All-Around" spoken />,
       score: allAroundBest.total,
       event: allAroundBest.event,
-      session: allAroundBest.session,
+      competition: allAroundBest.competition,
       view: "all-around",
     });
   }
@@ -87,13 +81,12 @@ const COLUMNS: Record<number, string> = {
 };
 
 /**
- * The view of the session's results a best is shown in: its apparatus, except
+ * The view of the competition's results a best is shown in: its apparatus, except
  * a championship qualification's second vault, which only the vault final's
  * two-vault ranking shows.
  */
 function bestView(best: AthleteDetail["personalBests"][number]): string {
-  const championshipQualification = best.session.round === "QUAL" && best.session.apparatus == null;
-  return best.apparatus === "VT" && best.vault === 2 && championshipQualification
+  return best.apparatus === "VT" && best.vault === 2 && ranksFirstVault(best.competition)
     ? VAULT_FINAL_QUALIFYING
     : best.apparatus;
 }
@@ -101,7 +94,7 @@ function bestView(best: AthleteDetail["personalBests"][number]): string {
 function BestTile({ best, athleteId }: { best: Best; athleteId: number }) {
   return (
     <Link
-      to={resultsPath(best.event.slug, best.session, best.view, athleteId)}
+      to={resultsPath(best.event.slug, best.competition, best.view, athleteId)}
       className="flex h-full flex-col rounded-lg border border-gray-200 p-3 hover:border-gray-400 hover:bg-gray-50 dark:border-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-900"
     >
       <span className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
@@ -114,7 +107,7 @@ function BestTile({ best, athleteId }: { best: Best; athleteId: number }) {
         <span className="block" title={best.event.title}>
           {best.event.shortName}
         </span>
-        <span className="block">{shortSessionLabel(best.session)}</span>
+        <span className="block">{best.competition.shortName}</span>
       </span>
     </Link>
   );
@@ -146,8 +139,8 @@ function Breakdown({ routine }: { routine: Routine }) {
 type Columns = { bonus: boolean; penalty: boolean; qualification: boolean };
 
 function columnsFor(entries: AthleteEntry[]): Columns {
-  const sessions = entries.flatMap((entry) => entry.sessions);
-  const scores = sessions.flatMap((entrySession) => entrySession.scores);
+  const competitions = entries.flatMap((entry) => entry.competitions);
+  const scores = competitions.flatMap((entryCompetition) => entryCompetition.scores);
   const routines = scores.flatMap((score) =>
     score.secondRoutine ? [score.routine, score.secondRoutine] : [score.routine],
   );
@@ -156,7 +149,9 @@ function columnsFor(entries: AthleteEntry[]): Columns {
     penalty: routines.some((routine) => routine.penalty || routine.sjPenalty),
     qualification:
       scores.some((score) => score.qualification) ||
-      sessions.some((entrySession) => entrySession.allAround?.qualification || entrySession.team?.qualification),
+      competitions.some(
+        (entryCompetition) => entryCompetition.allAround?.qualification || entryCompetition.team?.qualification,
+      ),
   };
 }
 
@@ -245,23 +240,29 @@ function EntryResults({
                   colSpan={columnCount}
                   className="pt-3 pb-1 text-left text-xs font-semibold text-gray-600 dark:text-gray-400"
                 >
-                  {round.sessions.length === 1 ? (
-                    <Link to={sessionPath(entry.event.slug, round.sessions[0].session)} className="hover:underline">
+                  {round.competitions.length === 1 ? (
+                    <Link
+                      to={competitionPath(entry.event.slug, round.competitions[0].competition)}
+                      className="hover:underline"
+                    >
                       {round.label}
                     </Link>
                   ) : (
                     round.label
                   )}
-                  {round.sessions.length === 1 && (
+                  {round.competitions.length === 1 && (
                     <span className="ml-2 font-normal text-gray-500">
-                      {formatSessionDate(round.sessions[0].session.date, round.sessions[0].session.endDate)}
+                      {formatCompetitionDate(
+                        round.competitions[0].competition.date,
+                        round.competitions[0].competition.endDate,
+                      )}
                     </span>
                   )}
                 </th>
               </tr>
-              {round.sessions
-                .flatMap((entrySession) => linesOf(entry.event.slug, entrySession, athleteId))
-                .sort(byApparatus(round.sessions[0].session.discipline))
+              {round.competitions
+                .flatMap((entryCompetition) => linesOf(entry.event.slug, entryCompetition, athleteId))
+                .sort(byApparatus(round.competitions[0].competition.discipline))
                 .flatMap((block) => block.lines)
                 .map((line) => (
                   <ResultLine key={line.key} line={line} columns={columns} />
@@ -282,29 +283,29 @@ function ColumnHeader({ short, label }: { short: string; label: string }) {
   );
 }
 
-type Round = { key: string; label: string; sessions: EntrySession[] };
+type Round = { key: string; label: string; competitions: EntryCompetition[] };
 
 /**
- * An entry's sessions as rounds. A World Cup publishes each apparatus's
- * qualification as its own session, and each apparatus final is a session of
+ * An entry's competitions as rounds. A World Cup publishes each apparatus's
+ * qualification as its own competition, and each apparatus final is a competition of
  * its own: each kind is one round here, so a World Cup reads like a
  * championship.
  */
 function roundsOf(entry: AthleteEntry): Round[] {
-  const rounds = new Map<string, EntrySession[]>();
-  for (const entrySession of entry.sessions) {
-    const key = `${entrySession.session.round}-${entrySession.session.part ?? ""}`;
-    rounds.set(key, [...(rounds.get(key) ?? []), entrySession]);
+  const rounds = new Map<string, EntryCompetition[]>();
+  for (const entryCompetition of entry.competitions) {
+    const key = `${entryCompetition.competition.type}-${entryCompetition.competition.part ?? ""}`;
+    rounds.set(key, [...(rounds.get(key) ?? []), entryCompetition]);
   }
-  return [...rounds].map(([key, sessions]) => {
-    const { session } = sessions[0];
+  return [...rounds].map(([key, competitions]) => {
+    const { competition } = competitions[0];
     const label =
-      session.round === "QUAL"
-        ? sessionLabel({ ...session, apparatus: null })
-        : sessions.length > 1
+      competition.type === "C1" && competition.apparatus != null
+        ? "Qualification"
+        : competitions.length > 1
           ? "Apparatus Finals"
-          : sessionLabel(session);
-    return { key, label, sessions };
+          : competition.name;
+    return { key, label, competitions };
   });
 }
 
@@ -319,6 +320,8 @@ type Line = {
   bonus?: number | null;
   score: ReactNode;
   rank?: number | null;
+  /** Why there's no rank, where the results say */
+  rankStatus?: RankStatus;
   /** Whether the rank is a medal placing: the result the final awards medals for */
   medal?: boolean;
   qualification?: QualificationResult | null;
@@ -327,21 +330,21 @@ type Line = {
 type Block = { apparatus?: Apparatus; lines: Line[] };
 
 /**
- * A session's results as lines, an apparatus to a block: two vaults are their
+ * A competition's results as lines, an apparatus to a block: two vaults are their
  * result, then each vault under it. The all-around and the team come last.
  */
-function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: number): Block[] {
-  const { session, scores, apparatusStandings, allAround, team } = entrySession;
-  const to = (view: string) => resultsPath(eventSlug, session, view, athleteId);
-  // A final awards medals for one result: an apparatus final for the apparatus, an all-around final for the
-  // all-around (not each apparatus in it), a team final for the team. A split round awards them on the
+function linesOf(eventSlug: string, entryCompetition: EntryCompetition, athleteId: number): Block[] {
+  const { competition, scores, apparatusStandings, allAround, team } = entryCompetition;
+  const to = (view: string) => resultsPath(eventSlug, competition, view, athleteId);
+  // Medals are awarded for a final ranking's places: the apparatus, all-around or team where its ranking is
+  // the final one (so not each apparatus in an all-around final). A split competition awards them on the
   // combined results, not a part's.
-  const awards = session.part == null ? session.round : undefined;
+  const apparatusFinal = competition.purposes.apparatus === "FINAL";
   // A championship qualification ranks vault on the first vault, and the vault final on both
-  const championshipQualification = session.round === "QUAL" && session.apparatus == null;
+  const championshipQualification = ranksFirstVault(competition);
   const blocks: Block[] = scores.map((score) => {
     const { apparatus, routine, secondRoutine } = score;
-    const key = `${session.id}-${apparatus}`;
+    const key = `${competition.id}-${apparatus}`;
     if (!secondRoutine) {
       return {
         apparatus,
@@ -355,7 +358,7 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
             bonus: routine.bonus,
             score: <RoutineScore routine={routine} />,
             rank: score.rank,
-            medal: awards === "EVENT",
+            medal: apparatusFinal,
             qualification: score.qualification,
           },
         ],
@@ -383,7 +386,7 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
           bonus: score.combinedBonus,
           score: formatScore(score.total),
           rank: championshipQualification ? score.qualificationRank : score.rank,
-          medal: awards === "EVENT",
+          medal: apparatusFinal,
           qualification: score.qualification,
         },
         vault(1, routine),
@@ -396,14 +399,14 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
       apparatus: standing.apparatus,
       lines: [
         {
-          key: `${session.id}-combined-${standing.apparatus}`,
+          key: `${competition.id}-combined-${standing.apparatus}`,
           kind: "apparatus",
           label: <ApparatusCode apparatus={standing.apparatus} />,
           to: to(`combined-${standing.apparatus}`),
           score: formatScore(standing.total),
           rank: standing.rank,
           // A national championship's apparatus titles are decided on the combined results
-          medal: awards != null && awards !== "QUAL",
+          medal: competition.purposes.apparatus === "FINAL",
         },
       ],
     });
@@ -412,13 +415,14 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
     blocks.push({
       lines: [
         {
-          key: `${session.id}-AA`,
+          key: `${competition.id}-AA`,
           kind: "all-around",
           label: <Abbreviation short="AA" label="All-Around" spoken />,
           to: to("all-around"),
           score: formatScore(allAround.total),
           rank: allAround.rank,
-          medal: awards === "AA",
+          rankStatus: allAround.rankStatus,
+          medal: allAround.purpose === "FINAL",
           qualification: allAround.qualification,
         },
       ],
@@ -428,13 +432,14 @@ function linesOf(eventSlug: string, entrySession: EntrySession, athleteId: numbe
     blocks.push({
       lines: [
         {
-          key: `${session.id}-team`,
+          key: `${competition.id}-team`,
           kind: "team",
           label: <Abbreviation short="Team" label={`Team ${team.noc}`} spoken />,
           to: to("teams"),
           score: formatScore(team.total),
           rank: team.rank,
-          medal: awards === "TEAM",
+          rankStatus: team.rankStatus,
+          medal: team.purpose === "FINAL",
           qualification: team.qualification,
         },
       ],
@@ -506,7 +511,7 @@ function ResultLine({ line, columns }: { line: Line; columns: Columns }) {
       )}
       <td className={`px-2 text-right ${vault ? "" : "font-semibold"} ${styles.cell}`}>{line.score}</td>
       <td className={`pl-2 text-right text-gray-500 ${styles.cell}`}>
-        <Placing rank={line.rank} medal={line.medal ?? false} />
+        <Placing rank={line.rank} status={line.rankStatus} medal={line.medal ?? false} />
       </td>
       {columns.qualification && (
         <td className={`pl-2 text-left ${styles.cell}`}>

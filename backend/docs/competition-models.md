@@ -13,7 +13,7 @@ it before the model change. The rules settled here move into
 | 2 | Import file standard: `RANKING-*`, `C1`–`C4`, `Purpose`, `Rank Status`, format columns, `EventFormat`; the importer reads only the new files, and `convert_file_standard.py` makes the mechanical renames. The `Team` column moved to step 6 | Done ([import-file-model.md](import-file-model.md)) |
 | 3 | Reshape the existing files: formats in `EVENT.csv`, `data/` converted, then `reshape_2026_files.py`: title-deciding `RANKING-QUAL` → `RANKING-FINAL` of `C1`, a rank status for every blank rank, Asian Championships' qualifying rankings dropped (the whole field in the final ranking); Europeans MAG JR all-around final ranking parsed. `CORRECTIONS.csv` keys move with the parsers in step 4 | Done |
 | 4 | Parsers and the parsing doc: every parser writes the standard itself (`common.Output.ranking` names ranking files and sets purposes and rank statuses from the format), reproducing `data/` byte for byte; `CORRECTIONS.csv` keys converted; the step 2–3 scripts retired | Done ([instructions-results-parsing.md](instructions-results-parsing.md)) |
-| 5 | API and front end aligned with the model | |
+| 5 | API and front end aligned with the model: "session" becomes "competition" (`/api/competitions/{id}/results`); `round` becomes `type` (`C1`–`C4`); names, short names and slugs come from the rankings, with each ranking type's purpose in `purposes`; `rankStatus` on team and all-around results, shown as a code (HC, NR, INC, DNF, –) where the rank is blank; Q marks and medals follow the ranking's purpose | Done ([api-competition.md](api/api-competition.md)) |
 | 6 | Youth Olympic Games, mixed team included | |
 
 Sections 1–6 describe the model before step 1.
@@ -243,7 +243,8 @@ It also accepts Q/R/NR on standings that qualified nobody.
    | SA Games' C1 | "Team and All-Around Final · Apparatus Qualification" |
    | Oceania's C1 | "Team and All-Around Final" |
 
-   No session is called a final it wasn't.
+   No session is called a final it wasn't. Done in step 5: the rule, and the slugs, are in
+   [api-competition.md](api/api-competition.md#names-and-slugs).
 
 Apparatus standings inside a session stay on `Score` (`rank`, `qualificationRank`,
 `qualificationResult`). An `APPARATUS` ranking is needed only where standings combine

@@ -62,7 +62,7 @@ class AthleteControllerTest {
     }
 
     @Test
-    void testFindAthlete_PersonalBestsAndEachSessionOfTheMeet() throws Exception {
+    void testFindAthlete_PersonalBestsAndEachCompetitionOfTheMeet() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_WAG);
 
         mockMvc.perform(get("/api/athletes/{id}", athleteId("Nemour")))
@@ -76,20 +76,20 @@ class AthleteControllerTest {
                 // Floor: 13.266 in the all-around final beats 12.900 in qualification, which had a penalty
                 .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'FX')].score").value(13.266))
                 .andExpect(jsonPath("$.personalBests[3].routine.penalty").value(nullValue()))
-                .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'UB')].session.slug")
+                .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'UB')].competition.slug")
                         .value("uneven-bars-final"))
                 .andExpect(jsonPath("$.allAroundBest.total").value(55.999))
-                .andExpect(jsonPath("$.allAroundBest.session.slug").value("qualification"))
+                .andExpect(jsonPath("$.allAroundBest.competition.slug").value("qualification"))
                 .andExpect(jsonPath("$.entries", hasSize(1)))
                 .andExpect(jsonPath("$.entries[0].event.slug").value("2026-world-championships"))
                 .andExpect(jsonPath("$.entries[0].noc").value("ALG"))
                 .andExpect(jsonPath("$.entries[0].club").value(nullValue()))
-                .andExpect(jsonPath("$.entries[0].sessions[*].session.slug",
+                .andExpect(jsonPath("$.entries[0].competitions[*].competition.slug",
                         contains("qualification", "all-around-final", "uneven-bars-final", "beam-final")))
-                .andExpect(jsonPath("$.entries[0].sessions[1].allAround.total").value(54.998))
-                .andExpect(jsonPath("$.entries[0].sessions[1].allAround.rank").value(4))
-                .andExpect(jsonPath("$.entries[0].sessions[1].scores[*].apparatus", contains("VT", "UB", "BB", "FX")))
-                .andExpect(jsonPath("$.entries[0].sessions[2].scores[0].routine.score").value(15.333));
+                .andExpect(jsonPath("$.entries[0].competitions[1].allAround.total").value(54.998))
+                .andExpect(jsonPath("$.entries[0].competitions[1].allAround.rank").value(4))
+                .andExpect(jsonPath("$.entries[0].competitions[1].scores[*].apparatus", contains("VT", "UB", "BB", "FX")))
+                .andExpect(jsonPath("$.entries[0].competitions[2].scores[0].routine.score").value(15.333));
     }
 
     @Test
@@ -101,25 +101,28 @@ class AthleteControllerTest {
                 .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'VT')].score").value(14.9))
                 .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'VT')].vault").value(1))
                 .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'VT')].routine.execution").value(9.3))
-                .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'VT')].session.slug").value("qualification"));
+                .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'VT')].competition.slug").value("qualification"));
     }
 
     @Test
-    void testFindAthlete_TeamResultInEachSessionThatRanksTeams() throws Exception {
+    void testFindAthlete_TeamResultInEachCompetitionThatRanksTeams() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.WORLDS_MAG);
 
         mockMvc.perform(get("/api/athletes/{id}", athleteId("Jarman")))
-                .andExpect(jsonPath("$.entries[0].sessions[0].session.slug").value("qualification"))
-                .andExpect(jsonPath("$.entries[0].sessions[1].session.slug").value("team-final"))
-                .andExpect(jsonPath("$.entries[0].sessions[2].session.slug").value("all-around-final"))
-                .andExpect(jsonPath("$.entries[0].sessions[0].team.noc").value("GBR"))
-                .andExpect(jsonPath("$.entries[0].sessions[0].team.rank").value(2))
-                .andExpect(jsonPath("$.entries[0].sessions[0].team.total").value(251.46))
-                .andExpect(jsonPath("$.entries[0].sessions[0].team.qualification").value("Q"))
-                .andExpect(jsonPath("$.entries[0].sessions[1].team.rank").value(4))
-                .andExpect(jsonPath("$.entries[0].sessions[1].team.total").value(247.395))
-                .andExpect(jsonPath("$.entries[0].sessions[1].team.qualification").value(nullValue()))
-                .andExpect(jsonPath("$.entries[0].sessions[2].team").value(nullValue()));
+                .andExpect(jsonPath("$.entries[0].competitions[0].competition.slug").value("qualification"))
+                .andExpect(jsonPath("$.entries[0].competitions[1].competition.slug").value("team-final"))
+                .andExpect(jsonPath("$.entries[0].competitions[2].competition.slug").value("all-around-final"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.noc").value("GBR"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.rank").value(2))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.total").value(251.46))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.qualification").value("Q"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.purpose").value("QUALIFYING"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.rankStatus").value("RANKED"))
+                .andExpect(jsonPath("$.entries[0].competitions[1].team.purpose").value("FINAL"))
+                .andExpect(jsonPath("$.entries[0].competitions[1].team.rank").value(4))
+                .andExpect(jsonPath("$.entries[0].competitions[1].team.total").value(247.395))
+                .andExpect(jsonPath("$.entries[0].competitions[1].team.qualification").value(nullValue()))
+                .andExpect(jsonPath("$.entries[0].competitions[2].team").value(nullValue()));
     }
 
     @Test
@@ -128,27 +131,33 @@ class AthleteControllerTest {
 
         // The team and all-around finals ranked the qualification's routines: one entry, with the final placings
         mockMvc.perform(get("/api/athletes/{id}", athleteId("Yeap")))
-                .andExpect(jsonPath("$.entries[0].sessions[*].session.slug", contains("qualification")))
-                .andExpect(jsonPath("$.entries[0].sessions[0].scores", hasSize(4)))
-                .andExpect(jsonPath("$.entries[0].sessions[0].allAround.rank").value(9))
-                .andExpect(jsonPath("$.entries[0].sessions[0].team.noc").value("MAS"))
-                .andExpect(jsonPath("$.entries[0].sessions[0].team.rank").value(5))
-                .andExpect(jsonPath("$.allAroundBest.session.slug").value("qualification"));
+                .andExpect(jsonPath("$.entries[0].competitions[*].competition.slug", contains("qualification")))
+                .andExpect(jsonPath("$.entries[0].competitions[0].scores", hasSize(4)))
+                .andExpect(jsonPath("$.entries[0].competitions[0].competition.name")
+                        .value("Team and All-Around Final · Apparatus Qualification"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].allAround.rank").value(9))
+                // Competition I decided the all-around: its placings are medal placings
+                .andExpect(jsonPath("$.entries[0].competitions[0].allAround.purpose").value("FINAL"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.noc").value("MAS"))
+                .andExpect(jsonPath("$.entries[0].competitions[0].team.rank").value(5))
+                .andExpect(jsonPath("$.allAroundBest.competition.slug").value("qualification"));
     }
 
     @Test
-    void testFindAthlete_SplitRound_BestAllAroundIsOneDayNotTheCombinedTotal() throws Exception {
+    void testFindAthlete_SplitCompetition_BestAllAroundIsOneDayNotTheCombinedTotal() throws Exception {
         ApiTestFixtures.load(eventImporter, ApiTestFixtures.US_MAG);
 
         mockMvc.perform(get("/api/athletes/{id}", athleteId("Moldauer")))
                 .andExpect(jsonPath("$.entries[0].club").value("U of Oklahoma"))
-                .andExpect(jsonPath("$.entries[0].sessions[*].session.slug",
-                        contains("all-around-final", "all-around-final-part-1", "all-around-final-part-2")))
-                .andExpect(jsonPath("$.entries[0].sessions[0].allAround.total").value(163.896))
-                .andExpect(jsonPath("$.entries[0].sessions[0].apparatusStandings[?(@.apparatus == 'FX')].total")
+                .andExpect(jsonPath("$.entries[0].competitions[*].competition.slug",
+                        contains("all-around-and-apparatus-final", "all-around-and-apparatus-final-part-1",
+                                "all-around-and-apparatus-final-part-2")))
+                .andExpect(jsonPath("$.entries[0].competitions[0].allAround.total").value(163.896))
+                .andExpect(jsonPath("$.entries[0].competitions[0].apparatusStandings[?(@.apparatus == 'FX')].total")
                         .value(26.7))
                 .andExpect(jsonPath("$.allAroundBest.total").value(82.123))
-                .andExpect(jsonPath("$.allAroundBest.session.slug").value("all-around-final-part-2"));
+                .andExpect(jsonPath("$.allAroundBest.competition.slug")
+                        .value("all-around-and-apparatus-final-part-2"));
     }
 
     @Test

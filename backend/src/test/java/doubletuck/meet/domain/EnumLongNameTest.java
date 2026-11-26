@@ -18,22 +18,12 @@ class EnumLongNameTest {
     }
 
     @Test
-    void testRound() {
-        assertEquals(Round.EVENT, Round.find("EVENT"));
-        assertEquals(Round.EVENT, Round.find("Apparatus Final"));
-        assertEquals(Round.AA, Round.find("all-around final"));
-        assertEquals("Qualification", Round.QUAL.getLongName());
-    }
-
-    @Test
     void testCompetitionType_ByCodeOrLongNameOnly() {
         assertEquals(CompetitionType.C1, CompetitionType.find("C1"));
         assertEquals(CompetitionType.C4, CompetitionType.find("Competition IV"));
         // The round codes the files used before the C1-C4 codes
         assertNull(CompetitionType.find("QUAL"));
         assertNull(CompetitionType.find("Apparatus Final"));
-        assertEquals(Round.TEAM, CompetitionType.C4.getLegacyRound());
-        assertEquals(CompetitionType.C2, CompetitionType.of(Round.AA));
         assertNull(CompetitionType.find("C5"));
     }
 

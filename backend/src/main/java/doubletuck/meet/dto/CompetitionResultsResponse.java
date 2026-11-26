@@ -3,6 +3,7 @@ package doubletuck.meet.dto;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.BonusDetail;
 import doubletuck.meet.domain.QualificationResult;
+import doubletuck.meet.domain.RankStatus;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.TeamScoreRole;
 import org.jspecify.annotations.Nullable;
@@ -11,20 +12,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A session's results as published. Which parts are filled depends on the
- * round: an apparatus final has one {@code apparatus} list; a championship
- * qualification has every apparatus plus {@code allAround} and {@code teams};
- * a split round's combined session has {@code allAround} and
+ * A competition's results as published. Which parts are filled depends on the
+ * competition: an apparatus final has one {@code apparatus} list; a Competition I
+ * at a championship has every apparatus plus {@code allAround} and {@code teams};
+ * a split competition's combined row has {@code allAround} and
  * {@code apparatusStandings} but no scores of its own.
  *
  * @param apparatus  each apparatus's scores in Olympic order, ranked as published
  * @param allAround  all-around standings
  * @param teams      team standings
- * @param apparatusStandings a split round's combined standings on each apparatus
+ * @param apparatusStandings a split competition's combined standings on each apparatus
  */
-public record SessionResultsResponse(
+public record CompetitionResultsResponse(
         EventRef event,
-        SessionSummaryResponse session,
+        CompetitionSummaryResponse competition,
         List<ApparatusScores> apparatus,
         List<AllAroundRow> allAround,
         List<TeamRow> teams,
@@ -84,14 +85,16 @@ public record SessionResultsResponse(
     /**
      * @param club            as on {@link ScoreRow}
      * @param sjPenalty       a penalty on the result as a whole (negative), already deducted from the total
-     * @param apparatusScores each apparatus's score in this session, for those the athlete scored on; for a
-     *                        split round's combined session, the sum of the parts' scores, over the parts
+     * @param rankStatus      why the result has a rank, or why it has none
+     * @param apparatusScores each apparatus's score in this competition, for those the athlete scored on; for
+     *                        a split competition's combined row, the sum of the parts' scores, over the parts
      *                        the athlete competed it in
-     * @param parts           for a split round's combined session, the athlete's result in each part;
+     * @param parts           for a split competition's combined row, the athlete's result in each part;
      *                        otherwise empty
      */
     public record AllAroundRow(
             @Nullable Integer rank,
+            RankStatus rankStatus,
             @Nullable String bib,
             AthleteRef athlete,
             String noc,
@@ -108,10 +111,12 @@ public record SessionResultsResponse(
 
     /**
      * @param sjPenalty       a penalty on the team as a whole (negative), already deducted from the total
+     * @param rankStatus      as on {@link AllAroundRow}
      * @param apparatusTotals the sum of the scores counting toward the team on each apparatus
      */
     public record TeamRow(
             @Nullable Integer rank,
+            RankStatus rankStatus,
             String noc,
             @Nullable Double total,
             @Nullable Double sjPenalty,
@@ -123,7 +128,7 @@ public record SessionResultsResponse(
     }
 
     /**
-     * @param parts the athlete's result on the apparatus in each part of the round: for two vaults, their
+     * @param parts the athlete's result on the apparatus in each part of the competition: for two vaults, their
      *              combination
      */
     public record ApparatusStandingRow(@Nullable Integer rank, @Nullable String bib, AthleteRef athlete, String noc,

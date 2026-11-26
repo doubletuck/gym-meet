@@ -4,8 +4,8 @@ Base path: `/api/events`
 
 Gymnastics competitions, where `Event` is the named competition (e.g.
 "54th Artistic Gymnastics World Championships"). An `Event` is the primary
-record to which `Participant`s and `Competition`s (the API's sessions) are related. Its results are
-read through the [Session API](api-session.md).
+record to which `Participant`s and `Competition`s are related. Its results are
+read through the [Competition API](api-competition.md).
 
 The `GET` endpoints are public. Their responses may be cached for 5 minutes
 (`Cache-Control: max-age=300, public`) and carry an `ETag`, so a client
@@ -43,7 +43,7 @@ results for.
 
 ### GET /api/events/{slug}
 
-Returns an event and its sessions, grouped by discipline and age category.
+Returns an event and its competitions, grouped by discipline and age category.
 
 **Path Parameters**
 
@@ -161,7 +161,7 @@ Returned by `GET /api/events/{slug}`. The fields of
 | venue | String | Venue or arena name, or `null` |
 | figEventNumber | String | FIG-assigned event code, or `null` |
 | apparatusSuppliers | String | Equipment manufacturer(s), or `null` |
-| divisions | List | `{discipline, ageCategory, sessions}`, where `sessions` lists [SessionSummaryResponse](api-session.md#sessionsummaryresponse-object) objects in competition order: rounds (qualification, team final, all-around final, apparatus finals), apparatus in Olympic order, and a split round's combined session before its parts, since it holds the result the round is decided on |
+| divisions | List | `{discipline, ageCategory, competitions}`, where `competitions` lists [CompetitionSummaryResponse](api-competition.md#competitionsummaryresponse-object) objects in the order they're held: Competition I, team final, all-around final, apparatus finals, apparatus in Olympic order, then elimination rounds, and a split competition's combined row before its parts, since it holds the result the competition is decided on |
 
 **Example** (abridged)
 
@@ -181,9 +181,19 @@ Returned by `GET /api/events/{slug}`. The fields of
     {
       "discipline": "WAG",
       "ageCategory": "SR",
-      "sessions": [
-        { "id": 15, "slug": "qualification", "discipline": "WAG", "ageCategory": "SR", "round": "QUAL", "apparatus": null, "part": null, "date": "2026-10-18" },
-        { "id": 11, "slug": "beam-final", "discipline": "WAG", "ageCategory": "SR", "round": "EVENT", "apparatus": "BB", "part": null, "date": "2026-10-25" }
+      "competitions": [
+        {
+          "id": 15, "slug": "qualification", "name": "Qualification", "shortName": "Qualification",
+          "discipline": "WAG", "ageCategory": "SR", "type": "C1", "apparatus": null, "round": null, "part": null,
+          "purposes": { "team": "QUALIFYING", "allAround": "QUALIFYING", "apparatus": "QUALIFYING" },
+          "date": "2026-10-18", "endDate": null
+        },
+        {
+          "id": 11, "slug": "beam-final", "name": "Balance Beam Final", "shortName": "Final",
+          "discipline": "WAG", "ageCategory": "SR", "type": "C3", "apparatus": "BB", "round": null, "part": null,
+          "purposes": { "team": null, "allAround": null, "apparatus": "FINAL" },
+          "date": "2026-10-25", "endDate": null
+        }
       ]
     }
   ]

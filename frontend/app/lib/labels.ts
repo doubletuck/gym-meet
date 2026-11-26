@@ -1,4 +1,4 @@
-import type { AgeCategory, Apparatus, Discipline, EventLevel, SessionSummary } from "~/api/types";
+import type { AgeCategory, Apparatus, CompetitionSummary, Discipline, EventLevel, RankStatus } from "~/api/types";
 
 export const DISCIPLINE_LABELS: Record<Discipline, string> = {
   MAG: "Men's Artistic Gymnastics",
@@ -48,53 +48,53 @@ export const LEVEL_LABELS: Record<EventLevel, string> = {
   UNKNOWN: "Competition",
 };
 
-/** The session's name as a results book heads it: "Qualification", "Balance Beam Final", "All-Around Final, Part 1". */
-export function sessionLabel(session: Pick<SessionSummary, "round" | "apparatus" | "part">): string {
-  const apparatus = session.apparatus ? APPARATUS_LABELS[session.apparatus] : "";
-  const round = {
-    QUAL: apparatus ? `${apparatus} Qualification` : "Qualification",
-    TEAM: "Team Final",
-    AA: "All-Around Final",
-    EVENT: `${apparatus} Final`,
-  }[session.round];
-  return session.part != null ? `${round}, Part ${session.part}` : round;
-}
+/**
+ * Why a result has no rank, as briefly as the rank cell can put it: a short
+ * code and what it means.
+ */
+export const RANK_STATUS_LABELS: Record<Exclude<RankStatus, "RANKED">, [short: string, label: string]> = {
+  HORS_CONCOURS: ["HC", "Hors concours: competed outside the competition"],
+  NOC_LIMIT: ["NR", "Not ranked: over the limit per country"],
+  INCOMPLETE: ["INC", "Incomplete: didn't compete every apparatus"],
+  DID_NOT_FINISH: ["DNF", "Did not finish"],
+  UNPLACED: ["–", "Unplaced: no place published"],
+};
 
 /** The address segment for a discipline and age category: "wag/sr". */
 export function divisionPath(discipline: Discipline, ageCategory: AgeCategory): string {
   return `${discipline.toLowerCase()}/${ageCategory.toLowerCase()}`;
 }
 
-/** A session's results page: "/events/2026-world-championships/wag/sr/beam-final". */
-export function sessionPath(
+/** A competition's results page: "/events/2026-world-championships/wag/sr/beam-final". */
+export function competitionPath(
   eventSlug: string,
-  session: Pick<SessionSummary, "discipline" | "ageCategory" | "slug">,
+  competition: Pick<CompetitionSummary, "discipline" | "ageCategory" | "slug">,
 ): string {
-  return `/events/${eventSlug}/${divisionPath(session.discipline, session.ageCategory)}/${session.slug}`;
+  return `/events/${eventSlug}/${divisionPath(competition.discipline, competition.ageCategory)}/${competition.slug}`;
 }
 
 /** The view of a championship qualification's two-vault ranking for the vault final. */
 export const VAULT_FINAL_QUALIFYING = "VT-final";
 
 /**
- * The session as briefly as a tile under an apparatus can put it, the
- * apparatus already being shown: "Qualification", "Final", "AA Final", "Team
- * Final, Part 1".
+ * Whether the competition ranks vault on the first vault, the one counting for
+ * team and all-around: a championship's Competition I that qualifies to the
+ * apparatus finals, whose vault final is decided on two vaults. Elsewhere vault
+ * is ranked on its result.
  */
-export function shortSessionLabel(session: Pick<SessionSummary, "round" | "part">): string {
-  const round = { QUAL: "Qualification", TEAM: "Team Final", AA: "AA Final", EVENT: "Final" }[session.round];
-  return session.part != null ? `${round}, Part ${session.part}` : round;
+export function ranksFirstVault(competition: Pick<CompetitionSummary, "type" | "apparatus" | "purposes">): boolean {
+  return competition.type === "C1" && competition.apparatus == null && competition.purposes.apparatus === "QUALIFYING";
 }
 
 /**
- * A session's results opened at a view, with an athlete's rows highlighted:
+ * A competition's results opened at a view, with an athlete's rows highlighted:
  * "/events/2026-world-championships/wag/sr/qualification?view=UB&athlete=12".
  */
 export function resultsPath(
   eventSlug: string,
-  session: Pick<SessionSummary, "discipline" | "ageCategory" | "slug">,
+  competition: Pick<CompetitionSummary, "discipline" | "ageCategory" | "slug">,
   view: string,
   athleteId: number,
 ): string {
-  return `${sessionPath(eventSlug, session)}?${new URLSearchParams({ view, athlete: String(athleteId) })}`;
+  return `${competitionPath(eventSlug, competition)}?${new URLSearchParams({ view, athlete: String(athleteId) })}`;
 }

@@ -6,7 +6,6 @@ import doubletuck.meet.domain.ApparatusResult;
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Ranking;
-import doubletuck.meet.domain.RankingPurpose;
 import doubletuck.meet.domain.RankingType;
 import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
@@ -14,17 +13,16 @@ import doubletuck.meet.domain.TeamContributionRole;
 import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.domain.TeamResultScore;
 import doubletuck.meet.domain.TeamScoreRole;
-import doubletuck.meet.dto.SessionResultsResponse;
-import doubletuck.meet.dto.SessionResultsResponse.AllAroundRow;
-import doubletuck.meet.dto.SessionResultsResponse.ApparatusScores;
-import doubletuck.meet.dto.SessionResultsResponse.ApparatusStandingRow;
-import doubletuck.meet.dto.SessionResultsResponse.ApparatusStandings;
-import doubletuck.meet.dto.SessionResultsResponse.AthleteRef;
-import doubletuck.meet.dto.SessionResultsResponse.PartResult;
-import doubletuck.meet.dto.SessionResultsResponse.PartScore;
-import doubletuck.meet.dto.SessionResultsResponse.ScoreRow;
-import doubletuck.meet.dto.SessionResultsResponse.TeamRow;
-import doubletuck.meet.dto.SessionSummaryResponse;
+import doubletuck.meet.dto.CompetitionResultsResponse;
+import doubletuck.meet.dto.CompetitionResultsResponse.AllAroundRow;
+import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusScores;
+import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusStandingRow;
+import doubletuck.meet.dto.CompetitionResultsResponse.ApparatusStandings;
+import doubletuck.meet.dto.CompetitionResultsResponse.AthleteRef;
+import doubletuck.meet.dto.CompetitionResultsResponse.PartResult;
+import doubletuck.meet.dto.CompetitionResultsResponse.PartScore;
+import doubletuck.meet.dto.CompetitionResultsResponse.ScoreRow;
+import doubletuck.meet.dto.CompetitionResultsResponse.TeamRow;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.CompetitionRepository;
@@ -48,17 +46,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
- * Rebuilds a competition's results page (the API's "session") from what was imported, ranked as
- * published: its scores, and the team, all-around and combined apparatus rankings of its routines.
+ * Rebuilds a competition's results page from what was imported, ranked as published: its scores,
+ * and the team, all-around and combined apparatus rankings of its routines.
  */
 @Service
 @Transactional(readOnly = true)
-public class SessionResultsService {
-
-    // Where a competition's routines are ranked more than once for one title, the page shows
-    // the ranking that decided the most
-    private static final List<RankingPurpose> PREFERENCE = List.of(RankingPurpose.FINAL, RankingPurpose.QUALIFYING,
-            RankingPurpose.INFORMATIONAL);
+public class CompetitionResultsService {
 
     private final CompetitionRepository competitionRepository;
     private final RankingRepository rankingRepository;
@@ -68,7 +61,7 @@ public class SessionResultsService {
     private final TeamResultScoreRepository teamResultScoreRepository;
     private final ApparatusResultRepository apparatusResultRepository;
 
-    public SessionResultsService(CompetitionRepository competitionRepository, RankingRepository rankingRepository,
+    public CompetitionResultsService(CompetitionRepository competitionRepository, RankingRepository rankingRepository,
             ScoreRepository scoreRepository, AllAroundResultRepository allAroundResultRepository,
             TeamResultRepository teamResultRepository, TeamResultScoreRepository teamResultScoreRepository,
             ApparatusResultRepository apparatusResultRepository) {
@@ -81,20 +74,23 @@ public class SessionResultsService {
         this.apparatusResultRepository = apparatusResultRepository;
     }
 
-    public Optional<SessionResultsResponse> findResults(Long competitionId) {
+    public Optional<CompetitionResultsResponse> findResults(Long competitionId) {
         return competitionRepository.findById(competitionId).map(this::results);
     }
 
-    private SessionResultsResponse results(Competition competition) {
+    private CompetitionResultsResponse results(Competition competition) {
         List<Apparatus> order = CompetitionNaming.apparatusOrder(competition.getDiscipline());
         List<Score> scores = scoreRepository.findResultsByCompetition(competition);
         List<Ranking> rankings = rankingRepository.findByCompetition(competition);
         List<Competition> division = competitionRepository.findByEventAndDisciplineAndAgeCategory(
                 competition.getEvent(), competition.getDiscipline(), competition.getAgeCategory());
+        CompetitionSummaries summaries = new CompetitionSummaries(division,
+                rankingRepository.findByEventAndDisciplineAndAgeCategory(competition.getEvent(),
+                        competition.getDiscipline(), competition.getAgeCategory()));
         List<Competition> partCompetitions = SplitRound.parts(competition, division);
         List<Part> parts = partCompetitions.stream()
                 .map(part -> new Part(part.getPart(), scoreRepository.findResultsByCompetition(part),
-                        preferred(rankingRepository.findByCompetition(part), RankingType.AA)
+                        CompetitionNaming.preferred(rankingRepository.findByCompetition(part), RankingType.AA)
                                 .map(allAroundResultRepository::findResultsByRanking).orElse(List.of())))
                 .toList();
 
@@ -104,15 +100,14 @@ public class SessionResultsService {
                 : apparatusResultRepository.findResultsByRankingIn(apparatusRankings);
         ApparatusRanks ranks = new ApparatusRanks(competition.getType(), apparatusResults);
 
-        Optional<Ranking> teamRanking = preferred(rankings, RankingType.TEAM);
+        Optional<Ranking> teamRanking = CompetitionNaming.preferred(rankings, RankingType.TEAM);
         List<TeamResult> teamResults = teamRanking.map(teamResultRepository::findByRanking).orElse(List.of());
         // How each score figured for its team: in the preferred team ranking where it's part of a
         // team there, otherwise in the competition's other team rankings (the qualifying standings
         // of teams not in the final)
         List<Ranking> teamRankings = rankings.stream()
                 .filter(ranking -> ranking.getType() == RankingType.TEAM)
-                .sorted(Comparator.comparingInt((Ranking ranking) -> PREFERENCE.indexOf(ranking.getPurpose()))
-                        .reversed())
+                .sorted(Comparator.comparingInt(CompetitionNaming::preference).reversed())
                 .toList();
         Map<TeamResult, List<TeamResultScore>> contributions = new HashMap<>();
         Map<Long, TeamContributionRole> roleByScore = new HashMap<>();
@@ -138,7 +133,7 @@ public class SessionResultsService {
                 .filter(list -> !list.scores().isEmpty())
                 .toList();
 
-        List<AllAroundRow> allAround = preferred(rankings, RankingType.AA)
+        List<AllAroundRow> allAround = CompetitionNaming.preferred(rankings, RankingType.AA)
                 .map(allAroundResultRepository::findResultsByRanking).orElse(List.of()).stream()
                 .sorted(byRank(AllAroundResult::getRank, AllAroundResult::getTotalScore,
                         result -> athlete(result.getParticipant())))
@@ -162,18 +157,10 @@ public class SessionResultsService {
                 .filter(list -> !list.rows().isEmpty())
                 .toList();
 
-        return new SessionResultsResponse(
-                new SessionResultsResponse.EventRef(competition.getEvent().getSlug(),
+        return new CompetitionResultsResponse(
+                new CompetitionResultsResponse.EventRef(competition.getEvent().getSlug(),
                         competition.getEvent().getTitle()),
-                SessionSummaryResponse.from(competition, division), apparatus, allAround, teams, apparatusStandings);
-    }
-
-    /** Of a competition's rankings of one type, the one deciding the most. */
-    static Optional<Ranking> preferred(List<Ranking> rankings, RankingType type) {
-        return rankings.stream()
-                .filter(ranking -> ranking.getType() == type)
-                .min(Comparator.comparingInt((Ranking ranking) -> PREFERENCE.indexOf(ranking.getPurpose()))
-                        .thenComparing(Ranking::getId));
+                summaries.of(competition), apparatus, allAround, teams, apparatusStandings);
     }
 
     /**
@@ -196,16 +183,16 @@ public class SessionResultsService {
                 score.getTotalScore(), ranks.qualificationRank(score), ranks.qualification(score), teamRole);
     }
 
-    static SessionResultsResponse.Routine routine(Routine routine) {
+    static CompetitionResultsResponse.Routine routine(Routine routine) {
         if (routine == null) {
             return null;
         }
-        return new SessionResultsResponse.Routine(routine.getStatus(), routine.getDifficulty(),
+        return new CompetitionResultsResponse.Routine(routine.getStatus(), routine.getDifficulty(),
                 Boolean.TRUE.equals(routine.getDifficultyInquiry()), routine.getExecution(), routine.getBonus(),
                 routine.getBonusDetail(), routine.getPenalty(), routine.getSjPenalty(), routine.getScore());
     }
 
-    /** A part of a split round, with its scores and all-around results. */
+    /** A part of a split competition, with its scores and all-around results. */
     private record Part(int number, List<Score> scores, List<AllAroundResult> allAround) {
     }
 
@@ -227,7 +214,7 @@ public class SessionResultsService {
             }
         }
         if (!parts.isEmpty() && partResults.size() == parts.size()) {
-            // A combined session has no scores of its own. Its apparatus standings can't stand in: vault's
+            // A combined row has no scores of its own. Its apparatus standings can't stand in: vault's
             // is the two-vault title, not the all-around's one vault a day
             for (Apparatus app : order) {
                 List<Double> each = partResults.stream().map(part -> part.apparatusScores().get(app))
@@ -237,7 +224,7 @@ public class SessionResultsService {
                 }
             }
         }
-        return new AllAroundRow(result.getRank(), participant.getBibNumber(), athlete(participant),
+        return new AllAroundRow(result.getRank(), result.getRankStatus(), participant.getBibNumber(), athlete(participant),
                 participant.getNoc(), club(participant), result.getTotalScore(), result.getSjPenalty(),
                 result.getQualificationResult(), apparatusScores, partResults);
     }
@@ -285,7 +272,7 @@ public class SessionResultsService {
                 apparatusTotals.put(app, sum(counted));
             }
         }
-        return new TeamRow(result.getRank(), result.getTeam().getNoc(), result.getTotalScore(), result.getSjPenalty(),
+        return new TeamRow(result.getRank(), result.getRankStatus(), result.getTeam().getNoc(), result.getTotalScore(), result.getSjPenalty(),
                 result.getQualificationResult(), apparatusTotals);
     }
 

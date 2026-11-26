@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-import type { Athlete, QualificationResult, Routine } from "~/api/types";
+import type { Athlete, QualificationResult, RankStatus, Routine } from "~/api/types";
+import { Abbreviation } from "~/components/Abbreviation";
 import { countryName, flagUrl } from "~/lib/countries";
 import { athleteName, formatScore, formatValue } from "~/lib/format";
+import { RANK_STATUS_LABELS } from "~/lib/labels";
 
 const QUALIFICATION_LABELS: Record<QualificationResult, string> = {
   Q: "Qualified",
@@ -118,8 +120,22 @@ export function RoutineScore({ routine, score = routine.score }: { routine: Rout
   );
 }
 
-export function Rank({ rank }: { rank: number | null }) {
-  return <span className="text-gray-500">{rank ?? "–"}</span>;
+/** Why a result has no rank, as a short code with its meaning as a tooltip. */
+export function RankStatusCode({ status }: { status: RankStatus }) {
+  if (status === "RANKED") {
+    return null;
+  }
+  const [short, label] = RANK_STATUS_LABELS[status];
+  return <Abbreviation short={short} label={label} spoken />;
+}
+
+/** @param status why there's no rank, where the results say */
+export function Rank({ rank, status }: { rank: number | null; status?: RankStatus }) {
+  return (
+    <span className="text-gray-500">
+      {rank ?? (status && status !== "RANKED" ? <RankStatusCode status={status} /> : "–")}
+    </span>
+  );
 }
 
 const MEDALS: Record<number, [name: string, colors: string]> = {
@@ -133,9 +149,21 @@ const MEDALS: Record<number, [name: string, colors: string]> = {
  * says the result wins one. Other placings are padded so a one-digit number
  * lines up with the one centred on a disc.
  */
-export function Placing({ rank, medal: awarded }: { rank: number | null | undefined; medal: boolean }) {
+export function Placing({
+  rank,
+  status,
+  medal: awarded,
+}: {
+  rank: number | null | undefined;
+  status?: RankStatus;
+  medal: boolean;
+}) {
   if (rank == null) {
-    return null;
+    return status && status !== "RANKED" ? (
+      <span className="px-1.5 text-gray-500">
+        <RankStatusCode status={status} />
+      </span>
+    ) : null;
   }
   const medal = awarded ? MEDALS[rank] : undefined;
   if (!medal) {

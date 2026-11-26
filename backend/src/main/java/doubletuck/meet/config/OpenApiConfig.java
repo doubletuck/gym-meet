@@ -4,8 +4,8 @@ import doubletuck.meet.dto.AthleteResponse;
 import doubletuck.meet.dto.AthleteSummaryResponse;
 import doubletuck.meet.dto.EventDetailResponse;
 import doubletuck.meet.dto.EventSummaryResponse;
-import doubletuck.meet.dto.SessionResultsResponse;
-import doubletuck.meet.dto.SessionSummaryResponse;
+import doubletuck.meet.dto.CompetitionResultsResponse;
+import doubletuck.meet.dto.CompetitionSummaryResponse;
 import io.swagger.v3.oas.models.media.Schema;
 import org.jspecify.annotations.Nullable;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 public class OpenApiConfig {
 
     private static final List<Class<?>> RESPONSES = List.of(EventSummaryResponse.class, EventDetailResponse.class,
-            SessionSummaryResponse.class, SessionResultsResponse.class, AthleteSummaryResponse.class,
+            CompetitionSummaryResponse.class, CompetitionResultsResponse.class, AthleteSummaryResponse.class,
             AthleteResponse.class);
 
     /**

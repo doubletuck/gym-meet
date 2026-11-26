@@ -11,19 +11,18 @@ import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.Competition;
-import doubletuck.meet.domain.Ranking;
 import doubletuck.meet.domain.TeamResult;
 import doubletuck.meet.dto.AthleteResponse;
 import doubletuck.meet.dto.AthleteResponse.AllAroundBest;
 import doubletuck.meet.dto.AthleteResponse.ApparatusScore;
 import doubletuck.meet.dto.AthleteResponse.ApparatusStanding;
 import doubletuck.meet.dto.AthleteResponse.Entry;
-import doubletuck.meet.dto.AthleteResponse.EntrySession;
+import doubletuck.meet.dto.AthleteResponse.EntryCompetition;
 import doubletuck.meet.dto.AthleteResponse.EntryTeam;
 import doubletuck.meet.dto.AthleteResponse.EntryEvent;
 import doubletuck.meet.dto.AthleteResponse.PersonalBest;
 import doubletuck.meet.dto.AthleteSummaryResponse;
-import doubletuck.meet.dto.SessionSummaryResponse;
+import doubletuck.meet.dto.CompetitionSummaryResponse;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.AthleteNameVariantRepository;
@@ -31,6 +30,7 @@ import doubletuck.meet.repository.AthleteRepository;
 import doubletuck.meet.repository.ParticipantRepository;
 import doubletuck.meet.repository.ScoreRepository;
 import doubletuck.meet.repository.CompetitionRepository;
+import doubletuck.meet.repository.RankingRepository;
 import doubletuck.meet.repository.TeamResultRepository;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -46,7 +46,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /** Reads athletes for the public site: search, and an athlete's career. */
@@ -64,12 +63,13 @@ public class AthleteQueryService {
     private final ApparatusResultRepository apparatusResultRepository;
     private final CompetitionRepository competitionRepository;
     private final TeamResultRepository teamResultRepository;
+    private final RankingRepository rankingRepository;
 
     public AthleteQueryService(AthleteRepository athleteRepository,
             AthleteNameVariantRepository nameVariantRepository, ParticipantRepository participantRepository,
             ScoreRepository scoreRepository, AllAroundResultRepository allAroundResultRepository,
             ApparatusResultRepository apparatusResultRepository, CompetitionRepository competitionRepository,
-            TeamResultRepository teamResultRepository) {
+            TeamResultRepository teamResultRepository, RankingRepository rankingRepository) {
         this.athleteRepository = athleteRepository;
         this.nameVariantRepository = nameVariantRepository;
         this.participantRepository = participantRepository;
@@ -78,6 +78,7 @@ public class AthleteQueryService {
         this.apparatusResultRepository = apparatusResultRepository;
         this.competitionRepository = competitionRepository;
         this.teamResultRepository = teamResultRepository;
+        this.rankingRepository = rankingRepository;
     }
 
     /**
@@ -151,43 +152,43 @@ public class AthleteQueryService {
             Set<Competition> competitions = new LinkedHashSet<>();
             scores.forEach(score -> competitions.add(score.getCompetition()));
             allAround.forEach(result -> competitions.addAll(result.getRanking().getCompetitions()));
-            Map<Competition, List<Competition>> divisions = new HashMap<>();
-            Function<Competition, List<Competition>> divisionOf = competition -> divisions.computeIfAbsent(
-                    competition, c -> competitionRepository.findByEventAndDisciplineAndAgeCategory(event,
-                            c.getDiscipline(), c.getAgeCategory()));
+            List<Competition> eventCompetitions = competitionRepository.findByEvent(event);
+            CompetitionSummaries summaries = new CompetitionSummaries(eventCompetitions,
+                    rankingRepository.findWithCompetitionsByEvent(event));
             // A split competition's combined apparatus standings, the only apparatus rankings not
             // shown with the scores they place
             List<ApparatusResult> combinedStandings = apparatusResults.stream()
                     .filter(result -> result.getRanking().getCompetitions().stream()
-                            .anyMatch(competition -> !SplitRound.parts(competition, divisionOf.apply(competition))
-                                    .isEmpty()))
+                            .anyMatch(competition -> !SplitRound.parts(competition, eventCompetitions).isEmpty()))
                     .toList();
             combinedStandings.forEach(result -> competitions.addAll(result.getRanking().getCompetitions()));
 
-            List<EntrySession> entrySessions = new ArrayList<>();
+            List<EntryCompetition> entryCompetitions = new ArrayList<>();
             for (Competition competition : competitions.stream().sorted(CompetitionNaming.order()).toList()) {
-                SessionSummaryResponse summary = SessionSummaryResponse.from(competition, divisionOf.apply(competition));
-                List<Score> sessionScores = scores.stream()
+                CompetitionSummaryResponse summary = summaries.of(competition);
+                List<Score> competitionScores = scores.stream()
                         .filter(score -> score.getCompetition().equals(competition))
                         .sorted(Comparator.comparingInt(score -> order.indexOf(score.getApparatus())))
                         .toList();
                 ApparatusRanks ranks = new ApparatusRanks(competition.getType(), apparatusResults.stream()
                         .filter(result -> result.getRanking().getCompetitions().contains(competition))
                         .toList());
-                AllAroundResult sessionAllAround = allAround.stream()
+                AllAroundResult competitionAllAround = allAround.stream()
                         .filter(result -> result.getRanking().getCompetitions().contains(competition))
-                        .min(Comparator.comparingInt(result -> preference(result.getRanking())))
+                        .min(Comparator.comparingInt(result -> CompetitionNaming.preference(result.getRanking())))
                         .orElse(null);
-                entrySessions.add(new EntrySession(summary,
-                        sessionAllAround == null ? null : new AthleteResponse.AllAroundResult(
-                                sessionAllAround.getRank(), sessionAllAround.getTotalScore(),
-                                sessionAllAround.getQualificationResult()),
+                entryCompetitions.add(new EntryCompetition(summary,
+                        competitionAllAround == null ? null : new AthleteResponse.AllAroundResult(
+                                competitionAllAround.getRank(), competitionAllAround.getRankStatus(),
+                                competitionAllAround.getTotalScore(), competitionAllAround.getQualificationResult(),
+                                competitionAllAround.getRanking().getPurpose()),
                         // The country's team in the rankings of the competition's routines
                         teamResultRepository.findByCompetitionAndNoc(competition, participant.getNoc()).stream()
-                                .min(Comparator.comparingInt(result -> preference(result.getRanking())))
+                                .min(Comparator.comparingInt(result -> CompetitionNaming.preference(
+                                        result.getRanking())))
                                 .map(AthleteQueryService::entryTeam)
                                 .orElse(null),
-                        sessionScores.stream().map(score -> apparatusScore(score, ranks)).toList(),
+                        competitionScores.stream().map(score -> apparatusScore(score, ranks)).toList(),
                         combinedStandings.stream()
                                 .filter(result -> result.getRanking().getCompetitions().contains(competition))
                                 .sorted(Comparator.comparingInt(result -> order.indexOf(
@@ -196,20 +197,20 @@ public class AthleteQueryService {
                                         result.getRank(), result.getTotalScore()))
                                 .toList()));
 
-                for (Score score : sessionScores) {
+                for (Score score : competitionScores) {
                     boolean twoVaults = score.getSecondRoutine() != null;
                     addBest(bests, score, score.getRoutine(), twoVaults ? 1 : null, eventRef, summary);
                     addBest(bests, score, score.getSecondRoutine(), twoVaults ? 2 : null, eventRef, summary);
                 }
-                if (sessionAllAround != null && sessionAllAround.getTotalScore() != null
-                        && completeAllAround(sessionScores, order)
-                        && (allAroundBest == null || sessionAllAround.getTotalScore() > allAroundBest.total())) {
-                    allAroundBest = new AllAroundBest(sessionAllAround.getTotalScore(), eventRef, summary);
+                if (competitionAllAround != null && competitionAllAround.getTotalScore() != null
+                        && completeAllAround(competitionScores, order)
+                        && (allAroundBest == null || competitionAllAround.getTotalScore() > allAroundBest.total())) {
+                    allAroundBest = new AllAroundBest(competitionAllAround.getTotalScore(), eventRef, summary);
                 }
             }
             entries.add(new Entry(eventRef, participant.getNoc(),
                     participant.getClub() == null ? null : participant.getClub().getName(),
-                    participant.getEntryStatus(), entrySessions));
+                    participant.getEntryStatus(), entryCompetitions));
         }
 
         return new AthleteResponse(athlete.getId(), athlete.getSurname(), athlete.getGivenName(),
@@ -218,57 +219,48 @@ public class AthleteQueryService {
     }
 
     private static void addBest(List<PersonalBest> bests, Score score, @Nullable Routine routine,
-            @Nullable Integer vault, EntryEvent event, SessionSummaryResponse session) {
+            @Nullable Integer vault, EntryEvent event, CompetitionSummaryResponse competition) {
         if (routine != null && routine.getStatus() == ScoreStatus.COMPLETED && routine.getScore() != null) {
-            bests.add(new PersonalBest(score.getApparatus(), routine.getScore(), SessionResultsService.routine(routine),
-                    vault, event, session));
+            bests.add(new PersonalBest(score.getApparatus(), routine.getScore(), CompetitionResultsService.routine(routine),
+                    vault, event, competition));
         }
     }
 
     /**
-     * The best on each apparatus; on a tie, the earlier. A split round's
-     * combined session holds no scores, so its totals never count.
+     * The best on each apparatus; on a tie, the earlier. A split competition's
+     * combined row holds no scores, so its totals never count.
      */
     private static List<PersonalBest> personalBests(List<PersonalBest> routines, List<Apparatus> order) {
         return order.stream()
                 .flatMap(app -> routines.stream()
                         .filter(best -> best.apparatus() == app)
                         .max(Comparator.comparingDouble(PersonalBest::score)
-                                .thenComparing(best -> best.session().date(), Comparator.reverseOrder()))
+                                .thenComparing(best -> best.competition().date(), Comparator.reverseOrder()))
                         .stream())
                 .toList();
     }
 
     /**
      * Whether the total is a whole all-around: a score on every apparatus in the
-     * one session. A split round's combined total and a partial total (which some
-     * national results print) aren't.
+     * one competition. A split competition's combined total and a partial total (which
+     * some national results print) aren't.
      */
-    private static boolean completeAllAround(List<Score> sessionScores, List<Apparatus> order) {
-        return order.stream().allMatch(app -> sessionScores.stream()
+    private static boolean completeAllAround(List<Score> competitionScores, List<Apparatus> order) {
+        return order.stream().allMatch(app -> competitionScores.stream()
                 .anyMatch(score -> score.getApparatus() == app && score.getRoutine() != null
                         && score.getRoutine().getStatus() == ScoreStatus.COMPLETED));
     }
 
-    /** Where one competition's routines are ranked more than once for a title, the ranking deciding the most. */
-    private static int preference(Ranking ranking) {
-        return switch (ranking.getPurpose()) {
-            case FINAL -> 0;
-            case QUALIFYING -> 1;
-            case INFORMATIONAL -> 2;
-        };
-    }
-
     private static ApparatusScore apparatusScore(Score score, ApparatusRanks ranks) {
         return new ApparatusScore(score.getApparatus(), ranks.rank(score),
-                SessionResultsService.routine(score.getRoutine()),
-                SessionResultsService.routine(score.getSecondRoutine()), score.getCombinedBonus(),
+                CompetitionResultsService.routine(score.getRoutine()),
+                CompetitionResultsService.routine(score.getSecondRoutine()), score.getCombinedBonus(),
                 score.getTotalScore(), ranks.qualificationRank(score), ranks.qualification(score));
     }
 
     private static EntryTeam entryTeam(TeamResult result) {
-        return new EntryTeam(result.getTeam().getNoc(), result.getRank(), result.getTotalScore(),
-                result.getQualificationResult());
+        return new EntryTeam(result.getTeam().getNoc(), result.getRank(), result.getRankStatus(),
+                result.getTotalScore(), result.getQualificationResult(), result.getRanking().getPurpose());
     }
 
     private static String fullName(String givenName, String surname) {

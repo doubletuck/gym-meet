@@ -5,8 +5,8 @@ import type { Route } from "./+types/event";
 import { eventQuery, queryClient } from "~/api/client";
 import { Division } from "~/components/Abbreviation";
 import { countryName } from "~/lib/countries";
-import { formatDateRange, formatSessionDate } from "~/lib/format";
-import { LEVEL_LABELS, sessionLabel, sessionPath } from "~/lib/labels";
+import { formatDateRange, formatCompetitionDate } from "~/lib/format";
+import { competitionPath, LEVEL_LABELS } from "~/lib/labels";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   return queryClient.ensureQueryData(eventQuery(params.eventSlug));
@@ -35,15 +35,15 @@ export default function Event({ params }: Route.ComponentProps) {
               <Division discipline={division.discipline} ageCategory={division.ageCategory} />
             </h2>
             <ul className="mt-2 divide-y divide-gray-200 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
-              {division.sessions.map((session) => (
-                <li key={session.id}>
+              {division.competitions.map((competition) => (
+                <li key={competition.id}>
                   <Link
-                    to={sessionPath(event.slug, session)}
+                    to={competitionPath(event.slug, competition)}
                     className="flex items-baseline justify-between gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900"
                   >
-                    <span>{sessionLabel(session)}</span>
+                    <span>{competition.name}</span>
                     <span className="shrink-0 text-sm text-gray-500">
-                      {formatSessionDate(session.date, session.endDate)}
+                      {formatCompetitionDate(competition.date, competition.endDate)}
                     </span>
                   </Link>
                 </li>

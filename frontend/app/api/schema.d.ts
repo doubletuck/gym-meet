@@ -36,22 +36,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/sessions/{id}/results": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get: operations["findResults"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/events/{slug}": {
     parameters: {
       query?: never;
@@ -60,6 +44,22 @@ export interface paths {
       cookie?: never;
     };
     get: operations["findEvent"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/competitions/{id}/results": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["findResults"];
     put?: never;
     post?: never;
     delete?: never;
@@ -168,9 +168,111 @@ export interface components {
       /** Format: date-time */
       lastUpdateTimestamp?: string;
     };
+    Division: {
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      ageCategory: "SR" | "JR" | "JR16" | "JR17";
+    };
+    EventSummaryResponse: {
+      slug: string;
+      title: string;
+      /** Format: date */
+      startDate: string;
+      /** Format: date */
+      endDate: string;
+      city: string;
+      countryCode: string;
+      /** @enum {string} */
+      level:
+        | "OLYMPIC_GAMES"
+        | "WORLD_CHAMPIONSHIPS"
+        | "YOUTH_OLYMPIC_GAMES"
+        | "CONTINENTAL_GAMES"
+        | "CONTINENTAL_CHAMPIONSHIPS"
+        | "REGIONAL_GAMES"
+        | "REGIONAL_COMPETITION"
+        | "WORLD_CUP"
+        | "WORLD_CHALLENGE_CUP"
+        | "INTERNATIONAL_TOURNAMENTS"
+        | "NATIONAL_CHAMPIONSHIPS"
+        | "DOMESTIC_COMPETITION"
+        | "UNKNOWN";
+      divisions: components["schemas"]["Division"][];
+    };
+    CompetitionSummaryResponse: {
+      /** Format: int64 */
+      id: number;
+      slug: string;
+      name: string;
+      shortName: string;
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      ageCategory: "SR" | "JR" | "JR16" | "JR17";
+      /** @enum {string} */
+      type: "C1" | "C2" | "C3" | "C4";
+      /** @enum {string|null} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB" | null;
+      /** Format: int32 */
+      round: number | null;
+      /** Format: int32 */
+      part: number | null;
+      purposes: components["schemas"]["RankingPurposes"];
+      /** Format: date */
+      date: string;
+      /** Format: date */
+      endDate: string | null;
+    };
+    DivisionCompetitions: {
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      ageCategory: "SR" | "JR" | "JR16" | "JR17";
+      competitions: components["schemas"]["CompetitionSummaryResponse"][];
+    };
+    EventDetailResponse: {
+      slug: string;
+      title: string;
+      /** Format: date */
+      startDate: string;
+      /** Format: date */
+      endDate: string;
+      city: string;
+      countryCode: string;
+      venue: string | null;
+      /** @enum {string} */
+      level:
+        | "OLYMPIC_GAMES"
+        | "WORLD_CHAMPIONSHIPS"
+        | "YOUTH_OLYMPIC_GAMES"
+        | "CONTINENTAL_GAMES"
+        | "CONTINENTAL_CHAMPIONSHIPS"
+        | "REGIONAL_GAMES"
+        | "REGIONAL_COMPETITION"
+        | "WORLD_CUP"
+        | "WORLD_CHALLENGE_CUP"
+        | "INTERNATIONAL_TOURNAMENTS"
+        | "NATIONAL_CHAMPIONSHIPS"
+        | "DOMESTIC_COMPETITION"
+        | "UNKNOWN";
+      figEventNumber: string | null;
+      apparatusSuppliers: string | null;
+      divisions: components["schemas"]["DivisionCompetitions"][];
+    };
+    RankingPurposes: {
+      /** @enum {string|null} */
+      team: "QUALIFYING" | "FINAL" | "INFORMATIONAL" | null;
+      /** @enum {string|null} */
+      allAround: "QUALIFYING" | "FINAL" | "INFORMATIONAL" | null;
+      /** @enum {string|null} */
+      apparatus: "QUALIFYING" | "FINAL" | "INFORMATIONAL" | null;
+    };
     AllAroundRow: {
       /** Format: int32 */
       rank: number | null;
+      /** @enum {string} */
+      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
       bib: string | null;
       athlete: components["schemas"]["AthleteRef"];
       noc: string;
@@ -217,6 +319,14 @@ export interface components {
       /** Format: double */
       bonus?: number;
       description?: string;
+    };
+    CompetitionResultsResponse: {
+      event: components["schemas"]["EventRef"];
+      competition: components["schemas"]["CompetitionSummaryResponse"];
+      apparatus: components["schemas"]["ApparatusScores"][];
+      allAround: components["schemas"]["AllAroundRow"][];
+      teams: components["schemas"]["TeamRow"][];
+      apparatusStandings: components["schemas"]["ApparatusStandings"][];
     };
     EventRef: {
       slug: string;
@@ -275,36 +385,11 @@ export interface components {
       /** @enum {string} */
       teamRole: "COUNTING" | "DROPPED" | "INDIVIDUAL";
     };
-    SessionResultsResponse: {
-      event: components["schemas"]["EventRef"];
-      session: components["schemas"]["SessionSummaryResponse"];
-      apparatus: components["schemas"]["ApparatusScores"][];
-      allAround: components["schemas"]["AllAroundRow"][];
-      teams: components["schemas"]["TeamRow"][];
-      apparatusStandings: components["schemas"]["ApparatusStandings"][];
-    };
-    SessionSummaryResponse: {
-      /** Format: int64 */
-      id: number;
-      slug: string;
-      /** @enum {string} */
-      discipline: "MAG" | "WAG" | "MIX";
-      /** @enum {string} */
-      ageCategory: "SR" | "JR" | "JR16" | "JR17";
-      /** @enum {string} */
-      round: "QUAL" | "EVENT" | "AA" | "TEAM";
-      /** @enum {string|null} */
-      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB" | null;
-      /** Format: int32 */
-      part: number | null;
-      /** Format: date */
-      date: string;
-      /** Format: date */
-      endDate: string | null;
-    };
     TeamRow: {
       /** Format: int32 */
       rank: number | null;
+      /** @enum {string} */
+      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
       noc: string;
       /** Format: double */
       total: number | null;
@@ -315,74 +400,6 @@ export interface components {
       apparatusTotals: {
         [key: string]: number;
       };
-    };
-    Division: {
-      /** @enum {string} */
-      discipline: "MAG" | "WAG" | "MIX";
-      /** @enum {string} */
-      ageCategory: "SR" | "JR" | "JR16" | "JR17";
-    };
-    EventSummaryResponse: {
-      slug: string;
-      title: string;
-      /** Format: date */
-      startDate: string;
-      /** Format: date */
-      endDate: string;
-      city: string;
-      countryCode: string;
-      /** @enum {string} */
-      level:
-        | "OLYMPIC_GAMES"
-        | "WORLD_CHAMPIONSHIPS"
-        | "YOUTH_OLYMPIC_GAMES"
-        | "CONTINENTAL_GAMES"
-        | "CONTINENTAL_CHAMPIONSHIPS"
-        | "REGIONAL_GAMES"
-        | "REGIONAL_COMPETITION"
-        | "WORLD_CUP"
-        | "WORLD_CHALLENGE_CUP"
-        | "INTERNATIONAL_TOURNAMENTS"
-        | "NATIONAL_CHAMPIONSHIPS"
-        | "DOMESTIC_COMPETITION"
-        | "UNKNOWN";
-      divisions: components["schemas"]["Division"][];
-    };
-    DivisionSessions: {
-      /** @enum {string} */
-      discipline: "MAG" | "WAG" | "MIX";
-      /** @enum {string} */
-      ageCategory: "SR" | "JR" | "JR16" | "JR17";
-      sessions: components["schemas"]["SessionSummaryResponse"][];
-    };
-    EventDetailResponse: {
-      slug: string;
-      title: string;
-      /** Format: date */
-      startDate: string;
-      /** Format: date */
-      endDate: string;
-      city: string;
-      countryCode: string;
-      venue: string | null;
-      /** @enum {string} */
-      level:
-        | "OLYMPIC_GAMES"
-        | "WORLD_CHAMPIONSHIPS"
-        | "YOUTH_OLYMPIC_GAMES"
-        | "CONTINENTAL_GAMES"
-        | "CONTINENTAL_CHAMPIONSHIPS"
-        | "REGIONAL_GAMES"
-        | "REGIONAL_COMPETITION"
-        | "WORLD_CUP"
-        | "WORLD_CHALLENGE_CUP"
-        | "INTERNATIONAL_TOURNAMENTS"
-        | "NATIONAL_CHAMPIONSHIPS"
-        | "DOMESTIC_COMPETITION"
-        | "UNKNOWN";
-      figEventNumber: string | null;
-      apparatusSuppliers: string | null;
-      divisions: components["schemas"]["DivisionSessions"][];
     };
     AthleteSummaryResponse: {
       /** Format: int64 */
@@ -397,15 +414,19 @@ export interface components {
       /** Format: double */
       total: number;
       event: components["schemas"]["EntryEvent"];
-      session: components["schemas"]["SessionSummaryResponse"];
+      competition: components["schemas"]["CompetitionSummaryResponse"];
     };
     AllAroundResult: {
       /** Format: int32 */
       rank: number | null;
+      /** @enum {string} */
+      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
       /** Format: double */
       total: number | null;
       /** @enum {string|null} */
       qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+      /** @enum {string} */
+      purpose: "QUALIFYING" | "FINAL" | "INFORMATIONAL";
     };
     ApparatusScore: {
       /** @enum {string} */
@@ -451,7 +472,14 @@ export interface components {
       club: string | null;
       /** @enum {string} */
       entryStatus: "COMPETITOR" | "RESERVE" | "WITHDRAWN" | "HORS_CONCOURS";
-      sessions: components["schemas"]["EntrySession"][];
+      competitions: components["schemas"]["EntryCompetition"][];
+    };
+    EntryCompetition: {
+      competition: components["schemas"]["CompetitionSummaryResponse"];
+      allAround: components["schemas"]["AllAroundResult"] | null;
+      team: components["schemas"]["EntryTeam"] | null;
+      scores: components["schemas"]["ApparatusScore"][];
+      apparatusStandings: components["schemas"]["ApparatusStanding"][];
     };
     EntryEvent: {
       slug: string;
@@ -462,21 +490,18 @@ export interface components {
       /** Format: date */
       endDate: string;
     };
-    EntrySession: {
-      session: components["schemas"]["SessionSummaryResponse"];
-      allAround: components["schemas"]["AllAroundResult"] | null;
-      team: components["schemas"]["EntryTeam"] | null;
-      scores: components["schemas"]["ApparatusScore"][];
-      apparatusStandings: components["schemas"]["ApparatusStanding"][];
-    };
     EntryTeam: {
       noc: string;
       /** Format: int32 */
       rank: number | null;
+      /** @enum {string} */
+      rankStatus: "RANKED" | "INCOMPLETE" | "NOC_LIMIT" | "HORS_CONCOURS" | "DID_NOT_FINISH" | "UNPLACED";
       /** Format: double */
       total: number | null;
       /** @enum {string|null} */
       qualification: "Q" | "R1" | "R2" | "R3" | "R4" | "NR" | null;
+      /** @enum {string} */
+      purpose: "QUALIFYING" | "FINAL" | "INFORMATIONAL";
     };
     PersonalBest: {
       /** @enum {string} */
@@ -487,7 +512,7 @@ export interface components {
       /** Format: int32 */
       vault: number | null;
       event: components["schemas"]["EntryEvent"];
-      session: components["schemas"]["SessionSummaryResponse"];
+      competition: components["schemas"]["CompetitionSummaryResponse"];
     };
   };
   responses: never;
@@ -605,28 +630,6 @@ export interface operations {
       };
     };
   };
-  findResults: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["SessionResultsResponse"];
-        };
-      };
-    };
-  };
   findEvent: {
     parameters: {
       query?: never;
@@ -645,6 +648,28 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["EventDetailResponse"];
+        };
+      };
+    };
+  };
+  findResults: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CompetitionResultsResponse"];
         };
       };
     };

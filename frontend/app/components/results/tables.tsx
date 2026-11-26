@@ -6,7 +6,7 @@ import type {
   ApparatusStandingRow,
   Routine,
   ScoreRow,
-  SessionResults,
+  CompetitionResults,
   TeamRow,
 } from "~/api/types";
 import { formatScore, formatValue } from "~/lib/format";
@@ -505,7 +505,7 @@ export function AllAroundTable({
       label: "Rank",
       sortValue: (row) => row.rank,
       sortFirst: "ascending",
-      cell: (row) => <Rank rank={row.rank} />,
+      cell: (row) => <Rank rank={row.rank} status={row.rankStatus} />,
     },
     {
       header: "Gymnast",
@@ -598,7 +598,7 @@ export function TeamTable({
       label: "Rank",
       sortValue: (row) => row.rank,
       sortFirst: "ascending",
-      cell: (row) => <Rank rank={row.rank} />,
+      cell: (row) => <Rank rank={row.rank} status={row.rankStatus} />,
     },
     {
       header: "Team",
@@ -679,12 +679,12 @@ function athleteRow(athleteId: number | undefined) {
 }
 
 /**
- * The apparatus columns of a session's team and all-around standings: its
+ * The apparatus columns of a competition's team and all-around standings: its
  * score tables', else a split round's combined standings', else, for
- * standings ranking another session's routines (which have no score tables of
+ * standings ranking another competition's routines (which have no score tables of
  * their own), those its rows have scores on, in Olympic order.
  */
-export function standingsApparatus(results: SessionResults): Apparatus[] {
+export function standingsApparatus(results: CompetitionResults): Apparatus[] {
   if (results.apparatus.length) {
     return results.apparatus.map(({ apparatus }) => apparatus);
   }
@@ -695,5 +695,5 @@ export function standingsApparatus(results: SessionResults): Apparatus[] {
     ...results.allAround.flatMap((row) => Object.keys(row.apparatusScores)),
     ...results.teams.flatMap((row) => Object.keys(row.apparatusTotals)),
   ]);
-  return APPARATUS_ORDER[results.session.discipline].filter((apparatus) => scored.has(apparatus));
+  return APPARATUS_ORDER[results.competition.discipline].filter((apparatus) => scored.has(apparatus));
 }
