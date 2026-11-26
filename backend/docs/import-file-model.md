@@ -42,8 +42,8 @@ Naming notes:
   title, while the World Championships' is `C4`.
 - `SR` is both the Senior age code and the Still Rings apparatus code;
   position disambiguates (`…-MAG-SR-SCORES-C1-SR.csv` is Senior Rings).
-- Older files used other names (in git history, and converted by
-  `backend/tools/results-parsing/convert_file_standard.py`):
+- Older files used other names (in git history; converted to these in 2026, rollout steps 2–3 in
+  competition-models.md):
   - before the competition codes, `SCORES-QUAL-`, `SCORES-AA-`,
     `SCORES-EVENT-` and `SCORES-TEAM-` for `C1`, `C2`, `C3` and `C4` (a meet
     whose only competition was Competition I called it `AA`); `SUMMARY-` for
@@ -346,7 +346,7 @@ files.
 
 | Column | Description |
 |---|---|
-| File | The corrected file's name without the event prefix and `.csv`, e.g. `MAG-JR-SCORES-C1-FX` (logs written before the competition codes still name the old files, until they're converted with the parsers) |
+| File | The corrected file's name without the event prefix and `.csv`, e.g. `MAG-JR-SCORES-C1-FX` or `WAG-JR-RANKING-FINAL-TEAM` |
 | Key | The row: its `Bib` as printed (`Bib Number` in `PARTICIPANTS`), a team ranking's `NOC Code`, or a judge's `Competition Apparatus Function` (`-` for a blank apparatus), e.g. `C1 FX E1`. In `JUDGES`, the judge's `Name` as printed instead corrects every row with that name. Keys match the rows as printed, before any correction |
 | Field | The corrected column, by its header |
 | Printed | The value as the book prints it (blank when the book prints nothing) |

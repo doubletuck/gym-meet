@@ -5,12 +5,12 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_world_championships.py \\
         data/2026/2026-WORLD-CHAMPIONSHIPS/2026-WORLD-CHAMPIONSHIPS-ALL-RESULTS.pdf
 
-Writes every PARTICIPANTS / JUDGES / SCORES-* / SUMMARY-* CSV and an IMPORT.json per
+Writes every PARTICIPANTS / JUDGES / SCORES-* / RANKING-* CSV and an IMPORT.json per
 discipline next to the PDF, reading event metadata from the EVENT.csv already there.
 Exits non-zero if any self-check fails (docs/instructions-results-parsing.md §3; this source format is §5.1).
 
 Written against the FIG/Swiss Timing results-book layout (footer codes like
-GARM1APFX----...QUAL..._73I). Session dates come from that book's Competition Schedule
+GARM1APFX----...QUAL..._73I). Competition dates come from that book's Competition Schedule
 and are set below; reusing this for another FIG results book means re-checking those,
 the report footer codes, and the header layouts per §5.1.
 """
@@ -127,7 +127,7 @@ def judges(disc):
     def add(rnd, app, fn, name, noc):
         sur, giv = split_name(name)
         rows.append({'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': 'SR',
-                     'Event Start Date': EVENT_START, 'Round': rnd, 'Apparatus': app, 'Function': fn,
+                     'Event Start Date': EVENT_START, 'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': fn,
                      'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': noc})
     for rnd, c in specs:
         ls = lines(find(c))
@@ -175,7 +175,7 @@ def meta(disc, rnd, app):
     if isinstance(date, dict):
         date = date[app]
     return {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': 'SR',
-            'Session Start Date': date, 'Round': rnd, 'Part': '', 'Apparatus': app}
+            'Competition Start Date': date, 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app}
 
 def split_bp(vals, ctx):
     """Pen./Bonus share a column pair; sign tells them apart (bonus > 0, penalty < 0)."""
@@ -249,7 +249,7 @@ def single_app(disc, rnd, app):
         for r in rows:
             QUAL_SCORES[disc][(app, r['Bib'])] = r['Total'] or 'DNS'
     if app != 'VT':
-        out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(False, rnd == 'QUAL'), rows_out)
+        out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(False, rnd == 'QUAL'), rows_out)
     return rows
 
 def vault_attempt(tokens, ctx):
@@ -348,7 +348,7 @@ def vault(disc, rnd):
             row |= vault_cols(1, r['v1']) | vault_cols(2, r['v2']) | {'Total': r['Total']}
             row['Combined Bonus'] = r['Bonus']
             rows.append(row)
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-VT.csv', hdr, rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-VT.csv', hdr, rows)
 
 # ---------------------------------------------------------------- team / all-around reports
 NUM = re.compile(r'-?\d+\.\d+')
@@ -461,20 +461,20 @@ def aa_report(disc, rnd):
     return athletes
 
 def summary_aa(disc, rnd, athletes):
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib', 'Name',
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib', 'Name',
            'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
     if rnd == 'QUAL':
         hdr.append('Qualification')
     rows = []
     for a in athletes:
         r = {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': EVENT_START,
-             'Round': rnd, 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'],
+             'Competition': common.COMPETITION[rnd], 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'],
              'Name': check_name(f'{disc} {rnd} AA summary', a['Bib'], a['Name'], a['NOC']),
              'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total'], 'Qualification': a['Q']}
         for app in SUMMARY_APPS[disc]:
             r[f'{app} Total'] = a['apps'][app]['Total']
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-{"QUAL" if rnd == "QUAL" else "FINAL"}-AA.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'AA', hdr, rows, EVENTS[PREFIX[disc]])
 
 def team_report(disc, rnd):
     sfx = '73C' if disc == 'MAG' else '73D'
@@ -538,19 +538,19 @@ def team_report(disc, rnd):
     return teams
 
 def summary_team(disc, rnd, teams):
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'NOC Code'] + \
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'NOC Code'] + \
           [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
     if rnd == 'QUAL':
         hdr.append('Qualification')
     rows = []
     for t in teams:
         r = {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': EVENT_START,
-             'Round': rnd, 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
+             'Competition': common.COMPETITION[rnd], 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
              'Total': '' if t['Total'] == 'DNF' else t['Total'], 'Qualification': t['Q']}
         for a, app in enumerate(APPS[disc]):
             r[f'{app} Total'] = t['totals'][a]
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-{"QUAL" if rnd == "QUAL" else "FINAL"}-TEAM.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'TEAM', hdr, rows, EVENTS[PREFIX[disc]])
 
 def scores_from_report(disc, rnd, athletes):
     """Per-apparatus SCORES-<rnd>-<APP> files built from a team/AA report (no separate per-apparatus report)."""
@@ -567,7 +567,7 @@ def scores_from_report(disc, rnd, athletes):
                         'SJ Penalty': '', 'Total': x['Total']})
         if rnd == 'AA':
             rows.sort(key=lambda r: (r['Rank'] == '', int(r['Rank'] or 0)))
-        out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(False, False), rows)
+        out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(False, False), rows)
 
 def cross_check_qual(disc, athletes, ctx):
     for a in athletes:

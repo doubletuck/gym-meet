@@ -1,19 +1,19 @@
 File,Key,Field,Printed,Corrected,Category,Source,Note
-MAG-SR-PARTICIPANTS,202,Birth Date,2007-02-06,2007-02-16,BIRTH_DATE,World Championships,"ALVAREZ Jorman (licence 62060): the entry list prints 6 Feb 2007; the 2026 Worlds entry list has 16 Feb 2007 (agreed with the user)"
-WAG-SR-PARTICIPANTS,110,Birth Date,2008-05-09,2008-05-19,BIRTH_DATE,World Championships,"HERRERA POLANCO Brithany (licence 55573): the entry list prints 9 May 2008; the 2026 Worlds entry list has 19 May 2008 (agreed with the user)"
+MAG-SR-PARTICIPANTS,202,Birth Date,2007-02-06,2007-02-16,BIRTH_DATE,World Championships,ALVAREZ Jorman (licence 62060): the entry list prints 6 Feb 2007; the 2026 Worlds entry list has 16 Feb 2007 (agreed with the user)
+WAG-SR-PARTICIPANTS,110,Birth Date,2008-05-09,2008-05-19,BIRTH_DATE,World Championships,HERRERA POLANCO Brithany (licence 55573): the entry list prints 9 May 2008; the 2026 Worlds entry list has 19 May 2008 (agreed with the user)
 WAG-SR-PARTICIPANTS,131,Name,FERNANDEZ RODRIGUEZ Melissa Del Car,FERNANDEZ RODRIGUEZ Melissa Del Carmen,NAME,start lists; results,The entry list cuts the name short; the start lists and results print it in full
 WAG-SR-PARTICIPANTS,131,Given Name,Melissa Del Car,Melissa Del Carmen,NAME,start lists; results,As above
-MAG-SR-JUDGES,QUAL SR SV,NOC Code,,ARG,NOC,apparatus finals judges,"MACERONI Mauricio, Apparatus Supervisor credited to UPAG; the apparatus finals page credits him to ARG as an E judge (agreed with the user)"
-MAG-SR-JUDGES,QUAL HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
-MAG-SR-JUDGES,AA SR SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
-MAG-SR-JUDGES,AA HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
-MAG-SR-JUDGES,EVENT SR SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
-MAG-SR-JUDGES,EVENT HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,C1 SR SV,NOC Code,,ARG,NOC,apparatus finals judges,"MACERONI Mauricio, Apparatus Supervisor credited to UPAG; the apparatus finals page credits him to ARG as an E judge (agreed with the user)"
+MAG-SR-JUDGES,C1 HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,C2 SR SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,C2 HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,C3 SR SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
+MAG-SR-JUDGES,C3 HB SV,NOC Code,,ARG,NOC,apparatus finals judges,As above
 MAG-SR-JUDGES,CAMACHO Esteban,NOC Code,,CRC,NOC,Senior Pan American Championships,"The MAG Technical Delegate, credited to UPAG; CRC at the 2026 Senior Pan Americans"
-MAG-SR-JUDGES,VALENZUELA GOMEZ César Fernando,NOC Code,,MEX,NOC,World Championships; Senior Pan American Championships,"Apparatus Supervisor credited to UPAG; MEX at the 2026 Worlds and Senior Pan Americans"
-MAG-SR-JUDGES,VELÁSQUEZ ALVARADO Juan Carlos,NOC Code,,COL,NOC,Cairo and Osijek World Cups; Senior Pan American Championships,"Apparatus Supervisor credited to UPAG; COL at the 2026 Cairo and Osijek World Cups and Senior Pan Americans"
+MAG-SR-JUDGES,VALENZUELA GOMEZ César Fernando,NOC Code,,MEX,NOC,World Championships; Senior Pan American Championships,Apparatus Supervisor credited to UPAG; MEX at the 2026 Worlds and Senior Pan Americans
+MAG-SR-JUDGES,VELÁSQUEZ ALVARADO Juan Carlos,NOC Code,,COL,NOC,Cairo and Osijek World Cups; Senior Pan American Championships,Apparatus Supervisor credited to UPAG; COL at the 2026 Cairo and Osijek World Cups and Senior Pan Americans
 WAG-SR-JUDGES,CABRERA DÁVILA Yazaira,NOC Code,,PUR,NOC,World Championships,"The WAG Superior Jury President, credited to UPAG; PUR at the 2026 Worlds"
-WAG-SR-JUDGES,ALVARADO CLEMENTE Lisseth Amelia,NOC Code,,ECU,NOC,World Championships; Senior Pan American Championships,"Apparatus Supervisor credited to UPAG; ECU at the 2026 Worlds and Senior Pan Americans"
-WAG-SR-JUDGES,SANCHEZ VILLALOBOS Carlos Alberto,NOC Code,,VEN,NOC,Senior Pan American Championships,"Apparatus Supervisor credited to UPAG; VEN at the 2026 Senior Pan Americans"
+WAG-SR-JUDGES,ALVARADO CLEMENTE Lisseth Amelia,NOC Code,,ECU,NOC,World Championships; Senior Pan American Championships,Apparatus Supervisor credited to UPAG; ECU at the 2026 Worlds and Senior Pan Americans
+WAG-SR-JUDGES,SANCHEZ VILLALOBOS Carlos Alberto,NOC Code,,VEN,NOC,Senior Pan American Championships,Apparatus Supervisor credited to UPAG; VEN at the 2026 Senior Pan Americans
 WAG-SR-JUDGES,PADILLA OLIVARES Arturo Miguel,NOC Code,,PAN,NOC,World Cups; Senior Pan American Championships,"Apparatus Supervisor credited to UPAG; PAN at the 2026 Antalya, Baku, Cairo and Osijek World Cups and Senior Pan Americans"
-WAG-SR-JUDGES,CALABRÓ Mónica,NOC Code,,ARG,NOC,World Championships; Senior Pan American Championships,"Apparatus Supervisor credited to UPAG; ARG at the 2026 Worlds and Senior Pan Americans"
+WAG-SR-JUDGES,CALABRÓ Mónica,NOC Code,,ARG,NOC,World Championships; Senior Pan American Championships,Apparatus Supervisor credited to UPAG; ARG at the 2026 Worlds and Senior Pan Americans

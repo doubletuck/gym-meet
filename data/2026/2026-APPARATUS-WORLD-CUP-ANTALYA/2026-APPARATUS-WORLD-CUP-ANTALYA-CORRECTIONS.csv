@@ -1,12 +1,12 @@
 File,Key,Field,Printed,Corrected,Category,Source,Note
-MAG-SR-SCORES-EVENT-VT,130,E2,-1.700,8.300,SCORE,arithmetic,"Vault 2 prints E -1,700 (the execution deductions); D 4.800 + E 8.300 - 0.300 = the printed 12.800, and 6.400 is half of it"
+MAG-SR-SCORES-C3-VT,130,E2,-1.700,8.300,SCORE,arithmetic,"Vault 2 prints E -1,700 (the execution deductions); D 4.800 + E 8.300 - 0.300 = the printed 12.800, and 6.400 is half of it"
 MAG-SR-PARTICIPANTS,198,FIG License,,15842,LICENCE,earlier entry lists,"Printed COLAK İbrahim; other meets have COLAK Ibrahim, licence 15842"
 WAG-SR-PARTICIPANTS,314,FIG License,,16889,LICENCE,earlier entry lists,"Printed PENA ABREU Yamilet; other meets have PEÑA ABREU Yamilet, licence 16889"
 MAG-SR-JUDGES,FELIPE Julio Marcos,Name,FELIPE Julio Marcos,MARCOS FELIPE Julio,JUDGE_NAME,Mediterranean Games,The Competition Jury; written as the Mediterranean Games files have him
 MAG-SR-JUDGES,FELIPE Julio Marcos,Surname,FELIPE,MARCOS FELIPE,JUDGE_NAME,Mediterranean Games,As above
 MAG-SR-JUDGES,FELIPE Julio Marcos,Given Name,Julio Marcos,Julio,JUDGE_NAME,Mediterranean Games,As above
-MAG-SR-JUDGES,EVENT VT L,Name,Yusuke,KOGA Yusuke,JUDGE_NAME,judge number,"The finals vault line judge prints no surname; judge number 19 is KOGA Yusuke (JPN) on the qualification page"
-MAG-SR-JUDGES,EVENT VT L,Surname,,KOGA,JUDGE_NAME,judge number,As above
+MAG-SR-JUDGES,C3 VT L,Name,Yusuke,KOGA Yusuke,JUDGE_NAME,judge number,The finals vault line judge prints no surname; judge number 19 is KOGA Yusuke (JPN) on the qualification page
+MAG-SR-JUDGES,C3 VT L,Surname,,KOGA,JUDGE_NAME,judge number,As above
 WAG-SR-JUDGES,GONCHARUK OLGA,Name,GONCHARUK OLGA,GONCHARUK Olga,JUDGE_NAME,capitalisation,Given name printed in capitals
 WAG-SR-JUDGES,GONCHARUK OLGA,Given Name,OLGA,Olga,JUDGE_NAME,capitalisation,As above
-WAG-SR-SCORES-QUAL-VT,314,Total,12.533,12.583,SCORE,arithmetic; The Gymternet,"Vaults 12.533 and 12.233 average 12.383, + 0.2 bonus = 12.583, as The Gymternet's results have it; the rank (17) is the same either way"
+WAG-SR-SCORES-C1-VT,314,Total,12.533,12.583,SCORE,arithmetic; The Gymternet,"Vaults 12.533 and 12.233 average 12.383, + 0.2 bonus = 12.583, as The Gymternet's results have it; the rank (17) is the same either way"

@@ -1,8 +1,8 @@
 File,Key,Field,Printed,Corrected,Category,Source,Note
-MAG-SR-SCORES-QUAL-FX,206,Rank,46,45,TIE_BREAK,tie-break report,"DE LEON Justine Ace and TRINH Hai Khang, 11.800 with E 6.800 and D 5.0 both: the tie-break report (p49) ranks them =45 under its rule that gymnasts still tied share the classification; the results table prints 45 and 46"
-MAG-SR-SCORES-QUAL-FX,206,Qualification Rank,46,45,TIE_BREAK,tie-break report,As above
-MAG-SR-SCORES-QUAL-PB,119,Rank,15,14,TIE_BREAK,tie-break report,"TIAN Hao and ERGASHEV Khabibullo, 13.300 with E 8.600 and D 4.7 both: the tie-break report (p53) ranks them =14; the results table prints 14 and 15"
-MAG-SR-SCORES-QUAL-PB,119,Qualification Rank,15,14,TIE_BREAK,tie-break report,As above
+MAG-SR-SCORES-C1-FX,206,Rank,46,45,TIE_BREAK,tie-break report,"DE LEON Justine Ace and TRINH Hai Khang, 11.800 with E 6.800 and D 5.0 both: the tie-break report (p49) ranks them =45 under its rule that gymnasts still tied share the classification; the results table prints 45 and 46"
+MAG-SR-SCORES-C1-FX,206,Qualification Rank,46,45,TIE_BREAK,tie-break report,As above
+MAG-SR-SCORES-C1-PB,119,Rank,15,14,TIE_BREAK,tie-break report,"TIAN Hao and ERGASHEV Khabibullo, 13.300 with E 8.600 and D 4.7 both: the tie-break report (p53) ranks them =14; the results table prints 14 and 15"
+MAG-SR-SCORES-C1-PB,119,Qualification Rank,15,14,TIE_BREAK,tie-break report,As above
 MAG-SR-PARTICIPANTS,165,Name,AZIZOV Llyas,AZIZOV Ilyas,NAME,World Championships,"Licence 31800: the World Championships, Cairo and Osijek World Cup entry lists print Ilyas; Llyas is a misprint of the capital I"
 MAG-SR-PARTICIPANTS,165,Given Name,Llyas,Ilyas,NAME,World Championships,As above
 MAG-SR-JUDGES,CHENG Feng-Yi,Name,CHENG Feng-Yi,CHENG Feng Yi,JUDGE_NAME,World Championships,As the World Championships judges list prints it
@@ -20,14 +20,14 @@ MAG-SR-JUDGES,SNG Puay Liang,NOC Code,,SGP,NOC,World Gymnastics,"Apparatus super
 MAG-SR-JUDGES,KASAMATSU Akihiro,NOC Code,,JPN,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
 MAG-SR-JUDGES,LIPING Huang,NOC Code,,CHN,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
 MAG-SR-JUDGES,KIM Alexander,NOC Code,,KAZ,NOC,World Gymnastics,"Apparatus supervisor printed as AGU (Asian Gymnastics Union); federation from World Gymnastics, as given by the user"
-WAG-SR-JUDGES,EVENT VT SV,NOC Code,,QAT,NOC,other panels,"AL BOUAINAIN Abeer: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to QAT"
-WAG-SR-JUDGES,EVENT UB SV,NOC Code,,JPN,NOC,other panels,"SHIRAKAWA Chihiro: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to JPN"
-WAG-SR-JUDGES,EVENT BB SV,NOC Code,,UZB,NOC,other panels,"KOSHECHKINA Stella: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to UZB"
-WAG-SR-JUDGES,EVENT FX SV,NOC Code,,PHI,NOC,other panels,"ORTEGA Jasmin: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to PHI"
-WAG-SR-JUDGES,EVENT - R2,NOC Code,,PHI,NOC,other panels,"ORTEGA Jasmin: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to PHI"
-WAG-SR-JUDGES,EVENT - R3,NOC Code,,QAT,NOC,other panels,"AL BOUAINAIN Abeer: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to QAT"
-WAG-SR-JUDGES,EVENT - R4,NOC Code,,JPN,NOC,other panels,"SHIRAKAWA Chihiro: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to JPN"
-WAG-JR-SUMMARY-QUAL-TEAM,LBN,BB Total,22.665,22.965,SCORE,team report,"Two team penalties, -0.6 in all, written as the SJ Penalty: the beam warm-up overrun (-0.3) is taken off the printed beam total (starred), the flag (-0.3) off the team total. The beam total is written as its best three scores, 6.666 + 8.833 + 7.466, so the counting scores can be worked out"
+WAG-SR-JUDGES,C3 VT SV,NOC Code,,QAT,NOC,other panels,AL BOUAINAIN Abeer: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to QAT
+WAG-SR-JUDGES,C3 UB SV,NOC Code,,JPN,NOC,other panels,SHIRAKAWA Chihiro: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to JPN
+WAG-SR-JUDGES,C3 BB SV,NOC Code,,UZB,NOC,other panels,KOSHECHKINA Stella: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to UZB
+WAG-SR-JUDGES,C3 FX SV,NOC Code,,PHI,NOC,other panels,ORTEGA Jasmin: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to PHI
+WAG-SR-JUDGES,C3 - R2,NOC Code,,PHI,NOC,other panels,ORTEGA Jasmin: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to PHI
+WAG-SR-JUDGES,C3 - R3,NOC Code,,QAT,NOC,other panels,AL BOUAINAIN Abeer: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to QAT
+WAG-SR-JUDGES,C3 - R4,NOC Code,,JPN,NOC,other panels,SHIRAKAWA Chihiro: the finals sheet prints AGU (Asian Gymnastics Union); the qualification sheet credits her to JPN
+WAG-JR-RANKING-FINAL-TEAM,LBN,BB Total,22.665,22.965,SCORE,team report,"Two team penalties, -0.6 in all, written as the SJ Penalty: the beam warm-up overrun (-0.3) is taken off the printed beam total (starred), the flag (-0.3) off the team total. The beam total is written as its best three scores, 6.666 + 8.833 + 7.466, so the counting scores can be worked out"
 MAG-JR-JUDGES,CHENG Feng-Yi,Name,CHENG Feng-Yi,CHENG Feng Yi,JUDGE_NAME,World Championships,As the World Championships judges list prints it (as in the senior book)
 MAG-JR-JUDGES,CHENG Feng-Yi,Given Name,Feng-Yi,Feng Yi,JUDGE_NAME,World Championships,As above
 MAG-JR-JUDGES,CHEN Ming-Yao,Name,CHEN Ming-Yao,CHEN Ming Yao,JUDGE_NAME,Antalya World Cup,As the 2026 Antalya Apparatus World Cup judges list prints it (as in the senior book)

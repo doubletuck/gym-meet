@@ -5,8 +5,8 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_mediterranean_games.py \\
         data/2026/2026-MEDITERRANEAN-GAMES/2026-MEDITERRANEAN-GAMES-ALL-RESULTS.pdf
 
-Writes PARTICIPANTS, JUDGES, SCORES-{QUAL,AA,EVENT}-<APP>, SUMMARY-QUAL-{TEAM,AA} and
-SUMMARY-FINAL-AA, and an IMPORT.json, per discipline next to the PDF, reading event metadata from
+Writes PARTICIPANTS, JUDGES, SCORES-{C1,C2,C3}-<APP>, RANKING-FINAL-TEAM (Competition I decides the
+team title), RANKING-QUAL-AA and RANKING-FINAL-AA, and an IMPORT.json, per discipline next to the PDF, reading event metadata from
 the EVENT.csv already there. Exits non-zero if any check fails (docs/instructions-results-parsing.md
 §3; this source format is §5.6).
 
@@ -178,7 +178,7 @@ def judges(disc):
         if not sur or not giv:
             err(f'judges {disc}: name split {name!r}')
         rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR',
-                     'Event Start Date': ev['Start Date'], 'Round': rnd, 'Apparatus': app, 'Function': fn,
+                     'Event Start Date': ev['Start Date'], 'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': fn,
                      'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': noc})
     for rnd in ('QUAL', 'AA', 'EVENT'):
         idx = find(disc, 'Judges Assignment', rnd)
@@ -354,7 +354,7 @@ def double_table(idx, ctx):
 
 def meta(disc, rnd, app):
     return {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-            'Session Start Date': SESSION_DATE[disc][rnd], 'Round': rnd, 'Part': '', 'Apparatus': app}
+            'Competition Start Date': SESSION_DATE[disc][rnd], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app}
 
 ROUTINE_KEYS = ['Status', 'D', 'E', 'B', 'Penalty', 'SJ Penalty', 'Total']
 
@@ -389,7 +389,7 @@ def app_results(disc, rnd, app):
             for r in double_table(doubles, ctx):
                 rows.append(ident(disc, rnd, app, r) | vault_cols(1, r['v1']) | vault_cols(2, r['v2'])
                             | {'Combined Bonus': r['Bonus'], 'Total': r['Total']})
-            out.csv(f'{PREFIX[disc]}-SCORES-EVENT-VT.csv', common.score_header(True, False), rows)
+            out.csv(f'{PREFIX[disc]}-SCORES-C3-VT.csv', common.score_header(True, False), rows)
             return rows
         single = single_table(singles, ctx + ' vault 1')
         double = {r['Bib']: r for r in double_table(doubles, ctx + ' two-vault')}
@@ -423,7 +423,7 @@ def app_results(disc, rnd, app):
             rows.append(ident(disc, rnd, app, s) | vault_cols(1, v1) | vault_cols(2, v2) | extra)
         if double:
             err(f'{ctx}: two-vault bibs missing from the vault 1 list: {list(double)}')
-        out.csv(f'{PREFIX[disc]}-SCORES-QUAL-VT.csv', common.score_header(True, True), rows)
+        out.csv(f'{PREFIX[disc]}-SCORES-C1-VT.csv', common.score_header(True, True), rows)
         # Cross-checks see the written (corrected) ranks
         for s, row in zip(single, rows):
             remember(disc, rnd, app, s['Bib'], row['Rank'], s['v1'])
@@ -440,7 +440,7 @@ def app_results(disc, rnd, app):
         if qual:
             row |= {'Qualification': r['Q'], 'Qualification Rank': r['Rank']}
         rows.append(row)
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(False, qual), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(False, qual), rows)
     return rows
 
 # ---------------------------------------------------------------- qualifiers and tie-breaks
@@ -632,21 +632,21 @@ def aa_report(disc, rnd):
 
 def summary_aa(disc, rnd, athletes):
     ev = EVENTS[PREFIX[disc]]
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib', 'Name',
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib', 'Name',
            'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
     if rnd == 'QUAL':
         hdr.append('Qualification')
     rows = []
     for a in athletes:
         r = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-             'Round': rnd, 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'],
+             'Competition': common.COMPETITION[rnd], 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'],
              'Name': check_name(disc, f'{disc} {rnd} AA summary', a['Bib'], a['Name'], a['NOC']),
              'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total'], 'Qualification': a['Q']}
         for app in SUMMARY_APPS[disc]:
             x = a['apps'].get(app)
             r[f'{app} Total'] = x['Total'] if x else ''
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-{"QUAL" if rnd == "QUAL" else "FINAL"}-AA.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'AA', hdr, rows, EVENTS[PREFIX[disc]])
 
 def check_aa_final(disc, qual, final):
     marks = {a['Bib']: a['Q'] for a in qual}
@@ -710,17 +710,17 @@ def team_report(disc):
 
 def summary_team(disc, teams):
     ev = EVENTS[PREFIX[disc]]
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'NOC Code'] + \
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'NOC Code'] + \
           [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total', 'Qualification']
     rows = []
     for t in teams:
         r = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-             'Round': 'QUAL', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['SJ'],
+             'Competition': 'C1', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['SJ'],
              'Total': t['Total'], 'Qualification': ''}
         for app in SUMMARY_APPS[disc]:
             r[f'{app} Total'] = t['totals'][app]
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-QUAL-TEAM.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'TEAM', hdr, rows, EVENTS[PREFIX[disc]])
 
 # ---------------------------------------------------------------- run
 for disc in ('MAG', 'WAG'):

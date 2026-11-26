@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_world_challenge_cup_szombathely.py \\
         data/2026/2026-WORLD-CHALLENGE-CUP-SZOMBATHELY/18241-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS / JUDGES / SCORES-QUAL-<APP> / SCORES-EVENT-<APP> CSVs and an IMPORT.json
+Writes PARTICIPANTS / JUDGES / SCORES-C1-<APP> / SCORES-C3-<APP> CSVs and an IMPORT.json
 per discipline next to the PDF, reading event metadata from the EVENT.csv already there and
 applying the event's CORRECTIONS.csv. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.13).
@@ -397,7 +397,7 @@ def results(disc, rnd, app):
         if qual:
             COMPETED[(disc, app)].add(r['Bib'])
         row = {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-               'Session Start Date': DATES[(disc, rnd, app)], 'Round': rnd, 'Part': '', 'Apparatus': app,
+               'Competition Start Date': DATES[(disc, rnd, app)], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                'Rank': r['Rank'], 'Bib': r['Bib'], 'Name': p['Name'], 'NOC Code': p['NOC Code']}
         c = f'{ctx} bib {r["Bib"]}'
         if vault:
@@ -438,7 +438,7 @@ def results(disc, rnd, app):
         err(f'{ctx}: ranks {ranked}')
     checks.check_rank_order(ctx, written)
     check_ties(ctx, (disc, rnd, app), written, app)
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(vault, qual), written)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(vault, qual), written)
     check_written(ctx, written, app)
     return written
 
@@ -622,7 +622,7 @@ def medal(ctx, finals, key, rank, name, noc):
 def judge_row(disc, rnd, app, function, name, surname, given, noc):
     ev = EVENTS[PREFIX[disc]]
     return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-            'Round': rnd, 'Apparatus': app, 'Function': function, 'Name': name, 'Surname': surname,
+            'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': function, 'Name': name, 'Surname': surname,
             'Given Name': given, 'NOC Code': noc}
 
 GRID = {'MAG': [('FX', 'PH'), ('SR', 'VT'), ('PB', 'HB')], 'WAG': [('VT', 'UB'), ('BB', 'FX')]}

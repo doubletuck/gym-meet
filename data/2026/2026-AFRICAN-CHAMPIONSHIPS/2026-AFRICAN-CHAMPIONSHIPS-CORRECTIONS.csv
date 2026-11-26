@@ -2,37 +2,37 @@ File,Key,Field,Printed,Corrected,Category,Source,Note
 WAG-SR-PARTICIPANTS,105,Birth Date,2006-07-11,2005-01-15,BIRTH_DATE,World Championships,"LAROUI Djenna (licence 48297): the entry list prints 11/07/2006; the World Championships, Paris World Challenge Cup and Mediterranean Games entry lists all give 2005-01-15"
 WAG-SR-PARTICIPANTS,105,Birth Year,2006,2005,BIRTH_DATE,World Championships,As above
 WAG-SR-PARTICIPANTS,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,"MUCHATUTA Kylana: the entry list and results print ZWE (the ISO code); the entries by NOC page (p. 4) prints ZIM, the IOC code World Gymnastics uses"
-WAG-SR-SUMMARY-QUAL-AA,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-SR-SCORES-QUAL-VT,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-SR-SCORES-QUAL-UB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-SR-SCORES-QUAL-BB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-SR-SCORES-QUAL-FX,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-SR-SCORES-EVENT-BB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-SR-JUDGES,EVENT VT E2,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The finals sheet (p. 56) cuts the surname to the column; the qualification sheet and the other finals panels print DELGADO MIRANDA
-WAG-SR-JUDGES,EVENT VT E2,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
-WAG-SR-JUDGES,EVENT BB E2,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The finals sheet (p. 56) cuts the surname to the column; the qualification sheet and the other finals panels print DELGADO MIRANDA
-WAG-SR-JUDGES,EVENT BB E2,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
-WAG-SR-JUDGES,QUAL - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646; the full name is not given); taken to be ABOUSHOUSHA Rawan (EGY), a WAG judge at the 2026 Cairo World Cup, as agreed with the user"
-WAG-SR-JUDGES,QUAL - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
-WAG-SR-JUDGES,EVENT - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,As above
-WAG-SR-JUDGES,EVENT - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
+WAG-SR-RANKING-FINAL-AA,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-C1-VT,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-C1-UB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-C1-BB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-C1-FX,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-SCORES-C3-BB,123,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-SR-JUDGES,C3 VT E2,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The finals sheet (p. 56) cuts the surname to the column; the qualification sheet and the other finals panels print DELGADO MIRANDA
+WAG-SR-JUDGES,C3 VT E2,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
+WAG-SR-JUDGES,C3 BB E2,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The finals sheet (p. 56) cuts the surname to the column; the qualification sheet and the other finals panels print DELGADO MIRANDA
+WAG-SR-JUDGES,C3 BB E2,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
+WAG-SR-JUDGES,C1 - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646; the full name is not given); taken to be ABOUSHOUSHA Rawan (EGY), a WAG judge at the 2026 Cairo World Cup, as agreed with the user"
+WAG-SR-JUDGES,C1 - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
+WAG-SR-JUDGES,C3 - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,As above
+WAG-SR-JUDGES,C3 - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
 WAG-JR-PARTICIPANTS,166,NOC Code,RDC,COD,NOC,IOC code,"YAELLE Malaika: the entry list and results print RDC (the French abbreviation for the Democratic Republic of the Congo); the entries by NOC page leaves the country out. COD is the IOC code World Gymnastics uses, as agreed with the user"
-WAG-JR-SUMMARY-QUAL-AA,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-VT,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-UB,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-BB,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-FX,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
+WAG-JR-RANKING-FINAL-AA,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
+WAG-JR-SCORES-C1-VT,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
+WAG-JR-SCORES-C1-UB,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
+WAG-JR-SCORES-C1-BB,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
+WAG-JR-SCORES-C1-FX,166,NOC Code,RDC,COD,NOC,IOC code,As in PARTICIPANTS
 WAG-JR-PARTICIPANTS,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,"MUCHATUTA Neela: the entry list and results print ZWE (the ISO code); the entries by NOC page (p. 4) prints ZIM, the IOC code World Gymnastics uses"
-WAG-JR-SUMMARY-QUAL-AA,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-VT,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-UB,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-BB,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-JR-SCORES-QUAL-FX,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
-WAG-JR-JUDGES,QUAL VT E1,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The qualification sheet (p. 50) cuts the surname to the column; the finals sheet prints DELGADO MIRANDA
-WAG-JR-JUDGES,QUAL VT E1,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
-WAG-JR-JUDGES,QUAL BB E1,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The qualification sheet (p. 50) cuts the surname to the column; the finals sheet prints DELGADO MIRANDA
-WAG-JR-JUDGES,QUAL BB E1,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
-WAG-JR-JUDGES,QUAL - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646), as in the senior book; taken to be ABOUSHOUSHA Rawan (EGY), as agreed with the user for the seniors"
-WAG-JR-JUDGES,QUAL - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
-WAG-JR-JUDGES,EVENT - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646), as in the senior book; taken to be ABOUSHOUSHA Rawan (EGY), as agreed with the user for the seniors"
-WAG-JR-JUDGES,EVENT - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
+WAG-JR-RANKING-FINAL-AA,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-JR-SCORES-C1-VT,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-JR-SCORES-C1-UB,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-JR-SCORES-C1-BB,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-JR-SCORES-C1-FX,158,NOC Code,ZWE,ZIM,NOC,entries by NOC,As in PARTICIPANTS
+WAG-JR-JUDGES,C1 VT E1,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The qualification sheet (p. 50) cuts the surname to the column; the finals sheet prints DELGADO MIRANDA
+WAG-JR-JUDGES,C1 VT E1,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
+WAG-JR-JUDGES,C1 BB E1,Name,DELGADO MIRAND Diana,DELGADO MIRANDA Diana,JUDGE_NAME,other panels,The qualification sheet (p. 50) cuts the surname to the column; the finals sheet prints DELGADO MIRANDA
+WAG-JR-JUDGES,C1 BB E1,Surname,DELGADO MIRAND,DELGADO MIRANDA,JUDGE_NAME,other panels,As above
+WAG-JR-JUDGES,C1 - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646), as in the senior book; taken to be ABOUSHOUSHA Rawan (EGY), as agreed with the user for the seniors"
+WAG-JR-JUDGES,C1 - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above
+WAG-JR-JUDGES,C3 - Member,Name,Rawan,ABOUSHOUSHA Rawan,JUDGE_NAME,Cairo World Cup,"Superior Jury 2 prints the given name only (Rawan, EGY, judge number 4646), as in the senior book; taken to be ABOUSHOUSHA Rawan (EGY), as agreed with the user for the seniors"
+WAG-JR-JUDGES,C3 - Member,Surname,,ABOUSHOUSHA,JUDGE_NAME,Cairo World Cup,As above

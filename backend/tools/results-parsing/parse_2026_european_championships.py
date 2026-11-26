@@ -9,7 +9,7 @@ Scoped to one report: the juniors' "All-Around Results" of the All-Around Final.
 2026 Europeans files were written before these parsers existed; the all-around final's
 routines (`SCORES-C2-*`) were among them, but its ranking wasn't. Writes
 `2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR-RANKING-FINAL-AA.csv` next to the PDF, in the current
-standard (docs/import-file-model.md), and lists it in the MAG JR manifest.
+standard (docs/import-file-model.md), and the MAG JR manifest.
 
 FIG/Swiss Timing layout (instructions-results-parsing.md §5.1): each athlete takes three lines,
 the D / Total / Rk of each apparatus above the rank, bib, name and NOC, then E / Pen. / B
@@ -17,7 +17,7 @@ the D / Total / Rk of each apparatus above the rank, bib, name and NOC, then E /
 apparatus total equals the athlete's C2 score, the apparatus totals and any SJ penalty add up
 to the total, ranks and totals are in order, and every bib is in the entry list.
 """
-import csv, json, os, re, sys
+import csv, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import common
@@ -27,9 +27,8 @@ PDF = sys.argv[1]
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.abspath(PDF))
 PREFIX = '2026-EUROPEAN-CHAMPIONSHIPS-MAG-JR'
 APPARATUS = ['FX', 'PH', 'SR', 'VT', 'PB', 'HB']
-HEADER = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Purpose',
-          'Rank', 'Rank Status', 'Bib', 'Name', 'NOC Code'] + [f'{a} Total' for a in APPARATUS] + \
-         ['SJ Penalty', 'Total']
+HEADER = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib',
+          'Name', 'NOC Code'] + [f'{a} Total' for a in APPARATUS] + ['SJ Penalty', 'Total']
 
 checks = common.Checks()
 err = checks.err
@@ -80,15 +79,11 @@ for text in report_pages():
             err(f'{ctx}: unreadable row around "{line.strip()}"')
             continue
         row = {'Event Name': event['Title'], 'Discipline': 'MAG', 'Age Category': 'JR',
-               'Event Start Date': event['Start Date'], 'Competition': 'C2', 'Part': '', 'Purpose': 'FINAL',
-               'Rank': rank or '', 'Rank Status': '', 'Bib': bib, 'Name': name, 'NOC Code': noc,
+               'Event Start Date': event['Start Date'], 'Competition': 'C2', 'Part': '',
+               'Rank': rank or '', 'Bib': bib, 'Name': name, 'NOC Code': noc,
                'SJ Penalty': penalty if D(penalty) else '', 'Total': total}
         for a, t in zip(APPARATUS, totals):
             row[f'{a} Total'] = t
-        if not row['Rank']:
-            row['Rank Status'] = 'INCOMPLETE' if not all(totals) else ''
-            if not row['Rank Status']:
-                err(f'{ctx}: unranked with a full all-around; say why in Rank Status')
         rows.append(row)
 
 if not rows:
@@ -121,14 +116,7 @@ if missing:
 
 if checks.errors:
     checks.finish()
-name = f'{PREFIX}-RANKING-FINAL-AA.csv'
-common.Output(OUT).csv(name, HEADER, rows)
-manifest_path = os.path.join(OUT, f'{PREFIX}-IMPORT.json')
-with open(manifest_path, encoding='utf-8') as f:
-    manifest = json.load(f)
-if name not in manifest['rankings']:
-    manifest['rankings'] = sorted(manifest['rankings'] + [name])
-    with open(manifest_path, 'w', encoding='utf-8') as f:
-        json.dump(manifest, f, indent=4, separators=(',', ' : '))
-        f.write('\n')
+out = common.Output(OUT)
+out.ranking(PREFIX, 'AA', HEADER, rows, event)
+out.manifest(PREFIX, event)
 checks.finish()

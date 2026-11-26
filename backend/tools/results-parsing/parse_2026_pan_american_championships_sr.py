@@ -5,8 +5,8 @@ Usage:
     python3 -I parse_2026_pan_american_championships_sr.py \\
         data/2026/2026-PAN-AMERICAN-CHAMPIONSHIPS/18533-ResultsbookMedia-PanAms-SR.pdf
 
-Writes PARTICIPANTS, JUDGES, SCORES-QUAL-*, SCORES-AA-*, SCORES-EVENT-*, SUMMARY-QUAL-AA,
-SUMMARY-QUAL-TEAM, SUMMARY-FINAL-AA and an IMPORT.json for MAG SR and WAG SR next to the PDF, reading
+Writes PARTICIPANTS, JUDGES, SCORES-C1-*, SCORES-C2-*, SCORES-C3-*, RANKING-QUAL-AA,
+RANKING-FINAL-TEAM (Competition I decides the team title), RANKING-FINAL-AA and an IMPORT.json for MAG SR and WAG SR next to the PDF, reading
 event metadata from the EVENT.csv already there. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.5).
 
@@ -44,7 +44,7 @@ if any(EVENTS[p]['Title'] != EVENT_NAME or EVENTS[p]['Start Date'] != EVENT_STAR
 AGE = 'SR'
 corrections = common.Corrections(OUT, EVENT_PREFIX, ['MAG-SR', 'WAG-SR'], err)
 out = common.Output(OUT, corrections)
-# All-around report column order, and the SUMMARY column order (import-file-model.md).
+# All-around report column order, and the RANKING column order (import-file-model.md).
 APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
 SUMMARY_APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
 # From the Competition Schedule page (p. 2): qualification Wed 17 Jun, all-around finals Fri 19 Jun,
@@ -140,7 +140,7 @@ def judges(disc):
             if fed and not re.fullmatch(r'(UPAG-)?[A-Z]{3}|UPAG', fed) or fed == 'WAG' and disc != 'MAG':
                 err(f'judges {disc} {rnd}: federation {fed!r}')
             rows.append({'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
-                         'Event Start Date': EVENT_START, 'Round': rnd, 'Apparatus': app,
+                         'Event Start Date': EVENT_START, 'Competition': common.COMPETITION[rnd], 'Apparatus': app,
                          'Function': JUDGE_FN.get(fn, fn), 'Name': name, 'Surname': sur, 'Given Name': giv,
                          'NOC Code': judge_noc(fed)})
         print(f'  judges {disc} {rnd}: {len(rows) - n_rnd}')
@@ -204,7 +204,7 @@ def routine_cols(g, suffix='', vault=False):
 
 def meta(disc, rnd, app, rank, bib):
     return {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
-            'Session Start Date': SESSION_DATE[rnd], 'Round': rnd, 'Part': '', 'Apparatus': app,
+            'Competition Start Date': SESSION_DATE[rnd], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
             'Rank': rank, 'Bib': bib, 'Name': PEOPLE[bib]['name'], 'NOC Code': PEOPLE[bib]['noc']}
 
 def same_routine(ctx, a, b):
@@ -256,7 +256,7 @@ def aa_report(disc):
 
 def summary_aa(disc, athletes, rnd):
     final = rnd == 'AA'
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib', 'Name',
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib', 'Name',
            'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total'] + \
           ([] if final else ['Qualification'])
     rows = []
@@ -264,14 +264,14 @@ def summary_aa(disc, athletes, rnd):
         if all(g['kind'] == 'none' for g in a['apps'].values()):
             continue          # entered but competed on nothing
         r = {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE, 'Event Start Date': EVENT_START,
-             'Round': rnd, 'Part': '', 'Rank': a['rank'], 'Bib': a['bib'], 'Name': PEOPLE[a['bib']]['name'],
+             'Competition': common.COMPETITION[rnd], 'Part': '', 'Rank': a['rank'], 'Bib': a['bib'], 'Name': PEOPLE[a['bib']]['name'],
              'NOC Code': PEOPLE[a['bib']]['noc'], 'SJ Penalty': '', 'Total': a['Total']}
         if not final:
             r['Qualification'] = a['mk']
         for app in SUMMARY_APPS[disc]:
             r[f'{app} Total'] = a['apps'][app].get('Total', '')
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-{"FINAL" if final else "QUAL"}-AA.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'AA', hdr, rows, EVENTS[PREFIX[disc]])
 
 def team_report(disc, aa):
     """`T|rank|NOC|apparatus totals…|total[|penalty]`, then `M|bib|name|values…` per member: a score,
@@ -320,17 +320,17 @@ def team_report(disc, aa):
         if noc in team_nocs and not any(a['bib'] in t['athletes'] for t in teams if t['NOC'] == noc):
             err(f'{disc} team {noc}: bib {a["bib"]} not listed as a member')
     checks.check_rank_order(f'{disc} team', [dict(Rank=t['Rank'], Total=t['Total'], Bib=t['NOC']) for t in teams])
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'NOC Code'] + \
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'NOC Code'] + \
           [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total', 'Qualification']
     rows = []
     for t in teams:
         r = {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE, 'Event Start Date': EVENT_START,
-             'Round': 'QUAL', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['Penalty'],
+             'Competition': 'C1', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['Penalty'],
              'Total': t['Total'], 'Qualification': ''}
         for app, total in zip(APPS[disc], t['totals']):
             r[f'{app} Total'] = total
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-QUAL-TEAM.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'TEAM', hdr, rows, EVENTS[PREFIX[disc]])
 
 # ---------------------------------------------------------------- qualification
 def qualification(mk):
@@ -379,7 +379,7 @@ def qual_app(disc, app, aa):
         err(f'{ctx}: athletes differ from the all-around report: {sorted({r["Bib"] for r in rows} ^ aa_bibs)}')
     check_ranks(ctx, rows)
     check_markers(ctx, [b for b in bs if b['rank']])
-    out.csv(f'{PREFIX[disc]}-SCORES-QUAL-{app}.csv', common.score_header(False, True), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-C1-{app}.csv', common.score_header(False, True), rows)
     return {r['Bib']: r['Qualification'] for r in rows if r['Qualification']}
 
 def vault_totals(f, ctx):
@@ -425,7 +425,7 @@ def qual_vault(disc, aa):
         rows.append(r)
     if not set(double) <= {r['Bib'] for r in rows}:
         err(f'{ctx}: two-vault athletes missing from the all-around report')
-    out.csv(f'{PREFIX[disc]}-SCORES-QUAL-VT.csv', common.score_header(True, True), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-C1-VT.csv', common.score_header(True, True), rows)
     return {r['Bib']: r['Qualification'] for r in rows if r['Qualification']}
 
 # ---------------------------------------------------------------- all-around final
@@ -454,7 +454,7 @@ def aa_final(disc, qual_aa):
         vault = False      # all-around final vault is a single attempt
         rows = [{**meta(disc, 'AA', app, '', a['bib']), **routine_cols(a['apps'][app], vault=app == 'VT')}
                 for a in athletes if a['apps'][app]['kind'] != 'none']
-        out.csv(f'{PREFIX[disc]}-SCORES-AA-{app}.csv', common.score_header(vault, False), rows)
+        out.csv(f'{PREFIX[disc]}-SCORES-C2-{app}.csv', common.score_header(vault, False), rows)
     summary_aa(disc, athletes, 'AA')
 
 # ---------------------------------------------------------------- finals
@@ -493,7 +493,7 @@ def final(disc, app, marks):
     elif q - finalists:
         print(f'  {ctx}: qualifiers {sorted(q - finalists)} replaced by reserves {sorted(finalists & r_)}')
     check_ranks(ctx, rows)
-    out.csv(f'{PREFIX[disc]}-SCORES-EVENT-{app}.csv', common.score_header(vault, False), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-C3-{app}.csv', common.score_header(vault, False), rows)
 
 # ---------------------------------------------------------------- sporttech.io cross-check
 EXPORT_TITLE = {'MAG': 'SENIOR - Men', 'WAG': 'SENIOR - Women'}

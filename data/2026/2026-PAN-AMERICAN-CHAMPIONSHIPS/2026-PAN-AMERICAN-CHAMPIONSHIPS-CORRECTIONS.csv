@@ -1,136 +1,136 @@
 File,Key,Field,Printed,Corrected,Category,Source,Note
-MAG-SR-SCORES-QUAL-VT,312,Status2,,DNS,STATUS,sporttech export,"Second vault started but not performed (FAILED); the two-vault list leaves him out"
-MAG-SR-JUDGES,QUAL FX E1,Name,"CORDEIRO, Tiago","CORDEIRO ANDRADE, Tiago",JUDGE_NAME,other panels,"Printed CORDEIRO ANDRADE on every other MAG panel of the meet"
-MAG-SR-JUDGES,QUAL FX E1,Surname,CORDEIRO,CORDEIRO ANDRADE,JUDGE_NAME,other panels,
-MAG-SR-JUDGES,AA SR E2,Name,ANTEQUERA ECHEVERRIA. Walter,"ANTEQUERA ECHEVERRIA, Walter",JUDGE_NAME,other panels,A full stop printed for the comma
-MAG-SR-JUDGES,EVENT FX L1,Name,"SANCHEZ, Carlos","SANCHEZ VILLALOBOS, Carlos Alberto",JUDGE_NAME,WAG judges list,"Federation printed WAG: lent by the women's panel, where he is SANCHEZ VILLALOBOS Carlos Alberto (UPAG-VEN)"
-MAG-SR-JUDGES,EVENT FX L1,Surname,SANCHEZ,SANCHEZ VILLALOBOS,JUDGE_NAME,WAG judges list,
-MAG-SR-JUDGES,EVENT FX L1,Given Name,Carlos,Carlos Alberto,JUDGE_NAME,WAG judges list,
-MAG-SR-JUDGES,EVENT FX L1,NOC Code,,VEN,JUDGE_NAME,WAG judges list,
-MAG-SR-JUDGES,EVENT VT L,Name,"SANCHEZ, Carlos","SANCHEZ VILLALOBOS, Carlos Alberto",JUDGE_NAME,WAG judges list,As EVENT FX L1
-MAG-SR-JUDGES,EVENT VT L,Surname,SANCHEZ,SANCHEZ VILLALOBOS,JUDGE_NAME,WAG judges list,
-MAG-SR-JUDGES,EVENT VT L,Given Name,Carlos,Carlos Alberto,JUDGE_NAME,WAG judges list,
-MAG-SR-JUDGES,EVENT VT L,NOC Code,,VEN,JUDGE_NAME,WAG judges list,
-MAG-SR-JUDGES,EVENT FX L2,NOC Code,,DOM,JUDGE_NAME,WAG judges list,"Federation printed WAG: lent by the women's panel, where she is ROMAN Maria (DOM)"
-WAG-SR-JUDGES,EVENT FX E5,Name,MENESSES DE AGUILA Wendy Yasmina,MENESES DE AGUILA Wendy Yasmina,JUDGE_NAME,other panels,Printed MENESES on every other WAG panel of the meet
-WAG-SR-JUDGES,EVENT FX E5,Surname,MENESSES DE AGUILA,MENESES DE AGUILA,JUDGE_NAME,other panels,
-MAG-SR-JUDGES,"VALENZUELA, César",Name,"VALENZUELA, César","VALENZUELA GOMEZ, Cesar",JUDGE_NAME,FIG books,"As World Gymnastics prints him (2026 Worlds)"
+MAG-SR-SCORES-C1-VT,312,Status2,,DNS,STATUS,sporttech export,Second vault started but not performed (FAILED); the two-vault list leaves him out
+MAG-SR-JUDGES,C1 FX E1,Name,"CORDEIRO, Tiago","CORDEIRO ANDRADE, Tiago",JUDGE_NAME,other panels,Printed CORDEIRO ANDRADE on every other MAG panel of the meet
+MAG-SR-JUDGES,C1 FX E1,Surname,CORDEIRO,CORDEIRO ANDRADE,JUDGE_NAME,other panels,
+MAG-SR-JUDGES,C2 SR E2,Name,ANTEQUERA ECHEVERRIA. Walter,"ANTEQUERA ECHEVERRIA, Walter",JUDGE_NAME,other panels,A full stop printed for the comma
+MAG-SR-JUDGES,C3 FX L1,Name,"SANCHEZ, Carlos","SANCHEZ VILLALOBOS, Carlos Alberto",JUDGE_NAME,WAG judges list,"Federation printed WAG: lent by the women's panel, where he is SANCHEZ VILLALOBOS Carlos Alberto (UPAG-VEN)"
+MAG-SR-JUDGES,C3 FX L1,Surname,SANCHEZ,SANCHEZ VILLALOBOS,JUDGE_NAME,WAG judges list,
+MAG-SR-JUDGES,C3 FX L1,Given Name,Carlos,Carlos Alberto,JUDGE_NAME,WAG judges list,
+MAG-SR-JUDGES,C3 FX L1,NOC Code,,VEN,JUDGE_NAME,WAG judges list,
+MAG-SR-JUDGES,C3 VT L,Name,"SANCHEZ, Carlos","SANCHEZ VILLALOBOS, Carlos Alberto",JUDGE_NAME,WAG judges list,As EVENT FX L1
+MAG-SR-JUDGES,C3 VT L,Surname,SANCHEZ,SANCHEZ VILLALOBOS,JUDGE_NAME,WAG judges list,
+MAG-SR-JUDGES,C3 VT L,Given Name,Carlos,Carlos Alberto,JUDGE_NAME,WAG judges list,
+MAG-SR-JUDGES,C3 VT L,NOC Code,,VEN,JUDGE_NAME,WAG judges list,
+MAG-SR-JUDGES,C3 FX L2,NOC Code,,DOM,JUDGE_NAME,WAG judges list,"Federation printed WAG: lent by the women's panel, where she is ROMAN Maria (DOM)"
+WAG-SR-JUDGES,C3 FX E5,Name,MENESSES DE AGUILA Wendy Yasmina,MENESES DE AGUILA Wendy Yasmina,JUDGE_NAME,other panels,Printed MENESES on every other WAG panel of the meet
+WAG-SR-JUDGES,C3 FX E5,Surname,MENESSES DE AGUILA,MENESES DE AGUILA,JUDGE_NAME,other panels,
+MAG-SR-JUDGES,"VALENZUELA, César",Name,"VALENZUELA, César","VALENZUELA GOMEZ, Cesar",JUDGE_NAME,FIG books,As World Gymnastics prints him (2026 Worlds)
 MAG-SR-JUDGES,"VALENZUELA, César",Surname,VALENZUELA,VALENZUELA GOMEZ,JUDGE_NAME,FIG books,
 MAG-SR-JUDGES,"VALENZUELA, César",Given Name,César,Cesar,JUDGE_NAME,FIG books,
 MAG-SR-JUDGES,"GOULET, James",Name,"GOULET, James","GOULET JR, James",JUDGE_NAME,FIG books,"As World Gymnastics prints him (2026 Worlds, Cottbus World Cup)"
 MAG-SR-JUDGES,"GOULET, James",Surname,GOULET,GOULET JR,JUDGE_NAME,FIG books,
-MAG-SR-JUDGES,"LIN WAY, Jim",Name,"LIN WAY, Jim","LI LIN WAY, Jim Anthony",JUDGE_NAME,FIG books,"As World Gymnastics prints him (2026 Worlds)"
+MAG-SR-JUDGES,"LIN WAY, Jim",Name,"LIN WAY, Jim","LI LIN WAY, Jim Anthony",JUDGE_NAME,FIG books,As World Gymnastics prints him (2026 Worlds)
 MAG-SR-JUDGES,"LIN WAY, Jim",Surname,LIN WAY,LI LIN WAY,JUDGE_NAME,FIG books,
 MAG-SR-JUDGES,"LIN WAY, Jim",Given Name,Jim,Jim Anthony,JUDGE_NAME,FIG books,
-WAG-SR-JUDGES,RUBIO NORIEGA Elisa Veronica,Name,RUBIO NORIEGA Elisa Veronica,RUBIO NORIEGA Elisa,JUDGE_NAME,FIG books,"As World Gymnastics prints her (2026 Worlds)"
+WAG-SR-JUDGES,RUBIO NORIEGA Elisa Veronica,Name,RUBIO NORIEGA Elisa Veronica,RUBIO NORIEGA Elisa,JUDGE_NAME,FIG books,As World Gymnastics prints her (2026 Worlds)
 WAG-SR-JUDGES,RUBIO NORIEGA Elisa Veronica,Given Name,Elisa Veronica,Elisa,JUDGE_NAME,FIG books,
-MAG-JR-SCORES-QUAL-FX,404,Qualification Rank,23,24,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-FX,404,Rank,23,24,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-FX,408,Qualification Rank,30,31,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-FX,408,Rank,30,31,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-FX,411,Qualification Rank,6,7,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-FX,411,Rank,6,7,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-FX,427,Qualification Rank,34,35,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-FX,427,Rank,34,35,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-FX,443,Qualification Rank,23,25,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-FX,443,Rank,23,25,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-FX,446,Qualification Rank,30,32,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-FX,446,Rank,30,32,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-HB,403,Qualification Rank,30,31,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-HB,403,Rank,30,31,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-HB,411,Qualification Rank,16,17,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-HB,411,Rank,16,17,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-HB,414,Qualification Rank,4,5,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-HB,414,Rank,4,5,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-HB,424,Qualification Rank,8,9,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-HB,424,Rank,8,9,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-HB,426,Qualification Rank,13,14,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-HB,426,Rank,13,14,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PB,413,Qualification Rank,24,26,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PB,413,Rank,24,26,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PB,426,Qualification Rank,16,17,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PB,426,Rank,16,17,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PH,402,Qualification Rank,18,19,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PH,402,Rank,18,19,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PH,404,Qualification Rank,22,23,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PH,404,Rank,22,23,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PH,406,Qualification Rank,27,28,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PH,406,Rank,27,28,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PH,426,Qualification Rank,31,32,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PH,426,Rank,31,32,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PH,427,Qualification Rank,15,16,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PH,427,Rank,15,16,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-PH,446,Qualification Rank,18,19,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-PH,446,Rank,18,19,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-SR,415,Qualification Rank,24,27,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-SR,415,Rank,24,27,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-SR,420,Qualification Rank,24,26,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-SR,420,Rank,24,26,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-SR,421,Qualification Rank,17,18,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-SR,421,Rank,17,18,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-SR,430,Qualification Rank,38,39,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-SR,430,Rank,38,39,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-SR,434,Qualification Rank,24,25,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-SR,434,Rank,24,25,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-SR,446,Qualification Rank,33,34,TIE_BREAK,sporttech export,
-MAG-JR-SCORES-QUAL-SR,446,Rank,33,34,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,203,Qualification Rank,40,41,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,203,Rank,40,41,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,211,Qualification Rank,22,23,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,211,Rank,22,23,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,220,Qualification Rank,26,27,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,220,Rank,26,27,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,221,Qualification Rank,29,30,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,221,Rank,29,30,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,225,Qualification Rank,26,28,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,225,Rank,26,28,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,230,Qualification Rank,12,13,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,230,Rank,12,13,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,244,Qualification Rank,40,42,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,244,Rank,40,42,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,251,Qualification Rank,9,10,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,251,Rank,9,10,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-BB,258,Qualification Rank,4,5,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-BB,258,Rank,4,5,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,204,Qualification Rank,18,19,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,204,Rank,18,19,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,205,Qualification Rank,40,42,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,205,Rank,40,42,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,218,Qualification Rank,8,9,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,218,Rank,8,9,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,226,Qualification Rank,40,41,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,226,Rank,40,41,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,229,Qualification Rank,26,27,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,229,Rank,26,27,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,249,Qualification Rank,36,37,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,249,Rank,36,37,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,253,Qualification Rank,6,7,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,253,Rank,6,7,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,256,Qualification Rank,13,14,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,256,Rank,13,14,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-FX,258,Qualification Rank,23,24,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-FX,258,Rank,23,24,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-UB,221,Qualification Rank,28,29,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-UB,221,Rank,28,29,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-UB,226,Qualification Rank,44,45,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-UB,226,Rank,44,45,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-UB,229,Qualification Rank,17,18,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-UB,229,Rank,17,18,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-UB,236,Qualification Rank,36,37,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-UB,236,Rank,36,37,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SCORES-QUAL-UB,240,Qualification Rank,34,35,TIE_BREAK,sporttech export,
-WAG-JR-SCORES-QUAL-UB,240,Rank,34,35,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SUMMARY-QUAL-AA,203,Rank,32,33,TIE_BREAK,sporttech export,Book prints equal totals tied
-WAG-JR-SUMMARY-QUAL-AA,237,Rank,21,22,TIE_BREAK,sporttech export,Book prints equal totals tied
-MAG-JR-SCORES-QUAL-VT,425,Status2,,DNS,STATUS,sporttech export,Second vault started but not performed (FAILED); the two-vault list leaves him out
-WAG-JR-SCORES-QUAL-UB,207,Rank,,51,ROW,sporttech export,The book's table stops at rank 50 (p. 99); routine from the all-around report
-WAG-JR-SCORES-QUAL-UB,207,Qualification Rank,,51,ROW,sporttech export,
-WAG-JR-SCORES-QUAL-UB,205,Rank,,52,ROW,sporttech export,As bib 207
-WAG-JR-SCORES-QUAL-UB,205,Qualification Rank,,52,ROW,sporttech export,
+MAG-JR-SCORES-C1-FX,404,Qualification Rank,23,24,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-FX,404,Rank,23,24,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-FX,408,Qualification Rank,30,31,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-FX,408,Rank,30,31,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-FX,411,Qualification Rank,6,7,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-FX,411,Rank,6,7,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-FX,427,Qualification Rank,34,35,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-FX,427,Rank,34,35,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-FX,443,Qualification Rank,23,25,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-FX,443,Rank,23,25,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-FX,446,Qualification Rank,30,32,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-FX,446,Rank,30,32,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-HB,403,Qualification Rank,30,31,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-HB,403,Rank,30,31,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-HB,411,Qualification Rank,16,17,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-HB,411,Rank,16,17,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-HB,414,Qualification Rank,4,5,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-HB,414,Rank,4,5,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-HB,424,Qualification Rank,8,9,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-HB,424,Rank,8,9,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-HB,426,Qualification Rank,13,14,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-HB,426,Rank,13,14,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PB,413,Qualification Rank,24,26,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PB,413,Rank,24,26,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PB,426,Qualification Rank,16,17,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PB,426,Rank,16,17,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PH,402,Qualification Rank,18,19,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PH,402,Rank,18,19,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PH,404,Qualification Rank,22,23,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PH,404,Rank,22,23,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PH,406,Qualification Rank,27,28,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PH,406,Rank,27,28,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PH,426,Qualification Rank,31,32,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PH,426,Rank,31,32,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PH,427,Qualification Rank,15,16,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PH,427,Rank,15,16,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-PH,446,Qualification Rank,18,19,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-PH,446,Rank,18,19,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-SR,415,Qualification Rank,24,27,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-SR,415,Rank,24,27,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-SR,420,Qualification Rank,24,26,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-SR,420,Rank,24,26,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-SR,421,Qualification Rank,17,18,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-SR,421,Rank,17,18,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-SR,430,Qualification Rank,38,39,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-SR,430,Rank,38,39,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-SR,434,Qualification Rank,24,25,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-SR,434,Rank,24,25,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-SR,446,Qualification Rank,33,34,TIE_BREAK,sporttech export,
+MAG-JR-SCORES-C1-SR,446,Rank,33,34,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,203,Qualification Rank,40,41,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,203,Rank,40,41,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,211,Qualification Rank,22,23,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,211,Rank,22,23,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,220,Qualification Rank,26,27,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,220,Rank,26,27,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,221,Qualification Rank,29,30,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,221,Rank,29,30,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,225,Qualification Rank,26,28,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,225,Rank,26,28,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,230,Qualification Rank,12,13,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,230,Rank,12,13,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,244,Qualification Rank,40,42,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,244,Rank,40,42,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,251,Qualification Rank,9,10,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,251,Rank,9,10,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-BB,258,Qualification Rank,4,5,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-BB,258,Rank,4,5,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,204,Qualification Rank,18,19,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,204,Rank,18,19,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,205,Qualification Rank,40,42,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,205,Rank,40,42,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,218,Qualification Rank,8,9,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,218,Rank,8,9,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,226,Qualification Rank,40,41,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,226,Rank,40,41,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,229,Qualification Rank,26,27,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,229,Rank,26,27,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,249,Qualification Rank,36,37,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,249,Rank,36,37,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,253,Qualification Rank,6,7,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,253,Rank,6,7,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,256,Qualification Rank,13,14,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,256,Rank,13,14,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-FX,258,Qualification Rank,23,24,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-FX,258,Rank,23,24,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-UB,221,Qualification Rank,28,29,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-UB,221,Rank,28,29,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-UB,226,Qualification Rank,44,45,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-UB,226,Rank,44,45,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-UB,229,Qualification Rank,17,18,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-UB,229,Rank,17,18,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-UB,236,Qualification Rank,36,37,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-UB,236,Rank,36,37,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-SCORES-C1-UB,240,Qualification Rank,34,35,TIE_BREAK,sporttech export,
+WAG-JR-SCORES-C1-UB,240,Rank,34,35,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-RANKING-FINAL-AA,203,Rank,32,33,TIE_BREAK,sporttech export,Book prints equal totals tied
+WAG-JR-RANKING-FINAL-AA,237,Rank,21,22,TIE_BREAK,sporttech export,Book prints equal totals tied
+MAG-JR-SCORES-C1-VT,425,Status2,,DNS,STATUS,sporttech export,Second vault started but not performed (FAILED); the two-vault list leaves him out
+WAG-JR-SCORES-C1-UB,207,Rank,,51,ROW,sporttech export,The book's table stops at rank 50 (p. 99); routine from the all-around report
+WAG-JR-SCORES-C1-UB,207,Qualification Rank,,51,ROW,sporttech export,
+WAG-JR-SCORES-C1-UB,205,Rank,,52,ROW,sporttech export,As bib 207
+WAG-JR-SCORES-C1-UB,205,Qualification Rank,,52,ROW,sporttech export,
 MAG-JR-PARTICIPANTS,416,FIG License,,62757,LICENCE,FIG athlete database,"Printed ""En tramite"" (pending)"
 MAG-JR-PARTICIPANTS,430,FIG License,,70320,LICENCE,FIG athlete database,"Printed ""En tramite"" (pending)"
-MAG-JR-JUDGES,EVENT FX T,Name,"OBERGOZO, Gianmarco","ORBEGOZO, Gianmarco",JUDGE_NAME,other panels,Printed ORBEGOZO in qualification and at the seniors
-MAG-JR-JUDGES,EVENT FX T,Surname,OBERGOZO,ORBEGOZO,JUDGE_NAME,other panels,
+MAG-JR-JUDGES,C3 FX T,Name,"OBERGOZO, Gianmarco","ORBEGOZO, Gianmarco",JUDGE_NAME,other panels,Printed ORBEGOZO in qualification and at the seniors
+MAG-JR-JUDGES,C3 FX T,Surname,OBERGOZO,ORBEGOZO,JUDGE_NAME,other panels,
 MAG-JR-JUDGES,"VALENZUELA, César",Name,"VALENZUELA, César","VALENZUELA GOMEZ, Cesar",JUDGE_NAME,FIG books,As World Gymnastics prints him (2026 Worlds)
 MAG-JR-JUDGES,"VALENZUELA, César",Surname,VALENZUELA,VALENZUELA GOMEZ,JUDGE_NAME,FIG books,
 MAG-JR-JUDGES,"VALENZUELA, César",Given Name,César,Cesar,JUDGE_NAME,FIG books,

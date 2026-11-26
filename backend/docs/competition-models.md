@@ -12,7 +12,7 @@ it before the model change. The rules settled here move into
 | 1 | Schema and domain: `Competition`, `Ranking`, `Team`, `TeamResultScore`, rank status; data rebuilt by re-importing | Done ([data-model.md](data-model.md)) |
 | 2 | Import file standard: `RANKING-*`, `C1`–`C4`, `Purpose`, `Rank Status`, format columns, `EventFormat`; the importer reads only the new files, and `convert_file_standard.py` makes the mechanical renames. The `Team` column moved to step 6 | Done ([import-file-model.md](import-file-model.md)) |
 | 3 | Reshape the existing files: formats in `EVENT.csv`, `data/` converted, then `reshape_2026_files.py`: title-deciding `RANKING-QUAL` → `RANKING-FINAL` of `C1`, a rank status for every blank rank, Asian Championships' qualifying rankings dropped (the whole field in the final ranking); Europeans MAG JR all-around final ranking parsed. `CORRECTIONS.csv` keys move with the parsers in step 4 | Done |
-| 4 | Parsers and the parsing doc | |
+| 4 | Parsers and the parsing doc: every parser writes the standard itself (`common.Output.ranking` names ranking files and sets purposes and rank statuses from the format), reproducing `data/` byte for byte; `CORRECTIONS.csv` keys converted; the step 2–3 scripts retired | Done ([instructions-results-parsing.md](instructions-results-parsing.md)) |
 | 5 | API and front end aligned with the model | |
 | 6 | Youth Olympic Games, mixed team included | |
 

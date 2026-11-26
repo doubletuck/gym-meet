@@ -5,14 +5,14 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_apparatus_world_cup_baku.py \\
         data/2026/2026-APPARATUS-WORLD-CUP-BAKU/17935-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS, JUDGES and SCORES-{QUAL,EVENT}-<APP>, and an IMPORT.json, per discipline next
+Writes PARTICIPANTS, JUDGES and SCORES-{C1,C3}-<APP>, and an IMPORT.json, per discipline next
 to the PDF, reading event metadata from the EVENT.csv already there. Exits non-zero if any check
 fails (docs/instructions-results-parsing.md §3; this source format is §5.7).
 
 The book is the organizer's (Microplus timing) print of FIG-style reports, the same family as the
 Mediterranean Games book (§5.6): footer codes like GARM1APFX----...QUAL..._C73I, internal codes on
 the entry list (MAG_SEN_000269) and List Of Qualifiers (_000291). An apparatus competition: each
-apparatus's qualification is its own session, then the finals; no team or all-around round. Every
+apparatus's qualification is its own competition, then the finals; no team or all-around round. Every
 SCORES file comes from a "Results By Apparatus" table; the start lists, tie-break reports, List Of
 Qualifiers and entry counts are cross-checks.
 """
@@ -212,7 +212,7 @@ def judges(disc):
         if not sur or not giv:
             err(f'judges {disc}: name split {name!r}')
         rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR',
-                     'Event Start Date': ev['Start Date'], 'Round': rnd, 'Apparatus': app, 'Function': fn,
+                     'Event Start Date': ev['Start Date'], 'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': fn,
                      'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': noc})
     for rnd in ('QUAL', 'EVENT'):
         idx = find(disc, 'Judges Assignment', rnd)
@@ -390,7 +390,7 @@ def double_table(idx, ctx):
 
 def meta(disc, rnd, app):
     return {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-            'Session Start Date': session_date(disc, rnd, app), 'Round': rnd, 'Part': '', 'Apparatus': app}
+            'Competition Start Date': session_date(disc, rnd, app), 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app}
 
 def ident(disc, rnd, app, r):
     COMPETED[disc].add(r['Bib'])
@@ -424,7 +424,7 @@ def app_results(disc, rnd, app):
             for r in double:
                 rows.append(ident(disc, rnd, app, r) | vault_cols(1, r['v1']) | vault_cols(2, r['v2'])
                             | two_vault_extra(r))
-            out.csv(f'{PREFIX[disc]}-SCORES-EVENT-VT.csv', VAULT_HEADER[False], rows)
+            out.csv(f'{PREFIX[disc]}-SCORES-C3-VT.csv', VAULT_HEADER[False], rows)
             return rows
         # Qualification: the vault 1 list ranks the field on the first vault, the two-vault list
         # on the vault score (§4.5); every vaulter is on both
@@ -442,7 +442,7 @@ def app_results(disc, rnd, app):
                 err(f'{ctx} bib {s["Bib"]}: vault 1 differs between lists: {v1} vs {r["v1"]}')
             rows.append(ident(disc, rnd, app, s) | vault_cols(1, v1) | vault_cols(2, r['v2']) | two_vault_extra(r)
                         | {'Qualification': r['Q'], 'Qualification Rank': r['Rank']})
-        out.csv(f'{PREFIX[disc]}-SCORES-QUAL-VT.csv', VAULT_HEADER[True], rows)
+        out.csv(f'{PREFIX[disc]}-SCORES-C1-VT.csv', VAULT_HEADER[True], rows)
         return rows
     for r in single_table(idx, ctx):
         RANKED[(disc, rnd, app)][r['Bib']] = (r['Rank'], r['Total'])
@@ -452,7 +452,7 @@ def app_results(disc, rnd, app):
         if qual:
             row |= {'Qualification': r['Q'], 'Qualification Rank': r['Rank']}
         rows.append(row)
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(False, qual), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(False, qual), rows)
     return rows
 
 # ---------------------------------------------------------------- cross-checks

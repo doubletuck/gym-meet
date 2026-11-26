@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_world_challenge_cup_tashkent.py \\
         data/2026/2026-WORLD-CHALLENGE-CUP-TASHKENT/18291-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS / JUDGES / SCORES-QUAL-<APP> / SCORES-EVENT-<APP> CSVs and an IMPORT.json
+Writes PARTICIPANTS / JUDGES / SCORES-C1-<APP> / SCORES-C3-<APP> CSVs and an IMPORT.json
 per discipline next to the PDF, reading event metadata from the EVENT.csv already there and
 applying the event's CORRECTIONS.csv. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.18).
@@ -436,7 +436,7 @@ def results(disc, rnd, app):
         if qual:
             COMPETED[(disc, app)].add(r['Bib'])
         row = {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-               'Session Start Date': DATES[(disc, rnd, app)], 'Round': rnd, 'Part': '', 'Apparatus': app,
+               'Competition Start Date': DATES[(disc, rnd, app)], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                'Rank': r['Rank'], 'Bib': r['Bib'], 'Name': p['Name'], 'NOC Code': p['NOC Code']}
         c = f'{ctx} bib {r["Bib"]}'
         if vault:
@@ -463,7 +463,7 @@ def results(disc, rnd, app):
         COMPETED[(disc, app)].add(b)
         blank = dict(DNS, Status='')
         row = {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-               'Session Start Date': DATES[(disc, rnd, app)], 'Round': rnd, 'Part': '', 'Apparatus': app,
+               'Competition Start Date': DATES[(disc, rnd, app)], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                'Rank': '', 'Bib': b, 'Name': p['Name'], 'NOC Code': p['NOC Code']}
         if vault:
             row |= attempt_columns(1, blank) | attempt_columns(2, blank) | {'Combined Bonus': '', 'Total': ''}
@@ -474,7 +474,7 @@ def results(disc, rnd, app):
     if ranked != list(range(1, len(ranked) + 1)):
         # Every tie in this book is broken; a shared rank would need a look
         err(f'{ctx}: ranks {ranked}')
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(vault, qual), written)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(vault, qual), written)
     # The rows as written: the rings final's D and E come from corrections
     check_written(ctx, written, app)
     checks.check_rank_order(ctx, written)
@@ -624,7 +624,7 @@ def judge_row(disc, rnd, app, function, surname, given, noc):
     if not surname or not given:
         err(f'{disc} {rnd} judges: {surname!r} {given!r}')
     return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-            'Round': rnd, 'Apparatus': app, 'Function': function, 'Name': f'{surname} {given}', 'Surname': surname,
+            'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': function, 'Name': f'{surname} {given}', 'Surname': surname,
             'Given Name': given, 'NOC Code': noc}
 
 MAG_JUDGE = re.compile(r'(?<!\S)(D[12]|E[1-7]|T|L\d?|R\d)\s+([A-Z][A-Z\'-]*(?: [A-Z][A-Z\'-]*)*)\s{2,}(\S.*?)\s{2,}([A-Z]{3})(?=\s|$)')

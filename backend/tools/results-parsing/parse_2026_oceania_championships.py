@@ -6,7 +6,7 @@ Usage (needs poppler's pdftotext on PATH):
         data/2026/2026-OCEANIA-CHAMPIONSHIPS/18530-ResultsbookMedia.pdf \\
         data/2026/2026-OCEANIA-CHAMPIONSHIPS/18531-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS, JUDGES, SCORES-AA-*, SUMMARY-FINAL-AA, SUMMARY-FINAL-TEAM and an IMPORT.json for
+Writes PARTICIPANTS, JUDGES, SCORES-C1-*, RANKING-FINAL-AA, RANKING-FINAL-TEAM and an IMPORT.json for
 MAG and WAG, SR and JR, next to the PDFs, reading event metadata from the EVENT.csv already there.
 Exits non-zero if any check fails (docs/instructions-results-parsing.md §3; this source format is
 §5.17).
@@ -17,8 +17,7 @@ discipline a cover, the Competition Schedule, entry counts and medallists (text)
 results. The scans were transcribed by eye into `transcriptions/2026-OCEANIA-CHAMPIONSHIPS/` (format
 in the README there), along with the team line-ups from the Elevien results site, which the books
 don't print. One competition on 9 May decides both titles, which the books call the All-around
-Final and the Team Final: it is written as the all-around final's session, and the team standings
-rank its routines (`Scores Round` AA).
+Final and the Team Final: it is Competition I (C1), and both final rankings rank its routines (§4.9).
 """
 import os, re, sys
 from decimal import Decimal
@@ -49,7 +48,7 @@ DIVISIONS = [(disc, age) for age in ('SR', 'JR') if age in PAGES for disc in ('M
 PREFIX = {div: f'{EVENT_PREFIX}-{div[0]}-{div[1]}' for div in DIVISIONS}
 corrections = common.Corrections(OUT, EVENT_PREFIX, [f'{d}-{a}' for d, a in DIVISIONS], err)
 out = common.Output(OUT, corrections)
-# The all-around report's column order (icons), and the SUMMARY column order.
+# The all-around report's column order (icons), and the RANKING column order.
 APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
 SUMMARY_APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
 COUNTRY = {'Australia': 'AUS', 'New Zealand': 'NZL'}
@@ -343,7 +342,7 @@ def judges(div):
         else:
             surname, given = printed.split(' ', 1)
         rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': div[1],
-                     'Event Start Date': ev['Start Date'], 'Round': 'AA', 'Apparatus': app,
+                     'Event Start Date': ev['Start Date'], 'Competition': 'C1', 'Apparatus': app,
                      'Function': FUNCTION[function], 'Name': printed, 'Surname': surname, 'Given Name': given,
                      'NOC Code': m[1] or m[2] or m[3] or ''})
     for app in APPS[disc]:
@@ -364,7 +363,7 @@ def score_rows(div, app, athletes, people, roles):
         person = people[a['bib']]
         status = 'COMPLETED' if r else ('DNS' if app in a['routines'] else '')
         rows.append({'Event Name': ev['Title'], 'Discipline': div[0], 'Age Category': div[1],
-                     'Session Start Date': SESSION_DATE, 'Round': 'AA', 'Part': '', 'Apparatus': app,
+                     'Competition Start Date': SESSION_DATE, 'Competition': 'C1', 'Part': '', 'Apparatus': app,
                      'Rank': '', 'Bib': a['bib'], 'Name': person['Name'], 'NOC Code': person['NOC Code'],
                      'Status': status, 'D': r['D'] if r else '', 'E': r['E'] if r else '',
                      'B': r['S'] if r and D(r['S']) else '',
@@ -398,7 +397,7 @@ for div in DIVISIONS:
 
     for app in APPS[disc]:
         rows = score_rows(div, app, athletes, people, roles)
-        out.csv(f'{prefix}-SCORES-AA-{app}.csv', common.score_header(vault=False, qual=False, team_role=True),
+        out.csv(f'{prefix}-SCORES-C1-{app}.csv', common.score_header(vault=False, qual=False, team_role=True),
                 rows)
         for r in rows:
             if r['Status'] not in ('COMPLETED', 'DNS'):
@@ -410,20 +409,21 @@ for div in DIVISIONS:
     aa_rows = []
     for a in athletes:
         person = people[a['bib']]
-        aa_rows.append({**meta, 'Round': 'AA', 'Rank': a['rank'], 'Bib': a['bib'], 'Name': person['Name'],
+        aa_rows.append({**meta, 'Competition': 'C1', 'Rank': a['rank'], 'Bib': a['bib'], 'Name': person['Name'],
                         'NOC Code': person['NOC Code'], 'SJ Penalty': '', 'Total': a['total'],
                         **{f'{app} Total': (a['routines'].get(app) or {}).get('Total', '')
                            for app in SUMMARY_APPS[disc]}})
-    out.csv(f'{prefix}-SUMMARY-FINAL-AA.csv',
-            ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib',
-             'Name', 'NOC Code'] + totals + ['SJ Penalty', 'Total'], aa_rows)
-    # The books print no team apparatus totals: the sums of the counting scores (team_scores)
-    out.csv(f'{prefix}-SUMMARY-FINAL-TEAM.csv',
-            ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank',
-             'NOC Code'] + totals + ['SJ Penalty', 'Total', 'Scores Round'],
-            [{**meta, 'Round': 'TEAM', 'Rank': rank, 'NOC Code': noc,
-              **{f'{app} Total': f'{team_totals[noc][app]:.3f}' for app in SUMMARY_APPS[disc]},
-              'SJ Penalty': '', 'Total': total, 'Scores Round': 'AA'} for rank, noc, total in team_rows])
+    out.ranking(prefix, 'AA',
+                ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib',
+                 'Name', 'NOC Code'] + totals + ['SJ Penalty', 'Total'], aa_rows, ev)
+    # The one competition decided the team title too. The books print no team apparatus totals: the sums
+    # of the counting scores (team_scores)
+    out.ranking(prefix, 'TEAM',
+                ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank',
+                 'NOC Code'] + totals + ['SJ Penalty', 'Total'],
+                [{**meta, 'Competition': 'C1', 'Rank': rank, 'NOC Code': noc,
+                  **{f'{app} Total': f'{team_totals[noc][app]:.3f}' for app in SUMMARY_APPS[disc]},
+                  'SJ Penalty': '', 'Total': total} for rank, noc, total in team_rows], ev)
 
     out.csv(f'{prefix}-JUDGES.csv', common.JUDGES, judges(div))
     out.manifest(prefix, ev)

@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_world_challenge_cup_varna.py \\
         data/2026/2026-WORLD-CHALLENGE-CUP-VARNA/18226-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS / JUDGES / SCORES-QUAL-<APP> / SCORES-EVENT-<APP> CSVs and an IMPORT.json
+Writes PARTICIPANTS / JUDGES / SCORES-C1-<APP> / SCORES-C3-<APP> CSVs and an IMPORT.json
 per discipline next to the PDF, reading event metadata from the EVENT.csv already there and
 applying the event's CORRECTIONS.csv. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.11).
@@ -373,7 +373,7 @@ def results(disc, rnd, app):
         if qual:
             (DNS if r['dns'] else COMPETED)[(disc, app)].add(p['Bib Number'])
         row = {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-               'Session Start Date': DATES[rnd][DAY[disc][app]], 'Round': rnd, 'Part': '', 'Apparatus': app,
+               'Competition Start Date': DATES[rnd][DAY[disc][app]], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                'Rank': r['Rank'], 'Bib': r['Bib'], 'Name': p['Name'], 'NOC Code': p['NOC Code']}
         if r['dns']:
             if r['Rank'] or r['lines'] != [[]]:
@@ -405,7 +405,7 @@ def results(disc, rnd, app):
         written.append(row)
     checks.check_rank_order(ctx, written)
     check_ties(ctx, written, read_ties(disc, rnd, app), app)
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(app == 'VT', qual), written)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(app == 'VT', qual), written)
     check_written(ctx, written, app)
     for row in written:
         if PARTICIPANTS[disc][row['Bib']]['Name'] != row['Name']:
@@ -507,7 +507,7 @@ def judges(disc, rnd):
     is `T1`, `T2`."""
     ev = EVENTS[PREFIX[disc]]
     base = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-            'Round': rnd}
+            'Competition': common.COMPETITION[rnd]}
     rows, panels = [], defaultdict(list)
     for app, func, name, noc in read_transcription(f'{disc}-JUDGES-{rnd}.txt'):
         if app != '-' and app not in APPS[disc]:

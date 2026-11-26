@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_apparatus_world_cup_cottbus.py \\
         data/2026/2026-APPARATUS-WORLD-CUP-COTTBUS/2026-APPARATUS-WORLD-CUP-COTTBUS-ALL-RESULTS.pdf
 
-Writes PARTICIPANTS / JUDGES / SCORES-QUAL-<APP> / SCORES-EVENT-<APP> CSVs and an IMPORT.json
+Writes PARTICIPANTS / JUDGES / SCORES-C1-<APP> / SCORES-C3-<APP> CSVs and an IMPORT.json
 per discipline next to the PDF, reading event metadata from the EVENT.csv already there.
 Exits non-zero if any self-check fails (docs/instructions-results-parsing.md §3; this source format is §5.3).
 
@@ -259,7 +259,7 @@ def level(disc, qual_text, starts):
             date = DATES[rnd][DAY[disc][app]]
             out = []
             for r in rows:
-                row = base | {'Session Start Date': date, 'Round': rnd, 'Part': '', 'Apparatus': app,
+                row = base | {'Competition Start Date': date, 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                               'Rank': r['Rank'], 'Bib': r['Bib'], 'Name': by_bib[r['Bib']]['Name'],
                               'NOC Code': r['NOC']}
                 if vault:
@@ -277,7 +277,7 @@ def level(disc, qual_text, starts):
                     # a World Cup has one qualification ranking per apparatus, vault included
                     row |= {'Qualification': r['Q'], 'Qualification Rank': r['Rank']}
                 out.append(row)
-            out_files.csv(f'{prefix}-SCORES-{rnd}-{app}.csv', common.score_header(vault, rnd == 'QUAL'), out)
+            out_files.csv(f'{prefix}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(vault, rnd == 'QUAL'), out)
 
     # ---- judges
     rows = []
@@ -287,7 +287,7 @@ def level(disc, qual_text, starts):
             err(f'{disc} {rnd} judges: panels for {sorted(apps)}')
         for app, fn, name, noc in panel:
             given, surname = (x.strip() for x in name.split(',', 1))
-            rows.append(base | {'Event Start Date': ev['Start Date'], 'Round': rnd, 'Apparatus': app,
+            rows.append(base | {'Event Start Date': ev['Start Date'], 'Competition': common.COMPETITION[rnd], 'Apparatus': app,
                                 'Function': FUNCTION.get(fn, fn), 'Name': name, 'Surname': surname,
                                 'Given Name': given, 'NOC Code': noc})
     out_files.csv(f'{prefix}-JUDGES.csv', common.JUDGES, rows)

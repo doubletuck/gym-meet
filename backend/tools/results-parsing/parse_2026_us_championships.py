@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_us_championships.py \\
         data/2026/2026-US-CHAMPIONSHIPS/2026-US-CHAMPIONSHIPS-ALL-RESULTS.pdf
 
-Writes PARTICIPANTS / SCORES-AA-<APP> / SUMMARY-FINAL-AA / SUMMARY-FINAL-<APP> CSVs and an
+Writes PARTICIPANTS / SCORES-C1-<APP> / RANKING-FINAL-AA / RANKING-FINAL-<APP> CSVs and an
 IMPORT.json per level next to the PDF, reading event metadata from the EVENT.csv already
 there. Exits non-zero if any self-check fails (docs/instructions-results-parsing.md §3; this source format is §5.2).
 
@@ -349,9 +349,9 @@ def level(disc, age):
 
     def meta(part, app):
         return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': age,
-                'Session Start Date': SESSION_DATE[(disc, age, part)], 'Round': 'AA', 'Part': part, 'Apparatus': app}
+                'Competition Start Date': SESSION_DATE[(disc, age, part)], 'Competition': 'C1', 'Part': part, 'Apparatus': app}
 
-    # ---- SCORES-AA-<APP>
+    # ---- SCORES-C1-<APP>
     for app in APPS[disc]:
         rows = []
         for part, data in ((1, d1), (2, d2)):
@@ -392,15 +392,15 @@ def level(disc, age):
             hdr = common.score_header(True, False) + [f'{c}{n}' for n in (1, 2) for c in BREAKDOWN]
         else:
             hdr = common.score_header(False, False) + BREAKDOWN
-        out_files.csv(f'{prefix}-SCORES-AA-{app}.csv', hdr, rows)
+        out_files.csv(f'{prefix}-SCORES-C1-{app}.csv', hdr, rows)
 
-    # ---- SUMMARY-FINAL-AA: per part, then the two-day combined standings (Part blank)
+    # ---- RANKING-FINAL-AA: per part, then the two-day combined standings (Part blank)
     order = ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'] if disc == 'MAG' else ['FX', 'BB', 'UB', 'VT']
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib', 'Name',
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib', 'Name',
            'NOC Code'] + [f'{a} Total' for a in order] + ['SJ Penalty', 'Total']
     rows = []
     base = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': age, 'Event Start Date': ev['Start Date'],
-            'Round': 'AA', 'NOC Code': 'USA', 'SJ Penalty': ''}
+            'Competition': 'C1', 'NOC Code': 'USA', 'SJ Penalty': ''}
     for part, data in ((1, d1), (2, d2)):
         for bib, a in sorted(data.items(), key=lambda x: int(x[0])):
             rows.append(base | {'Part': part, 'Rank': a['Rank'] if part == 1 else '', 'Bib': bib,
@@ -409,18 +409,18 @@ def level(disc, age):
     for bib, a in sorted(d2.items(), key=lambda x: int(x[1]['CombinedRank'])):
         rows.append(base | {'Part': '', 'Rank': a['CombinedRank'], 'Bib': bib, 'Name': people[bib]['Name'],
                             'Total': a['Combined']} | {f'{x} Total': '' for x in order})
-    out_files.csv(f'{prefix}-SUMMARY-FINAL-AA.csv', hdr, rows)
+    out_files.ranking(prefix, 'AA', hdr, rows, EVENTS[prefix])
 
-    # ---- SUMMARY-FINAL-<APP>: two-day combined apparatus standings
+    # ---- RANKING-FINAL-<APP>: two-day combined apparatus standings
     for app in APPS[disc]:
-        hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Apparatus', 'Rank',
+        hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Apparatus', 'Rank',
                'Bib', 'Name', 'NOC Code', 'Part 1 Total', 'Part 2 Total', 'Total']
         rows = [base | {'Part': '', 'Apparatus': app, 'Rank': m['Rank'], 'Bib': bib, 'Name': people[bib]['Name'],
                         'Part 1 Total': m['Day'][1], 'Part 2 Total': m['Day'][2], 'Total': m['Score']}
                 for bib, m in sorted(multi[app].items(), key=lambda x: int(x[1]['Rank']))]
         for r in rows:
             r.pop('SJ Penalty')
-        out_files.csv(f'{prefix}-SUMMARY-FINAL-{app}.csv', hdr, rows)
+        out_files.ranking(prefix, app, hdr, rows, EVENTS[prefix])
 
     # ---- PARTICIPANTS in the standard shape (Club kept as a trailing reference column)
     hdr = common.PARTICIPANTS + ['Club']

@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_pan_american_championships.py \\
         data/2026/2026-PAN-AMERICAN-CHAMPIONSHIPS/18529-ResultsbookMedia-PanAms-JR.pdf
 
-Writes PARTICIPANTS, JUDGES, SCORES-QUAL-*, SCORES-EVENT-*, SUMMARY-QUAL-AA, SUMMARY-QUAL-TEAM and an
+Writes PARTICIPANTS, JUDGES, SCORES-C1-*, SCORES-C3-*, RANKING-FINAL-AA, RANKING-FINAL-TEAM (Competition I decides both titles) and an
 IMPORT.json for MAG JR and WAG JR next to the PDF, reading event metadata from the EVENT.csv already
 there. Exits non-zero if any check fails (docs/instructions-results-parsing.md §3; this source
 format is §5.4).
@@ -48,7 +48,7 @@ EVENT_START = EVENTS[PREFIX['MAG']]['Start Date']
 if any(EVENTS[p]['Title'] != EVENT_NAME or EVENTS[p]['Start Date'] != EVENT_START for p in PREFIX.values()):
     raise SystemExit('MAG and WAG rows in EVENT.csv are expected to share a title and start date')
 AGE = 'JR'
-# All-around report column order (legend), and the SUMMARY column order (import-file-model.md).
+# All-around report column order (legend), and the RANKING column order (import-file-model.md).
 APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['VT', 'UB', 'BB', 'FX']}
 SUMMARY_APPS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
 LEGEND = {'Floor': 'FX', 'Pommel Horse': 'PH', 'Rings': 'SR', 'Vault': 'VT', 'Parallel Bars': 'PB',
@@ -161,7 +161,7 @@ def judges(disc):
         if not sur or not giv:
             err(f'judges {disc}: name split {name!r}')
         rows.append({'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
-                     'Event Start Date': EVENT_START, 'Round': rnd, 'Apparatus': app, 'Function': fn,
+                     'Event Start Date': EVENT_START, 'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': fn,
                      'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': judge_noc(noc)})
     for rnd, page in REPORTS[disc]['judges'].items():
         n_rnd, block, split_at, jury = len(rows), -1, None, False
@@ -313,7 +313,7 @@ def routine_cols(g, suffix='', vault=False):
 
 def meta(disc, rnd, app, b):
     return {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE,
-            'Session Start Date': SESSION_DATE[rnd], 'Round': rnd, 'Part': '', 'Apparatus': app,
+            'Competition Start Date': SESSION_DATE[rnd], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
             'Rank': b['rank'], 'Bib': b['bib'], 'Name': PEOPLE[b['bib']]['name'], 'NOC Code': b['noc']}
 
 def same_routine(ctx, a, b):
@@ -346,19 +346,19 @@ def aa_report(disc):
     return athletes
 
 def summary_aa(disc, athletes):
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib', 'Name',
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib', 'Name',
            'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total', 'Qualification']
     rows = []
     for a in athletes:
         if all(g['kind'] == 'none' for g in a['apps'].values()):
             continue          # entered but competed on nothing (a team's fifth member)
         r = {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE, 'Event Start Date': EVENT_START,
-             'Round': 'QUAL', 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'], 'Name': PEOPLE[a['Bib']]['name'],
+             'Competition': 'C1', 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'], 'Name': PEOPLE[a['Bib']]['name'],
              'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total'], 'Qualification': ''}
         for app in SUMMARY_APPS[disc]:
             r[f'{app} Total'] = a['apps'][app].get('Total', '')
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-QUAL-AA.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'AA', hdr, rows, EVENTS[PREFIX[disc]])
 
 def team_report(disc, aa):
     first, last = REPORTS[disc]['team']
@@ -418,17 +418,17 @@ def team_report(disc, aa):
         if any(by_bib[b]['NOC'] != t['NOC'] for b in t['athletes']):
             err(f'{c}: athlete from another NOC')
     checks.check_rank_order(ctx, [dict(Rank=t['Rank'], Total=t['Total'], Bib=t['NOC']) for t in teams])
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'NOC Code'] + \
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'NOC Code'] + \
           [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total', 'Qualification']
     rows = []
     for t in teams:
         r = {'Event Name': EVENT_NAME, 'Discipline': disc, 'Age Category': AGE, 'Event Start Date': EVENT_START,
-             'Round': 'QUAL', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
+             'Competition': 'C1', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
              'Total': t['Total'], 'Qualification': ''}
         for app, total in zip(APPS[disc], t['totals']):
             r[f'{app} Total'] = total
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-QUAL-TEAM.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'TEAM', hdr, rows, EVENTS[PREFIX[disc]])
 
 # ---------------------------------------------------------------- qualification
 def qualification(mk):
@@ -480,7 +480,7 @@ def qual_app(disc, app, aa):
         err(f'{ctx}: athletes differ from the all-around report: {sorted({r["Bib"] for r in rows} ^ aa_bibs)}')
     checks.check_rank_order(ctx, rows)
     check_markers(ctx, [b for b in bs if b['rank']])
-    out.csv(f'{PREFIX[disc]}-SCORES-QUAL-{app}.csv', common.score_header(False, True), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-C1-{app}.csv', common.score_header(False, True), rows)
     return {r['Bib']: r['Qualification'] for r in rows if r['Qualification']}
 
 def qual_vault(disc, aa):
@@ -525,7 +525,7 @@ def qual_vault(disc, aa):
         rows.append(r)
     if not set(double) <= {r['Bib'] for r in rows}:
         err(f'{ctx}: two-vault athletes missing from the all-around report')
-    out.csv(f'{PREFIX[disc]}-SCORES-QUAL-VT.csv', common.score_header(True, True), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-C1-VT.csv', common.score_header(True, True), rows)
     return {r['Bib']: r['Qualification'] for r in rows if r['Qualification']}
 
 # ---------------------------------------------------------------- finals
@@ -587,7 +587,7 @@ def final(disc, app, fin):
     if len(rows) != 8:
         err(f'{ctx}: {len(rows)} finalists')
     checks.check_rank_order(ctx, rows)
-    out.csv(f'{PREFIX[disc]}-SCORES-EVENT-{app}.csv', common.score_header(vault, False), rows)
+    out.csv(f'{PREFIX[disc]}-SCORES-C3-{app}.csv', common.score_header(vault, False), rows)
 
 # ---------------------------------------------------------------- main
 for disc in ('MAG', 'WAG'):

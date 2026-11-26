@@ -1,15 +1,15 @@
 File,Key,Field,Printed,Corrected,Category,Source,Note
-MAG-SR-SCORES-EVENT-VT,76,Status2,DNS,INVALID_VAULT,STATUS,results book,"Vault 2 line printed blank (read as DNS); the result 6.037 is half of vault 1, ranked 8th, so vault 2 counted as 0.000 (agreed with the user)"
-MAG-SR-SCORES-EVENT-VT,76,Total2,,0.000,ROW,results book,"Vault 2 line printed blank; the result 6.037 is half of vault 1 (agreed with the user)"
-WAG-SR-SUMMARY-FINAL-AA,6,Rank,6,,RANK,results book,"ARG's third all-arounder: the final ranks two per NOC and leaves the others unranked; 6 is her rank over the whole field (GUTIERREZ is the final's 6th) (agreed with the user)"
-WAG-SR-SUMMARY-FINAL-AA,17,Rank,7,,RANK,results book,"BRA's third all-arounder: the final ranks two per NOC and leaves the others unranked; 7 is her rank over the whole field (agreed with the user)"
-WAG-SR-SUMMARY-FINAL-AA,26,Rank,9,,RANK,results book,"PAN's third all-arounder: the final ranks two per NOC and leaves the others unranked; 9 is her rank over the whole field (WORRING is the final's 9th) (agreed with the user)"
-WAG-SR-JUDGES,QUAL VT E2,NOC Code,ARG-B,ARG,NOC,finals judges sheet,"Printed ARG-B on the qualification sheet, ARG on the finals sheet"
-MAG-SR-JUDGES,LI LIN Jim,Name,LI LIN Jim,LI LIN WAY Jim Anthony,JUDGE_NAME,World Championships,"Written as the 2026 World Championships print him (§4.7)"
+MAG-SR-SCORES-C3-VT,76,Status2,DNS,INVALID_VAULT,STATUS,results book,"Vault 2 line printed blank (read as DNS); the result 6.037 is half of vault 1, ranked 8th, so vault 2 counted as 0.000 (agreed with the user)"
+MAG-SR-SCORES-C3-VT,76,Total2,,0.000,ROW,results book,Vault 2 line printed blank; the result 6.037 is half of vault 1 (agreed with the user)
+WAG-SR-RANKING-FINAL-AA,6,Rank,6,,RANK,results book,ARG's third all-arounder: the final ranks two per NOC and leaves the others unranked; 6 is her rank over the whole field (GUTIERREZ is the final's 6th) (agreed with the user)
+WAG-SR-RANKING-FINAL-AA,17,Rank,7,,RANK,results book,BRA's third all-arounder: the final ranks two per NOC and leaves the others unranked; 7 is her rank over the whole field (agreed with the user)
+WAG-SR-RANKING-FINAL-AA,26,Rank,9,,RANK,results book,PAN's third all-arounder: the final ranks two per NOC and leaves the others unranked; 9 is her rank over the whole field (WORRING is the final's 9th) (agreed with the user)
+WAG-SR-JUDGES,C1 VT E2,NOC Code,ARG-B,ARG,NOC,finals judges sheet,"Printed ARG-B on the qualification sheet, ARG on the finals sheet"
+MAG-SR-JUDGES,LI LIN Jim,Name,LI LIN Jim,LI LIN WAY Jim Anthony,JUDGE_NAME,World Championships,Written as the 2026 World Championships print him (§4.7)
 MAG-SR-JUDGES,LI LIN Jim,Surname,LI LIN,LI LIN WAY,JUDGE_NAME,World Championships,As above
 MAG-SR-JUDGES,LI LIN Jim,Given Name,Jim,Jim Anthony,JUDGE_NAME,World Championships,As above
-MAG-SR-JUDGES,STAMATTI Fabian,Name,STAMATTI Fabian,STAMATTI Fabian Audite,JUDGE_NAME,Osijek World Cup,"Written as the 2026 Osijek Apparatus World Cup prints him (§4.7)"
+MAG-SR-JUDGES,STAMATTI Fabian,Name,STAMATTI Fabian,STAMATTI Fabian Audite,JUDGE_NAME,Osijek World Cup,Written as the 2026 Osijek Apparatus World Cup prints him (§4.7)
 MAG-SR-JUDGES,STAMATTI Fabian,Given Name,Fabian,Fabian Audite,JUDGE_NAME,Osijek World Cup,As above
-WAG-SR-JUDGES,ALVARADO Lisseth,Name,ALVARADO Lisseth,ALVARADO CLEMENTE Lisseth Amelia,JUDGE_NAME,World Championships,"Written as the 2026 World Championships print her (§4.7)"
+WAG-SR-JUDGES,ALVARADO Lisseth,Name,ALVARADO Lisseth,ALVARADO CLEMENTE Lisseth Amelia,JUDGE_NAME,World Championships,Written as the 2026 World Championships print her (§4.7)
 WAG-SR-JUDGES,ALVARADO Lisseth,Surname,ALVARADO,ALVARADO CLEMENTE,JUDGE_NAME,World Championships,As above
 WAG-SR-JUDGES,ALVARADO Lisseth,Given Name,Lisseth,Lisseth Amelia,JUDGE_NAME,World Championships,As above

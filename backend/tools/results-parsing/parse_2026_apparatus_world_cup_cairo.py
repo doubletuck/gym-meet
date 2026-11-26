@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_apparatus_world_cup_cairo.py \\
         data/2026/2026-APPARATUS-WORLD-CUP-CAIRO/17939-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS / JUDGES / SCORES-QUAL-<APP> / SCORES-EVENT-<APP> CSVs and an IMPORT.json
+Writes PARTICIPANTS / JUDGES / SCORES-C1-<APP> / SCORES-C3-<APP> CSVs and an IMPORT.json
 per discipline next to the PDF, reading event metadata from the EVENT.csv already there and
 applying the event's CORRECTIONS.csv. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.9).
@@ -351,7 +351,7 @@ def results(disc, rnd, app):
         if qual:
             COMPETED[(disc, app)].add(r['Bib'])
         row = {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-               'Session Start Date': DATES[rnd][DAY[disc][app]], 'Round': rnd, 'Part': '', 'Apparatus': app,
+               'Competition Start Date': DATES[rnd][DAY[disc][app]], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                'Rank': r['Rank'], 'Bib': r['Bib'], 'Name': p['Name'], 'NOC Code': p['NOC Code']}
         if app == 'VT':
             row |= vault_attempt(1, r['v1'], wag) | vault_attempt(2, r['v2'], wag)
@@ -367,7 +367,7 @@ def results(disc, rnd, app):
         reserves = [w for w in written if w['Qualification'] == 'R']
         for i, w in enumerate(reserves, 1):
             w['Qualification'] = f'R{i}'
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(app == 'VT', qual), written)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(app == 'VT', qual), written)
     return written
 
 # ---------------------------------------------------------------- qualifiers, finals, start lists
@@ -479,7 +479,7 @@ def judges(disc, rnd):
     text = page(JUDGES_PAGE[(disc, rnd)])
     ev = EVENTS[PREFIX[disc]]
     base = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-            'Round': rnd}
+            'Competition': common.COMPETITION[rnd]}
     m = re.search(r'^\s*(?:TD\s+)?([A-Z][a-z]+) ([A-Za-z]+)\s+(FIG|WGYM)\b', text, re.M)
     given, surname = m.group(1), m.group(2).upper()
     rows = [base | {'Apparatus': '', 'Function': 'TD', 'Name': f'{m.group(1)} {m.group(2)}', 'Surname': surname,

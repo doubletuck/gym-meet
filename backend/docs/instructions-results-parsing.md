@@ -17,15 +17,6 @@ entities are in [`data-model.md`](data-model.md).
   section below (§4 conventions, §5 the source format) rather than appending a
   history.
 
-> **In transition (competition-models.md, rollout).** The files under `data/2026` follow the
-> current standard in `import-file-model.md` (`SCORES-C1`–`C4`, `RANKING-*`, `Purpose`, `Rank
-> Status`, the event formats), and only that standard imports. The parsers still write the
-> previous one (`SCORES-QUAL/AA/EVENT/TEAM`, `SUMMARY-*`, `Round`, `Scores Round`), as does
-> this guide's wording (§4.9 especially), until step 4 moves them over; in the meantime, a
-> parser's output is brought to the standard with `convert_file_standard.py` and then
-> `reshape_2026_files.py`, which also apply the step 3 decisions (titles decided in Competition
-> I are final rankings; every blank rank states its Rank Status). `CORRECTIONS.csv` keys still
-> name the files and codes the parsers write.
 
 ## 1. Workflow
 
@@ -288,6 +279,14 @@ decisions that come up while parsing.
   a Team Final with no per-apparatus ranks).
 - The two-per-country rule never changes a rank; it shows as `NR`.
 
+- **Rank Status: why a ranking row has no rank** (`RANKING-*` only; import-file-model.md).
+  `out.ranking` sets it by rule, in order: an hors concours entry (`HORS_CONCOURS`; a team all of
+  whose entries are); marked `NR` (`NOC_LIMIT`); a partial all-around, an entry who started no
+  apparatus included, or a team short of an apparatus total (`INCOMPLETE`); a split competition's
+  part row (`UNPLACED`: US day-2 rows); and in a final ranking that prints a top (two per country),
+  `NOC_LIMIT` when two compatriots are ranked and the total beats the lowest ranked total, otherwise
+  `UNPLACED`. A row no rule covers stops the parser: bring it to the user.
+
 ### 4.3 Status
 
 - `COMPLETED`, `DNS` or `INVALID_VAULT`, always written.
@@ -326,7 +325,7 @@ decisions that come up while parsing.
   missing a whole apparatus prints a blank column and `DNF` total.
 - **A team penalty** printed beside the apparatus totals (Senior Pan Americans
   MAG CUB: `-1.000`, team score 190.728 against apparatus totals of 191.728)
-  goes in the team summary's `SJ Penalty`; `Total` stays the printed score.
+  goes in the team ranking's `SJ Penalty`; `Total` stays the printed score.
   The Central American and Caribbean Games print `* Penalty -1.0` under the team (MAG VEN, WAG GUA:
   a wrong start order on one apparatus), deducted from the team score but not from the apparatus
   total; written as `SJ Penalty` `-1.0`.
@@ -350,16 +349,16 @@ decisions that come up while parsing.
   Championships' (no `DNF` printed), with the printed rank or none: that book ranks WAG GODWIN, with
   no floor, 6th, and leaves the athletes with fewer apparatus unranked.
 
-### 4.4 Session dates
+### 4.4 Competition dates
 
 - **From the Competition Schedule pages, never from a report footer's
   timestamp.** Footers are print times: Europeans WAG qualification was
   stamped 13 Aug but competed 12 Aug.
 - **Read the schedule's time blocks, not just its labels.** A line naming
   "Junior Team Final" with the same time block as the qualification
-  subdivisions is a relabel, not a separate session; a round only gets files
+  subdivisions is a relabel, not a separate competition; a competition only gets files
   if the PDF has its own results report.
-- **A round over several days** (Worlds qualification) uses its first day.
+- **A competition over several days** (Worlds qualification) uses its first day.
 - **Exception — splitting known days:** when the schedule gives two days for
   a set of finals but not which apparatus is on which, the per-apparatus print
   timestamps (tightly clustered within one of the known days) decide it
@@ -402,7 +401,7 @@ decisions that come up while parsing.
   (`Combined Bonus`) — printed as a `*` on the total (Europeans), its own
   `Vault Bonus` column (Worlds), on the second vault's line but excluded from
   that vault's score (Cottbus), or as `Bns` (US).
-- **Which shape a file uses** depends on the round and source — check the page:
+- **Which shape a file uses** depends on the competition and source — check the page:
   Team and AA finals are single-attempt at FIG events; US AA vault is
   double-attempt where a vault event is held; at a World Cup every vaulter
   does two vaults in qualification — Cottbus, Antalya, Cairo, Osijek, Varna, Koper, Szombathely, Paris and Tashkent publish a single ranking,
@@ -415,7 +414,7 @@ decisions that come up while parsing.
 
 - `Q`, `R1`–`R4`, `NR` as printed (Worlds' AA qualification has four
   reserves).
-- `Qualification Rank` on every `QUAL` row: the double-vault rank for vault,
+- `Qualification Rank` on every `C1` row (where Competition I qualifies for apparatus finals): the double-vault rank for vault,
   equal to `Rank` elsewhere. sporttech.io ranks every vaulter (a single vault
   counts half) but lists only the two-vault athletes, so its ranks skip the
   one-vault athletes between them (Senior Pan Americans MAG: 13, then 17);
@@ -557,44 +556,45 @@ finals line judges lent by the women's panel print `WAG` as their federation
 
 ### 4.9 Competition structures
 
-Map the meet onto `Session`s (`data-model.md` §3) before parsing.
+Map the meet onto competitions and rankings (`data-model.md`; the design and every meet so far:
+`competition-models.md`) before parsing, and settle its **format** with the user: for the team,
+all-around and apparatus titles, `C1` (Competition I decided it), `FINAL` (its own final did) or
+`NONE` (not held), written in `EVENT.csv` (`Team Format`, `AA Format`, `Apparatus Format`).
 
-**Which round holds the routines.** A round is `QUAL` only if it qualifies athletes or teams to a
-later round of the same meet: a team, all-around or apparatus final, so `Q`/`R`/`NR` mean something
-on the site and the session is named "Qualification". A meet's only round, with nothing after it to
-qualify for, is the final it decides: its routines go in `AA` (vault single-attempt, as at any
-all-around final), and a team title decided by the same routines is a `TEAM` session ranking them
-(`Scores Round` `AA`), so the site shows an "All-Around Final" and a "Team Final". This holds
-however the book labels the round. Qualification to another event (the 2026 Oceania Championships'
-fifth athletes competing for World Championships places) doesn't make a round `QUAL`; nothing in the
-meet records it. So:
+**Which competition holds the routines.** `C1` is Competition I, every entrant's, whatever the book
+calls it ("Qualification", "Final", "Team Final and Individual Qualification"); `C2`, `C3` and `C4` are
+the all-around, apparatus and team finals, each only where it has routines of its own. A meet's only
+competition is `C1` (Oceania, US Championships). Write `common.COMPETITION[<the book's report name>]`,
+or `C1` for such a meet.
 
-- Followed by any final, the round is `QUAL`, and the titles it decides are summaries of it: the
-  African Championships (apparatus finals followed), the Asian Championships (published as team
-  and all-around finals too, which rank the `QUAL` routines), the South American Games (published
-  only as those finals).
-- Followed by nothing, the round is `AA` with a `TEAM` ranking of it: the Oceania Championships.
-  The US Championships are `AA` for the same reason, in two parts.
+**Which ranking decides a title.** A title Competition I decided has a `FINAL` ranking of `C1`, however
+the book labels it: a qualification report (African Championships), finals that re-rank the same
+routines (Asian Championships, South American Games), or the one competition's finals (Oceania).
+A title its own final decided has a `QUALIFYING` ranking of `C1` (where printed, with Q/R/NR) and a
+`FINAL` ranking of that final. `out.ranking` names the file (`RANKING-QUAL-` or `RANKING-FINAL-`) and
+sets the purpose from the format; a parser only says which competition a row ranks. One ranking per
+title and purpose: where a book prints a qualifying and a final ranking of the same routines for a
+title Competition I decided (Asian Championships), pass the qualifying rows as `left_out_from`, so the
+final ranking keeps the whole field. Qualification to another event (the 2026 Oceania Championships'
+fifth athletes competing for World Championships places) is no part of the format; nothing in the
+meet records it.
 
-| Structure | Sessions | Example |
-|---|---|---|
-| Championship | `QUAL`, `TEAM`, `AA`, `EVENT` per apparatus | Worlds, Europeans |
-| Juniors without a team final | no `TEAM`; team summary has no Q markers | Europeans juniors, Junior Pan Americans |
-| All-around decided in qualification | no `AA` session; `SUMMARY-QUAL-AA` only | Europeans WAG, Junior Pan Americans |
-| Team decided in qualification, all-around final | `QUAL`, `AA`, `EVENT` per apparatus; no `TEAM` | Senior Pan Americans, Mediterranean Games, Commonwealth Games ("Team Final and Individual Qualification"), Central American and Caribbean Games |
-| Team and all-around decided in qualification | `QUAL`, `EVENT` per apparatus; `SUMMARY-QUAL-TEAM` and `SUMMARY-QUAL-AA` without Q markers | African Championships |
-| Qualification that is also the team and all-around finals, published as separate final rankings of the same routines | `QUAL` (every routine, `SUMMARY-QUAL-TEAM`/`-AA` with Q/R/NR), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL`, `EVENT` per apparatus | Asian Championships |
-| Qualification that is also the team and all-around finals, published only as those finals (the schedule's "Final" shares qualification's time block) | `QUAL` (every routine, no qualification summaries), `TEAM` and `AA` holding only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL` (all-around: two per country ranked, the others unranked), `EVENT` per apparatus | South American Games |
-| Qualification that is also the all-around final, followed by a team final and apparatus finals | `QUAL` (every routine, `SUMMARY-QUAL-TEAM` with Q/R), `TEAM` (its own routines, `SUMMARY-FINAL-TEAM`), `AA` holding only `SUMMARY-FINAL-AA` with `Scores Round` `QUAL` (24 ranked, two per country; the others keep their totals unranked), `EVENT` per apparatus | Asian Games |
-| One competition deciding the team and all-around titles, called finals, with nothing to qualify for | `AA` (every routine, single-attempt vault, `SUMMARY-FINAL-AA`), `TEAM` holding only `SUMMARY-FINAL-TEAM` with `Scores Round` `AA` | Oceania Championships |
-| Round split into parts, decided on the combined total | one session per part + a whole-round session (part blank) holding the combined standings | US Championships |
-| Apparatus competition | `QUAL` and `EVENT` per apparatus; no team or AA | Apparatus World Cups |
+| Structure | Format (team, AA, apparatus) | Competitions, and the title rankings | Example |
+|---|---|---|---|
+| Championship | `FINAL`, `FINAL`, `FINAL` | `C1`, `C4`, `C2`, `C3` per apparatus | Worlds |
+| Team and apparatus finals, no all-around title | `FINAL`, `NONE`, `FINAL` | `C1`, `C4`, `C3` | Europeans MAG seniors (but see competition-models.md: the title exists, only its medallists printed) |
+| All-around decided in Competition I | `FINAL`, `C1`, `FINAL` | `C1`, `C4`, `C3`; `RANKING-FINAL-AA` of `C1` (Asian Games: 24 ranked, two per country, the others unranked) | Europeans WAG seniors, Asian Games |
+| Team decided in Competition I, all-around final | `C1`, `FINAL`, `FINAL` | `C1`, `C2`, `C3`; `RANKING-FINAL-TEAM` of `C1` | Europeans MAG juniors, Senior Pan Americans, Mediterranean Games, Commonwealth Games, Central American and Caribbean Games |
+| Team and all-around decided in Competition I | `C1`, `C1`, `FINAL` | `C1`, `C3`; both final rankings of `C1` | African Championships, Junior Pan Americans, Europeans WAG juniors, Asian Championships (also printed as finals of the same routines), South American Games (printed only as those finals) |
+| One competition deciding the team and all-around titles, nothing to qualify for | `C1`, `C1`, `NONE` | `C1` (single-attempt vault, as at any all-around final); both final rankings of `C1` | Oceania Championships |
+| Competition split into parts, decided on the combined total | `NONE`, `C1`, `C1` | `C1` per part, and the whole `C1` (part blank) holding the combined standings: `RANKING-FINAL-AA` (part rows `INFORMATIONAL`) and `RANKING-FINAL-<APP>` | US Championships |
+| Apparatus competition | `NONE`, `NONE`, `FINAL` | `C1` and `C3` per apparatus | Apparatus World Cups, World Challenge Cups |
 
 If a meet doesn't fit any of these, stop and discuss the model change first.
 
 **Team roles.** Where a source says who was up for each team on each apparatus, write every
 score's `Team Role` (`COUNTING`, `DROPPED`, `INDIVIDUAL`; import-file-model.md) and the team
-summary's apparatus totals as the sums of the `COUNTING` scores, checked against the printed team
+ranking's apparatus totals as the sums of the `COUNTING` scores, checked against the printed team
 total. A team's line-up can change by apparatus (2026 Oceania Championships: five a team, four up on
 each apparatus, the fifth an individual competing for World Championships qualification), which the
 importer can't work out from totals alone. Without such a source, leave the column out and give
@@ -637,7 +637,7 @@ competition-models.md, open items).
   as part of the value.
 - Worlds: `D` before `E` everywhere; separate `Pen.` and `Bonus` columns; no
   `SJ Pen.` column; finals add trailing `Qualification Rank` and `Start Order`
-  columns (not captured — join to the `QUAL` file).
+  columns (not captured — join to the `C1` file).
 - Vault: `_73I` "Qualifications - Vault 1" is the single list, `_73J` the
   double list; a DNF shows as `DNF` in the total with `DNS` for vault 2.
 
@@ -651,7 +651,7 @@ competition-models.md, open items).
   those lines must allow `-` (a penalty) — a digits-and-dots class silently
   failed on penalized rows.
 - At Worlds the Team Final and All-Around Final have **no per-apparatus
-  report**; `SCORES-TEAM-<APP>`/`SCORES-AA-<APP>` are built from these blocks
+  report**; `SCORES-C4-<APP>`/`SCORES-C2-<APP>` are built from these blocks
   (no per-apparatus rank in the Team Final; the AA report's `(Rk)` is used).
 - Column order follows the icons, e.g. MAG FX PH SR VT PB HB, WAG VT UB BB FX
   at Worlds; the WAG legend text lists them differently.
@@ -695,9 +695,9 @@ A ProScore printout: no footer codes, no NOCs or FIG licences, names
 **Structure.** Each level competes the all-around on two days (Day 1 =
 `Part 1`, Day 2 = `Part 2`); titles are decided on two-day combined totals —
 AA on the combined total, each apparatus on the combined apparatus total.
-Combined standings go on the whole-round session: `SUMMARY-FINAL-AA` rows with
-`Part` blank, and `SUMMARY-FINAL-<APP>`. Day 2 has no per-day places, so
-`Rank` is blank on `Part 2` rows. Day-1-only athletes have no combined rows.
+Combined standings go on the whole competition (`C1`, part blank): `RANKING-FINAL-AA` rows with
+`Part` blank, and `RANKING-FINAL-<APP>`. Day 2 has no per-day places, so
+`Rank` is blank on `Part 2` rows (`UNPLACED`). Day-1-only athletes have no combined rows.
 
 | Report | Gives |
 |---|---|
@@ -721,7 +721,7 @@ Combined standings go on the whole-round session: `SUMMARY-FINAL-AA` rows with
   prints only ND (and the vault `Bns`).
 - **Vault**: MAG juniors vault once each day (the two-day report prints an
   empty `x/0.000` second slot). MAG SR, WAG SR and WAG JR hold a two-vault
-  event each day, so their `SCORES-AA-VT` is double-attempt: vault 1 is the AA
+  event each day, so their `SCORES-C1-VT` is double-attempt: vault 1 is the AA
   vault, vault 2 and the day's result come from the vault lists. Day 1 second
   vaults come from Day 1's list — the two-day report omits anyone who didn't
   contest the vault title on both days. Single vaulters aren't in the vault
@@ -742,8 +742,8 @@ transcriptions of everything else. The 227 transcribed rows that the text PDF
 also covers matched it on every field.
 
 **Structure.** An apparatus competition: qualification and finals per
-apparatus, no team or all-around round, so no `SUMMARY-*` files. Each
-apparatus's qualification is its own session (its own day and panel). Vault
+apparatus, no team or all-around title, so no `RANKING-*` files. Each
+apparatus's qualification is its own competition (its own day and panel). Vault
 qualification has a single ranking — every vaulter does two vaults, ranked on
 the average.
 
@@ -921,7 +921,7 @@ never compete (in PARTICIPANTS, with no results).
 | Number of Entries by NOC (general, p. 6) | competitors per country — those with a routine (cross-checked) |
 | Results By Apparatus | every SCORES file, including the all-around final's (single vault) |
 | Vault qualification | a vault 1 list for the whole field (`_C73J`, no `Vault` column) and a two-vault list (`_C73J` with `Vault` and `Vault Score` columns) |
-| All-Around Results | the summaries; every routine's D, E, penalty, bonus, score and rank (cross-checked) |
+| All-Around Results | the rankings; every routine's D, E, penalty, bonus, score and rank (cross-checked) |
 | Team Results | team apparatus totals and score; each member's D, score and rank (cross-checked) |
 | Tie Break, All-Around Tie Break | the ranks of tied athletes (cross-checked) |
 | List Of Qualifiers | Q (numbered), R1–R3, NR per apparatus (cross-checked) |
@@ -978,7 +978,7 @@ vault `_C73J`), Tie Break (`_C77A`/`_C77B`), List Of Qualifiers (`_000291`,
 which shares §5.6's page lookup and table reading.
 
 **Structure.** An apparatus competition (§4.9): qualification on 5–6 March,
-finals on 7–8 March, each apparatus its own session. The schedule splits them
+finals on 7–8 March, each apparatus its own competition. The schedule splits them
 the same way both weekends: MAG FX/PB/SR and WAG VT/UB first, MAG VT/PH/HB and
 WAG BB/FX second (it also lists a "WAG: PH" rotation, a misprint for MAG). Top
 eight per apparatus to the final, two per country, three reserves; every
@@ -1271,7 +1271,7 @@ country (no `NR` printed), `R1`-`R2` (MAG vault: nine vaulters, one reserve).
 |---|---|
 | List of competitors with BIB numbers | bib, NOC, FIG licence, `SURNAME`, `Given`, function, `(Hors Concours)`: the participants. No birth year |
 | Number of Entries by NOC (p. 3) | men and women per country, blank for none; hors concours not counted (cross-checked) |
-| Qualification tables (pp. 25-34) | every `QUAL` row, whole field, no markers |
+| Qualification tables (pp. 25-34) | every `C1` row, whole field, no markers |
 | The same tables cut to the finalists (pp. 38-47) | the `Q`/`R1`-`R2` markers; their rows must repeat the whole-field tables |
 | Tie Break Report (pp. 35-37, 64) | every group of equal totals: rank, total, E, D (cross-checked) |
 | Qualification start lists (Elevien) | per day and part, groups in one column per apparatus under icons (MAG FX/PH, VT/PB in two columns; others one) (cross-checked as sets) |
@@ -1457,7 +1457,7 @@ juniors' book is a separate scan (below).
 
 **Gotchas**
 
-- **No team apparatus totals.** `SUMMARY-QUAL-TEAM`'s `<APP> Total` is the sum of the member scores
+- **No team apparatus totals.** The team ranking's `<APP> Total` is the sum of the member scores
   printed in bold, which are checked to be each apparatus's best three and to add up to the printed
   team total (agreed with the user). Namibia's fifth WAG entry, HANDURA (born 2010), is not on its
   team page and competed as an individual.
@@ -1564,8 +1564,8 @@ report across the books: juniors on its pages 1-2 of 5, seniors on 3-5.
 | Entry List by NOC (`_32A`) | NOC heading, `SURNAME Given`, licence, bib, date of birth: the participants |
 | Judges Assignments (`_57A`/`_57B`, qualification and finals) | President, panels in the icon grid (MAG FX/PH, SR/VT, PB/HB; WAG VT/UB, BB/FX), reserves |
 | Apparatus tables (`_73I`; vault `_73I` "Vault 1" and the two-vault `_73J`) | every SCORES file; finals add `Qualification Rank` and `Start Order` (not written) |
-| Team Qualification / Team Final (`_73C`/`_73D`) | `SUMMARY-QUAL-TEAM`, `SUMMARY-FINAL-TEAM`; each member's D and E lines (cross-checked) |
-| All-Around Qualification / Final (`_73G`/`_73H`) | `SUMMARY-QUAL-AA`, `SUMMARY-FINAL-AA`; every routine (cross-checked) |
+| Team Qualification / Team Final (`_73C`/`_73D`) | `RANKING-FINAL-TEAM` (the final's places, the other teams added from the qualification, unranked); each member's D and E lines (cross-checked) |
+| All-Around Qualification / Final (`_73G`/`_73H`) | `RANKING-FINAL-AA` (the final's places, the other athletes added from the qualification, unranked: NR as `NOC_LIMIT`); every routine (cross-checked) |
 | Tie Break Reports (`_77A`-`_77C`) | the tied athletes' ranks (cross-checked, §4.2) |
 | List of Qualifiers (`_53B`/`_53C`), finals Start List (`_51G`) | Q/R/NR per final (cross-checked) |
 | Medallists by Event (`_93`) | the top three of every final (cross-checked) |
@@ -1624,7 +1624,7 @@ for the scans (typed by eye: two short tables a discipline).
 
 **Structure.** One competition on 9 May (8 May is podium training) decides the team and all-around
 titles, which the medallists pages call the "All around Final" and "Team Final"; no apparatus finals,
-nothing qualifies, so by §4.9's rule `AA` holds every routine and `TEAM` ranks them (agreed with the user). The
+nothing qualifies, so by §4.9 it is Competition I (`C1`), holding every routine, with final team and all-around rankings of it (agreed with the user). The
 juniors compete the same day in the same format (the MAG juniors' judges' sheet calls it the "Junior
 Invitational"). Seniors: two teams of five per discipline. Juniors: MAG an Australian team of four
 and two New Zealand individuals (New Zealand entered no team, so their scores are `INDIVIDUAL`);
@@ -1670,7 +1670,7 @@ WAG Australia five, New Zealand three.
 - **Names**: results print `Given Surname` in mixed case (`Jun McDonald`); the files take the entry
   list's `Given SURNAME`. MAG FOSTER prints `Ben`, `Benjamin` (licence 45150) at Worlds: the licence
   is added (`LICENCE`) so the import links him.
-- **Judges** (round `AA`): MAG prints `AS` (`SV`), `Line 1`/`Line 2`/`Time` on floor and `Line 1` on
+- **Judges** (competition `C1`): MAG prints `AS` (`SV`), `Line 1`/`Line 2`/`Time` on floor and `Line 1` on
   vault; Puay Sng is `(SGP)` on floor and `(SIN)` on rings and parallel bars (written `SGP`, a `NOC`
   correction); surnames are written in capitals. WAG prints `Supervisor`, vault `Line`, bars
   `Time 1`, beam `Time 1`/`Time 2`, floor `Time`/`Line 1`/`Line 2`, and the same `Reserve` in every
@@ -1755,7 +1755,7 @@ medallists `_93`, medal standings `_95`); the parser finds pages by code, with t
 Parser: [`parse_2026_commonwealth_games.py`](../tools/results-parsing/parse_2026_commonwealth_games.py).
 
 **Structure.** "Team Final and Individual Qualification" (MAG 24 July, WAG 25 July) decides the team
-titles, so it is `QUAL` with a `SUMMARY-QUAL-TEAM` (§4.9, as at the Mediterranean Games); the
+title, so it is `C1` with a `RANKING-FINAL-TEAM` of it (§4.9, as at the Mediterranean Games); the
 all-around finals (26 July) and apparatus finals (27-28 July, by the schedule) follow. Teams of up
 to five, three scores counting. Athletes compete for Commonwealth Games Associations (§4.8).
 
@@ -1763,8 +1763,8 @@ to five, three scores counting. Athletes compete for Commonwealth Games Associat
 |---|---|
 | Entry List by CGA (`_32A`) | under `AUS - Australia`, `SURNAME Given  Licence  Bib  Date of birth`: the participants, in printed order |
 | Apparatus results (`_73I`, vault `_73J`) | every qualification and final SCORES file but the all-around final's; vault: the two-vault athletes only (below). Finals add the qualification rank and start order (cross-checked) |
-| Team results (`_73C`/`_73D`) | the team summary; each member's routines (cross-checked), and the first vaults of team members |
-| All-around results (`_73G`/`_73H`) | the all-around summaries; the all-around final's routines (it has no apparatus tables); the first vaults and their whole-field rank (below); qualification routines cross-checked |
+| Team results (`_73C`/`_73D`) | the team ranking; each member's routines (cross-checked), and the first vaults of team members |
+| All-around results (`_73G`/`_73H`) | the all-around rankings; the all-around final's routines (it has no apparatus tables); the first vaults and their whole-field rank (below); qualification routines cross-checked |
 | Judges Assignments (`_57x`) | JUDGES. The Competition Officials list (`_35`) is a cross-check of each judge's CGA |
 | Start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
 
@@ -1823,7 +1823,7 @@ Games' (§5.19), so the parser
 started from that one.
 
 **Structure.** "Individual Qualification & Team Final" (MAG 2 August, WAG 3 August) decides the team
-titles: `QUAL` with a `SUMMARY-QUAL-TEAM`, as at the Commonwealth Games (§4.9); the all-around finals
+title: `C1` with a `RANKING-FINAL-TEAM` of it, as at the Commonwealth Games (§4.9); the all-around finals
 (4 August) and apparatus finals (5-6 August, by the schedule) follow. Teams of five, four up per
 apparatus, three counting; individuals from countries without a team.
 
@@ -1831,8 +1831,8 @@ apparatus, three counting; individuals from countries without a team.
 |---|---|
 | Entry List by NOC (`_32A`, men and women under one code, told apart by the page heading) | `SURNAME Given  Licence  Bib  Date of birth` under `COL - Colombia`: the participants. Number of Entries by NOC (`_30`) counts them (cross-checked) |
 | Apparatus results (`_73I`, vault `_73J`) | every qualification and final SCORES file but the all-around final's; vault qualification lists only the two-vault athletes (below). Finals add the qualification rank and start order (cross-checked) |
-| Team results (`GARMTEAM…FNL_73C`/`_73D`, titled Final, printed on qualification day) | the team summary and penalty; each member's routines (cross-checked), and the first vaults of team members |
-| All-around results (`_73G`/`_73H`) | the all-around summaries; the all-around final's routines; the first vaults and their whole-field rank; qualification routines cross-checked |
+| Team results (`GARMTEAM…FNL_73C`/`_73D`, titled Final, printed on qualification day) | the team ranking and penalty; each member's routines (cross-checked), and the first vaults of team members |
+| All-around results (`_73G`/`_73H`) | the all-around rankings; the all-around final's routines; the first vaults and their whole-field rank; qualification routines cross-checked |
 | Qualification results by team (`GARMQUAL_73A`/`GARWQUAL_73B`) | scores only, every team member and individual, vault `V1 V2 [Bonus] FS`, all-around total and rank (cross-checked) |
 | Judges Assignments (`_57A`/`_57B`, qualification, all-around final, apparatus finals) | JUDGES |
 | Lists of Qualifiers (`_53A` all-around, `_53B`/`_53C` apparatus), start lists (`_51x`), Tie Break (`_77x`), Medallists by Event (`_93`) | cross-checks only |
@@ -1858,8 +1858,8 @@ apparatus, three counting; individuals from countries without a team.
   `DNF`, vault 2 `DNS`: `INVALID_VAULT` then `DNS`, unranked.
 - **The WAG judges pages' legend names the men's apparatus**; the icons (rendered) and the time and
   line judges (vault's line judge, beam's two time judges, floor's time and line judges) give the
-  grid VT/UB, BB/FX. MAG is FX/PH, SR/VT, PB/HB. Panels are `AS D1 D2 E1-E4` in every round,
-  finals included; one judge can sit on several panels of a session. No reserves are listed.
+  grid VT/UB, BB/FX. MAG is FX/PH, SR/VT, PB/HB. Panels are `AS D1 D2 E1-E4` in every competition,
+  finals included; one judge can sit on several panels of a competition. No reserves are listed.
 - **Apparatus finals start lists** (`GAR-1AP…FNL-PART<day>_51G`, revised) print men left and women
   right in blocks headed `Start Time: hh:mm`, the first block of a day men only; a name can end one
   space before its NOC. Replacements (MAG rings NUÑEZ FARFAN for PORRAS ESCATEL, parallel bars LOPEZ
@@ -1885,17 +1885,17 @@ one. Headers are bilingual (English, then Japanese).
 **Structure.** "Qualification and All-Around Final" (MAG 21, WAG 22 September) ranks the all-around
 title (the best 24, two per NOC; the others print their totals unranked) and qualifies eight teams to
 the team final (23 September, three up, three counting, its own routines) and eight athletes to each
-apparatus final (24-25 September). So it is `QUAL`; the all-around final is a `SUMMARY-FINAL-AA` with
-`Scores Round` `QUAL` and the team final a normal `TEAM` session (§4.9). Qualification teams are five
+apparatus final (24-25 September). So it is `C1`; the all-around title is a `RANKING-FINAL-AA` of `C1`
+and the team final a normal `C4` competition (§4.9). Qualification teams are five
 up to four, three counting; individuals from other NOCs.
 
 | Report | Gives |
 |---|---|
 | Entry List by NOC (`_32A`, men and women under one code) | the participants; Number of Entries by NOC (`_30`) counts them |
 | Apparatus results (`_73I`, vault `_73J`) | every qualification and apparatus final SCORES file; vault qualification lists only the two-vault athletes. Finals add the qualification rank and start order (cross-checked) |
-| Team results, qualification (`GARMTEAMQUAL_73C`/`GARWTEAMQUAL_73D`) | the team summary, markers (`Q`, WAG KAZ `R1`) and penalty; each member's routines (cross-checked) and the first vaults of team members |
-| Team results, final (`…TEAMFNL_73C`/`_73D`) | the team final's routines (SCORES-TEAM) and standings |
-| All-around results (`GARM1AAFNL_73G`/`GARW1AAFNL_73H`, titled Final, the qualification's routines) | SUMMARY-FINAL-AA; the first vaults of all-arounders and their whole-field rank; every routine cross-checked against the tables |
+| Team results, qualification (`GARMTEAMQUAL_73C`/`GARWTEAMQUAL_73D`) | the team ranking, markers (`Q`, WAG KAZ `R1`) and penalty; each member's routines (cross-checked) and the first vaults of team members |
+| Team results, final (`…TEAMFNL_73C`/`_73D`) | the team final's routines (SCORES-C4) and standings |
+| All-around results (`GARM1AAFNL_73G`/`GARW1AAFNL_73H`, titled Final, the qualification's routines) | RANKING-FINAL-AA; the first vaults of all-arounders and their whole-field rank; every routine cross-checked against the tables |
 | Qualification results by team (`_73A`/`_73B`) | scores only, every athlete, all-around rank (cross-checked) |
 | MAG Results Vault 1 (the separate file) | every first vault, with D, E and its whole-field `Rank`; the only source for KAMILJANOV's (below). The two-vault table and the team and all-around reports are checked against it |
 | Judges Assignments (qualification `_57A`/`_57B`, team final `…TEAMFNL_57x`, apparatus finals `GAR-FNL-000<day>00_57D`) | JUDGES |
@@ -1959,9 +1959,9 @@ finals, `C73J` vault finals, but `C73A` for the MAG high bar final), so the pars
 matches on the event part.
 
 **Structure.** "Competition I: Qualification" (MAG 13, WAG 14 September, two subdivisions) is
-followed by apparatus finals (15-16 September), so it is `QUAL`. "Competition II: Final" (team and
+followed by apparatus finals (15-16 September): `C1`. "Competition II: Final" (team and
 all-around) shares subdivision 2's time block; its reports, titled Final, rank the qualification's
-routines: `TEAM` and `AA` hold only `SUMMARY-FINAL-TEAM`/`-AA` with `Scores Round` `QUAL` (§4.9).
+routines, so Competition I decided both titles: `RANKING-FINAL-TEAM`/`-AA` of `C1` (§4.9).
 Teams of up to six, five up per apparatus, four counting (MAG BRA, COL, ARG, CHI, PER; WAG ARG, BRA,
 PAN, PER, BOL; BOL's four all count). The all-around final ranks two per NOC and prints the others
 unranked.
@@ -1970,8 +1970,8 @@ unranked.
 |---|---|
 | Entry List by NOC (`C32A`, printed twice: front matter and section) | under `ARG - Argentina (6)`, `SURNAME Given  Licence  Bib  Year`: the participants, with the results' bibs (below). Entries by NOC (`C30`) counts them |
 | Apparatus results (`C73x`) | every qualification and final routine but the first vaults of one-vault athletes. Vault qualification: the two-vault athletes only; WAG adds a First Vault list (every first vault, ranked) on the report's second page |
-| Team results (`C73C`/`C73D`, Final) | SUMMARY-FINAL-TEAM; MAG team members' first vaults; every other routine cross-checked |
-| All-around results (`C73G`/`C73H`, Final) | SUMMARY-FINAL-AA; MAG individuals' first vaults; every other routine cross-checked |
+| Team results (`C73C`/`C73D`, Final) | RANKING-FINAL-TEAM; MAG team members' first vaults; every other routine cross-checked |
+| All-around results (`C73G`/`C73H`, Final) | RANKING-FINAL-AA; MAG individuals' first vaults; every other routine cross-checked |
 | Judges Assignments (`C57x`, qualification and finals) | JUDGES |
 | Lists of Qualifiers (`C53x`), start lists (`C51x`), Tie-Break Output (`C77x`), Medallists by Event (`C93`) | cross-checks only |
 
@@ -2028,8 +2028,10 @@ unranked.
    and no marker; sporttech.io a bare `0` with no D or E; Baku's Microplus
    print a D (`0.0`) and `0.000` with E blank; Antalya's EVAL print `0,000` in
    every column. Watch for a source that marks it differently.
-2. **Europeans MAG all-around summaries** (`SUMMARY-QUAL-AA`,
-   `SUMMARY-FINAL-AA`) were never built; the reports exist in that PDF.
+2. **Europeans MAG senior all-around.** The title was decided in Competition I (medallists dated on
+   qualification day), but the senior book prints no all-around ranking, only the medallists; the
+   format says `NONE` for now (competition-models.md, open). The juniors' all-around final ranking is
+   parsed (`parse_2026_european_championships.py`).
 3. **Europeans files were built by hand** before the parsers existed and lack
    the newer `Birth Date` column; there is no parser to regenerate them.
 4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in

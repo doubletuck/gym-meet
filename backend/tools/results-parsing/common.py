@@ -9,7 +9,7 @@ Parsers run with `python3 -I`, which leaves the script's folder off sys.path, so
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import common
 """
-import csv, json, os, re, subprocess, sys
+import collections, csv, json, os, re, subprocess, sys
 from decimal import Decimal
 
 # ---------------------------------------------------------------- sources
@@ -57,15 +57,24 @@ def split_given_first(name):
     return ' '.join(words[i:]), ' '.join(words[:i])
 
 # ---------------------------------------------------------------- column sets (docs/import-file-model.md)
-SCORE_META = ['Event Name', 'Discipline', 'Age Category', 'Session Start Date', 'Round', 'Part', 'Apparatus',
-              'Rank', 'Bib', 'Name', 'NOC Code']
+# The competition code written for each of a book's reports, by the name the books give them:
+# Competition I (qualification), the all-around final, the apparatus finals, the team final. A meet
+# whose only competition is Competition I (Oceania, US Championships) writes C1 for it whatever
+# its book calls it.
+COMPETITION = {'QUAL': 'C1', 'AA': 'C2', 'EVENT': 'C3', 'TEAM': 'C4'}
+
+SCORE_META = ['Event Name', 'Discipline', 'Age Category', 'Competition Start Date', 'Competition', 'Part',
+              'Apparatus', 'Rank', 'Bib', 'Name', 'NOC Code']
 ROUTINE = ['Status', 'D', 'E', 'B', 'Penalty', 'SJ Penalty', 'Total']
 VAULT = [f'{c}{n}' for n in (1, 2) for c in ROUTINE] + ['Combined Bonus', 'Total']
 QUALIFICATION = ['Qualification', 'Qualification Rank']
 PARTICIPANTS = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Order', 'NOC Code', 'Bib Number',
                 'FIG License', 'Name', 'Surname', 'Given Name', 'Birth Year', 'Birth Date']
-JUDGES = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Apparatus', 'Function', 'Name',
-          'Surname', 'Given Name', 'NOC Code']
+JUDGES = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Apparatus', 'Function',
+          'Name', 'Surname', 'Given Name', 'NOC Code']
+APPARATUS = {'MAG': ['FX', 'PH', 'SR', 'VT', 'PB', 'HB'], 'WAG': ['FX', 'BB', 'UB', 'VT']}
+# A ranking's format column in EVENT.csv, by what it ranks (an apparatus code: the apparatus titles)
+FORMAT_COLUMNS = {'TEAM': 'Team Format', 'AA': 'AA Format'}
 
 def score_header(vault, qual, combined_sj_penalty=False, team_role=False):
     """SCORES-* header: single-routine or two-attempt vault shape, with or without qualification columns.
@@ -80,11 +89,11 @@ def score_header(vault, qual, combined_sj_penalty=False, team_role=False):
 CORRECTIONS = ['File', 'Key', 'Field', 'Printed', 'Corrected', 'Category', 'Source', 'Note']
 
 def row_key(name, row):
-    """How a CORRECTIONS row names the row it corrects: the bib, a team summary's NOC, or a judge's
-    `Round Apparatus Function` (apparatus `-` when blank). A judge correction can instead name the
-    judge as printed, for every row with that name."""
+    """How a CORRECTIONS row names the row it corrects: the bib, a team ranking's NOC, or a judge's
+    `Competition Apparatus Function` (apparatus `-` when blank). A judge correction can instead name
+    the judge as printed, for every row with that name."""
     if 'JUDGES' in name:
-        return f'{row["Round"]} {row["Apparatus"] or "-"} {row["Function"]}'
+        return f'{row["Competition"]} {row["Apparatus"] or "-"} {row["Function"]}'
     return row.get('Bib') or row.get('Bib Number') or row['NOC Code']
 
 class Corrections:
@@ -144,10 +153,14 @@ class Output:
     def __init__(self, out_dir, corrections=None):
         self.dir = out_dir
         self.corrections = corrections
+        self.participants = {}  # rows of each PARTICIPANTS file written, by prefix
+        self.rankings = set()
 
-    def csv(self, name, header, rows):
-        if self.corrections:
+    def csv(self, name, header, rows, correct=True):
+        if correct and self.corrections:
             self.corrections.apply(name, header, rows)
+        if name.endswith('-PARTICIPANTS.csv'):
+            self.participants[name.removesuffix('-PARTICIPANTS.csv')] = rows
         with open(os.path.join(self.dir, name), 'w', newline='', encoding='utf-8') as f:
             w = csv.writer(f, lineterminator='\n')
             w.writerow(header)
@@ -158,9 +171,82 @@ class Output:
                 w.writerow([r[h] for h in header])
         print(f'{name}: {len(rows)} rows')
 
+    def ranking(self, prefix, kind, header, rows, event, left_out_from=None):
+        """`<prefix>-RANKING-{QUAL,FINAL}-<kind>.csv` (kind `TEAM`, `AA` or an apparatus code): standings
+        whose rows each name the competition they rank (`Competition`, `Part`). The parser's header has
+        neither `Purpose` nor `Rank Status`; they're added here.
+
+        - Purpose follows the event's format (EVENT.csv): a ranking of C1 for a title its own final
+          decided is `QUALIFYING`; a split competition's part rows `INFORMATIONAL`; otherwise `FINAL`.
+          A final ranking qualifies no one: its `Qualification` column is dropped, an `NR` becoming
+          the `NOC_LIMIT` rank status, and any other marker is an error.
+        - `left_out_from`: the rows of a qualifying ranking printed over the same routines for a
+          title Competition I decided (2026 Asian Championships). Only the final ranking is written,
+          with the teams or athletes it leaves out added unranked, as the qualifying ranking has them.
+        - Corrections apply next, then every blank rank gets its Rank Status (`rank_status`)."""
+        header = list(header)
+        header.insert(header.index('Part') + 1, 'Purpose')
+        header.insert(header.index('Rank') + 1, 'Rank Status')
+        title_format = event[FORMAT_COLUMNS.get(kind, 'Apparatus Format')]
+        if not title_format:
+            raise SystemExit(f'{prefix}: EVENT.csv has no {FORMAT_COLUMNS.get(kind, "Apparatus Format")}')
+        for r in rows:
+            r['Purpose'] = ('INFORMATIONAL' if r['Part'] else
+                            'QUALIFYING' if r['Competition'] == 'C1' and title_format == 'FINAL' else 'FINAL')
+            r.setdefault('Rank Status', '')
+        purposes = {r['Purpose'] for r in rows if not r['Part']}
+        if len(purposes) != 1:
+            raise SystemExit(f'{prefix} {kind}: rows of purposes {sorted(purposes)} in one ranking')
+        final = purposes == {'FINAL'}
+        name = f'{prefix}-RANKING-{"FINAL" if final else "QUAL"}-{kind}.csv'
+        if name in self.rankings:
+            raise SystemExit(f'{name}: written twice; a title has one ranking per purpose')
+        self.rankings.add(name)
+        if left_out_from:
+            key = 'NOC Code' if kind == 'TEAM' else 'Bib'
+            present = {r[key] for r in rows}
+            for q in left_out_from:
+                if q[key] not in present:
+                    rows.append({**{h: q.get(h, '') for h in header}, 'Competition': rows[0]['Competition'],
+                                 'Purpose': 'FINAL', 'Rank': '',
+                                 'Rank Status': 'NOC_LIMIT' if q.get('Qualification') == 'NR' else ''})
+        if self.corrections:
+            self.corrections.apply(name, header, rows)
+        if final and 'Qualification' in header:
+            for r in rows:
+                if r['Qualification'] not in ('', 'NR'):
+                    raise SystemExit(f'{name}: {r.get("Bib") or r["NOC Code"]} marked {r["Qualification"]} on a '
+                                     'final ranking; look at it')
+                if r['Qualification'] == 'NR':
+                    if r['Rank']:
+                        raise SystemExit(f'{name}: {r.get("Bib") or r["NOC Code"]} is ranked and marked NR')
+                    r['Rank Status'] = 'NOC_LIMIT'
+            header.remove('Qualification')
+        participants = self.participants_of(prefix)
+        for r in rows:
+            if not r['Rank'] and not r['Rank Status']:
+                r['Rank Status'] = rank_status(r, kind, event['Disciplines'], rows, participants)
+                if not r['Rank Status']:
+                    raise SystemExit(f'{name}: no rule gives a rank status for {r.get("Bib") or r["NOC Code"]} '
+                                     f'{r.get("Name", "")}; look at it')
+        self.csv(name, header, rows, correct=False)
+
+    def participants_of(self, prefix):
+        """The PARTICIPANTS rows written for the prefix, or the file already in the folder."""
+        if prefix not in self.participants:
+            path = os.path.join(self.dir, f'{prefix}-PARTICIPANTS.csv')
+            with open(path, encoding='utf-8') as f:
+                self.participants[prefix] = list(csv.DictReader(f))
+        return self.participants[prefix]
+
     def manifest(self, prefix, event):
-        """`<prefix>-IMPORT.json`: the EVENT.csv row plus every file written for this prefix."""
+        """`<prefix>-IMPORT.json`: the EVENT.csv row, its formats included, plus every file written for
+        this prefix."""
         files = sorted(os.listdir(self.dir))
+        formats = {key: event.get(column, '') for key, column in
+                   (('teamFormat', 'Team Format'), ('aaFormat', 'AA Format'), ('apparatusFormat', 'Apparatus Format'))}
+        if not all(formats.values()):
+            raise SystemExit(f'{prefix}: EVENT.csv needs Team Format, AA Format and Apparatus Format')
         # An optional Slug names the event's address, for a folder holding several events
         slug = {'slug': event['Slug']} if event.get('Slug') else {}
         manifest = {
@@ -169,15 +255,51 @@ class Output:
                       'ageCategory': event['Age Category'], 'level': event['Level'],
                       'startDate': event['Start Date'], 'endDate': event['End Date'], 'city': event['City'],
                       'country': event['Country'], 'figEventNumber': event['FIG Event Number'],
-                      'venue': event['Venue'], 'apparatusSuppliers': event['Apparatus Suppliers']},
+                      'venue': event['Venue'], 'apparatusSuppliers': event['Apparatus Suppliers'], **formats},
             'participants': [f for f in files if f.startswith(prefix + '-PARTICIPANTS')],
             'judges': [f for f in files if f.startswith(prefix + '-JUDGES')],
             'scores': [f for f in files if f.startswith(prefix + '-SCORES-')],
-            'summaries': [f for f in files if f.startswith(prefix + '-SUMMARY-')],
+            'rankings': [f for f in files if f.startswith(prefix + '-RANKING-')],
         }
         with open(os.path.join(self.dir, f'{prefix}-IMPORT.json'), 'w') as f:
             json.dump(manifest, f, indent=4, separators=(',', ' : '))
             f.write('\n')
+
+
+def rank_status(row, kind, discipline, rows, participants):
+    """Why a ranking row has no rank (import-file-model.md, Rank Status), by rule, in order:
+
+    - an hors concours entry (`Entry Status`; a team all of whose entries are): `HORS_CONCOURS`;
+    - a partial all-around, an entry who started no apparatus included, or a team missing an
+      apparatus total: `INCOMPLETE`;
+    - a split competition's part row: `UNPLACED` (US Championships print no day-2 places);
+    - in a final ranking, an athlete outside its printed places: `NOC_LIMIT` when two compatriots
+      are ranked and the total beats the lowest ranked total (the two-per-country limit cost a
+      place), otherwise `UNPLACED`; a team outside them: `UNPLACED`.
+
+    None where no rule applies (a full all-around unranked in a qualifying ranking)."""
+    hors_concours = {p['Bib Number'] for p in participants if p.get('Entry Status') == 'HORS_CONCOURS'}
+    entries = collections.defaultdict(set)
+    for p in participants:
+        entries[p['NOC Code']].add(p['Bib Number'])
+    hors_concours_nocs = {noc for noc, bibs in entries.items() if noc and bibs and bibs <= hors_concours}
+    if kind == 'TEAM' and row['NOC Code'] in hors_concours_nocs or row.get('Bib') in hors_concours:
+        return 'HORS_CONCOURS'
+    totals = [row.get(a + ' Total', '') for a in APPARATUS[discipline]] if kind in ('TEAM', 'AA') else []
+    # A split competition's combined row prints a total but no apparatus totals
+    if totals and not all(totals) and (any(totals) or not row['Total']):
+        return 'INCOMPLETE'
+    if row['Part']:
+        return 'UNPLACED'
+    if row['Purpose'] != 'FINAL':
+        return None
+    if kind == 'AA':
+        ranked = [r for r in rows if r['Rank']]
+        lowest = min((D(r['Total']) for r in ranked if r['Total']), default=None)
+        compatriots = sum(1 for r in ranked if r['NOC Code'] == row['NOC Code'])
+        if compatriots >= 2 and lowest is not None and row['Total'] and D(row['Total']) > lowest:
+            return 'NOC_LIMIT'
+    return 'UNPLACED'
 
 # ---------------------------------------------------------------- checks
 class Checks:

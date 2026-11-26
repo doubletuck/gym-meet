@@ -5,8 +5,8 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_asian_championships.py data/2026/2026-ASIAN-CHAMPIONSHIPS/1856[5-8]-*.pdf
 
 One book per discipline and age category (18565 MAG SR, 18566 MAG JR, 18567 WAG SR, 18568 WAG JR),
-each recognised by its title band. Writes PARTICIPANTS, JUDGES, SCORES-QUAL-*, SCORES-EVENT-*,
-SUMMARY-QUAL-{TEAM,AA}, SUMMARY-FINAL-{TEAM,AA} and an IMPORT.json per book next to the PDFs,
+each recognised by its title band. Writes PARTICIPANTS, JUDGES, SCORES-C1-*, SCORES-C3-*,
+RANKING-FINAL-{TEAM,AA} and an IMPORT.json per book next to the PDFs,
 reading event metadata from the EVENT.csv already there. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.16).
 
@@ -17,9 +17,10 @@ suffix).
 
 One competition is the qualification, the Team Final and the All-Around Final at once. The book
 prints the qualification rankings (every team and athlete, with Q/R/NR) and, from the same
-routines, Team Final and All-Around Final rankings (the qualifiers only, re-ranked). The finals'
-rankings are written as SUMMARY-FINAL-* files whose `Scores Round` is QUAL: the TEAM and AA
-sessions hold no routines of their own (§4.9).
+routines, Team Final and All-Around Final rankings (the qualifiers only, re-ranked). Competition I
+decided both titles, so only the finals' rankings are written, as RANKING-FINAL-* of C1, with the
+teams and athletes they leave out added unranked from the qualification rankings (NR: the NOC_LIMIT
+rank status); the team and all-around finals have no routines of their own (§4.9).
 
 Australia is "an invited country and does not enter any ranking": its rows print `*` for a rank
 and are kept unranked, its athletes entered as HORS_CONCOURS.
@@ -169,7 +170,7 @@ def judges(disc, ev):
         if not sur or not giv:
             err(f'{disc} judges: name split {name!r}')
         rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': AGE,
-                     'Event Start Date': ev['Start Date'], 'Round': rnd, 'Apparatus': app, 'Function': fn,
+                     'Event Start Date': ev['Start Date'], 'Competition': common.COMPETITION[rnd], 'Apparatus': app, 'Function': fn,
                      'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': judge_noc(noc)})
     sfx = '57A' if disc == 'MAG' else '57B'
     for rnd, code in (('QUAL', f'GA{G[disc]}000900_{sfx}'), ('EVENT', f'GA{G[disc]}000100_{sfx}')):
@@ -221,7 +222,7 @@ def meta(disc, rnd, app):
     if isinstance(date, dict):
         date = date[app]
     return {'Event Name': EVENTS[prefix(disc)]['Title'], 'Discipline': disc, 'Age Category': AGE,
-            'Session Start Date': date, 'Round': rnd, 'Part': '', 'Apparatus': app}
+            'Competition Start Date': date, 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app}
 
 def split_bp(vals, ctx):
     """Pen. and Bonus: signed, one decimal; the sign tells them apart. A bonus is written unsigned."""
@@ -296,7 +297,7 @@ def single_app(disc, rnd, app):
             QUAL[disc][(app, r['Bib'])] = r
             row |= {'Qualification': r['Q'], 'Qualification Rank': r['Rank']}
         out_rows.append(row)
-    out.csv(f'{prefix(disc)}-SCORES-{rnd}-{app}.csv', common.score_header(False, rnd == 'QUAL'), out_rows)
+    out.csv(f'{prefix(disc)}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(False, rnd == 'QUAL'), out_rows)
 
 def vault_attempt(tokens, ctx):
     """D E [pen/bonus...] VaultScore -> routine dict, remaining tokens."""
@@ -405,7 +406,7 @@ def vault(disc, rnd):
             rows.append(row)
     # For the qualifier lists: the double list's ranking decides the vault final
     TABLES[disc][(rnd, 'VT')] = [dict(Rank=r['Rank'], Bib=r['Bib'], Total=r['Total'], Q=r['Q']) for r in double]
-    out.csv(f'{prefix(disc)}-SCORES-{rnd}-VT.csv', common.score_header(True, rnd == 'QUAL'), rows)
+    out.csv(f'{prefix(disc)}-SCORES-{common.COMPETITION[rnd]}-VT.csv', common.score_header(True, rnd == 'QUAL'), rows)
 
 # ---------------------------------------------------------------- team / all-around reports
 ITEM = re.compile(r'(\d+\.\d{3})\s+(\d+\.\d{3})(?:\s+\((\d+)\))?|DNS')
@@ -566,36 +567,47 @@ def cross_check_qual(disc, athletes, ctx):
 def summary_meta(disc, rnd):
     ev = EVENTS[prefix(disc)]
     return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': AGE, 'Event Start Date': ev['Start Date'],
-            'Round': rnd, 'Part': ''}
+            'Competition': common.COMPETITION[rnd], 'Part': ''}
 
-SUMMARY_HEAD = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part']
+SUMMARY_HEAD = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part']
 
-def summary_team(disc, rnd, teams):
-    hdr = SUMMARY_HEAD + ['Rank', 'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
-    hdr += ['Qualification'] if rnd == 'QUAL' else ['Scores Round']
+def team_rows(disc, teams):
     rows = []
     for t in teams:
-        r = summary_meta(disc, rnd) | {'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['Penalty'],
-                                       'Total': t['Total'], 'Qualification': t['Q'], 'Scores Round': 'QUAL'}
+        r = summary_meta(disc, 'QUAL') | {'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': t['Penalty'],
+                                          'Total': t['Total'], 'Qualification': t['Q']}
         for a, app in enumerate(APPS[disc]):
             r[f'{app} Total'] = t['totals'][a]
         rows.append(r)
-    out.csv(f'{prefix(disc)}-SUMMARY-{"QUAL" if rnd == "QUAL" else "FINAL"}-TEAM.csv', hdr, rows)
+    return rows
 
-def summary_aa(disc, rnd, athletes):
-    hdr = SUMMARY_HEAD + ['Rank', 'Bib', 'Name', 'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + \
-          ['SJ Penalty', 'Total']
-    hdr += ['Qualification'] if rnd == 'QUAL' else ['Scores Round']
+def summary_team(disc, final, qualifying):
+    """Competition I decided the team title, and the book prints its routines ranked twice: the team
+    qualification and the team final (the qualifiers re-ranked). Only the final ranking is written,
+    with the teams it leaves out added from the qualification, unranked (competition-models.md §7.6)."""
+    hdr = SUMMARY_HEAD + ['Rank', 'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
+    out.ranking(prefix(disc), 'TEAM', hdr, team_rows(disc, final), EVENTS[prefix(disc)],
+                left_out_from=team_rows(disc, qualifying))
+
+def aa_rows(disc, label, athletes):
     rows = []
     for a in athletes:
-        r = summary_meta(disc, rnd) | {'Rank': a['Rank'], 'Bib': a['Bib'],
-                                       'Name': check_name(f'{disc} {rnd} AA', a['Bib'], a['NOC']),
-                                       'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total'],
-                                       'Qualification': a['Q'], 'Scores Round': 'QUAL'}
+        r = summary_meta(disc, 'QUAL') | {'Rank': a['Rank'], 'Bib': a['Bib'],
+                                          'Name': check_name(f'{disc} {label} AA', a['Bib'], a['NOC']),
+                                          'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total'],
+                                          'Qualification': a['Q']}
         for app in SUMMARY_APPS[disc]:
             r[f'{app} Total'] = a['apps'][app]['Total']
         rows.append(r)
-    out.csv(f'{prefix(disc)}-SUMMARY-{"QUAL" if rnd == "QUAL" else "FINAL"}-AA.csv', hdr, rows)
+    return rows
+
+def summary_aa(disc, final, qualifying):
+    """As `summary_team`: the all-around final ranking (two per country), with the athletes it leaves
+    out added from the qualification, unranked; those it marked NR are the NOC_LIMIT rank status."""
+    hdr = SUMMARY_HEAD + ['Rank', 'Bib', 'Name', 'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + \
+          ['SJ Penalty', 'Total']
+    out.ranking(prefix(disc), 'AA', hdr, aa_rows(disc, 'AA', final), EVENTS[prefix(disc)],
+                left_out_from=aa_rows(disc, 'QUAL', qualifying))
 
 def check_final_ranking(ctx, qual, final, key, two_per_country):
     """A finals ranking re-ranks the qualification's `Q` rows, unchanged, in the same order."""
@@ -730,23 +742,21 @@ for path in sys.argv[1:]:
 
     tq = team_report(disc, 'QUAL')
     cross_check_qual(disc, [x for t in tq for x in t['athletes']], f'{disc} team qual')
-    summary_team(disc, 'QUAL', tq)
     tf = team_report(disc, 'TEAM')
     cross_check_qual(disc, [x for t in tf for x in t['athletes']], f'{disc} team final')
     check_final_ranking(f'{disc} team final', tq, tf, 'NOC', False)
     for q, f in zip([t for t in tq if t['Q'] == 'Q'], tf):
         if (q['totals'], q['ranks'], q['Rank']) != (f['totals'], f['ranks'], f['Rank']):
             err(f'{disc} team final {f["NOC"]}: differs from its qualification row')
-    summary_team(disc, 'TEAM', tf)
+    summary_team(disc, tf, tq)
     TEAM_FINAL[disc] = tf
 
     AA_QUAL[disc] = aaq = aa_report(disc, 'QUAL')
     cross_check_qual(disc, aaq, f'{disc} AA qual')
-    summary_aa(disc, 'QUAL', aaq)
     AA_FINAL[disc] = aaf = aa_report(disc, 'AA')
     cross_check_qual(disc, aaf, f'{disc} AA final')
     check_final_ranking(f'{disc} AA final', aaq, aaf, 'Bib', True)
-    summary_aa(disc, 'AA', aaf)
+    summary_aa(disc, aaf, aaq)
 
     # Vault double list rows carry their NOC for the medal check
     for r in TABLES[disc][('EVENT', 'VT')]:

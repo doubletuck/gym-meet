@@ -25,7 +25,7 @@ The frontend user interface is a React, TypeScript and Vite application, built w
 Tests are found in `backend/src/test/java/`. Run them with `mvn -q test` from `backend/`.
 
 ### Tools Testing
-The results-sourcing script's tests sit beside it. Run them with `python3 -I -m unittest discover -s backend/tools/results-sourcing` from the repository root. The import file conversion script's tests sit beside it too: `python3 -I -m unittest discover -s backend/tools/results-parsing -p "test_*.py"`.
+The results-sourcing script's tests sit beside it. Run them with `python3 -I -m unittest discover -s backend/tools/results-sourcing` from the repository root.
 
 ### Frontend Testing
 Tests sit beside the code they test (`*.test.ts(x)` under `frontend/app/`). Run them with `npm test` from `frontend/`, and `npm run typecheck` to check types.

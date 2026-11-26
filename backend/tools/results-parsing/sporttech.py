@@ -67,16 +67,21 @@ def routine(r):
     return ('COMPLETED', r['Frame: DMarkT_G'], r['Frame: EMarkTTT_G'], value(r['Frame: DBonusT_G'], False),
             value(r['Frame: NPenaltyT_G'], True), total, value(r['Frame: VaultBonusT_G'], False))
 
+# The report names the export's rounds use, by the competition code the files write
+ROUND_OF_COMPETITION = {'C1': 'QUAL', 'C2': 'AA', 'C3': 'EVENT', 'C4': 'TEAM'}
+
 def crosscheck(out_dir, prefix, export_csv, title, round_of_date, noc_of, err):
-    """Every routine, rank and standing in `<prefix>-SCORES-*` and `-SUMMARY-*` against the export.
-    `noc_of(bib)` gives a participant's NOC, to find a team's frames."""
+    """Every routine, rank and standing in `<prefix>-SCORES-*` and `-RANKING-*` against the export.
+    `noc_of(bib)` gives a participant's NOC, to find a team's frames. The export's rounds are named as
+    the books name their reports (`round_of_date`: QUAL, AA, EVENT); a file names the competition."""
     fr = frames(export_csv, title, round_of_date, err)
     seen = set()
     for name in sorted(os.listdir(out_dir)):
-        m = re.fullmatch(rf'{prefix}-SCORES-([A-Z]+)-([A-Z]{{2}})\.csv', name)
+        m = re.fullmatch(rf'{prefix}-SCORES-([A-Z0-9]+)-([A-Z]{{2}})\.csv', name)
         if not m:
             continue
-        rnd, app = m.groups()
+        code, app = m.groups()
+        rnd = ROUND_OF_COMPETITION[code]
         with open(os.path.join(out_dir, name), encoding='utf-8') as f:
             for row in csv.DictReader(f):
                 attempts = ('1', '2') if 'Status1' in row else ('',)
@@ -104,12 +109,11 @@ def crosscheck(out_dir, prefix, export_csv, title, round_of_date, noc_of, err):
     # All-around and team standings: each frame also carries its performance's totals and ranks
     perf = {(rnd, bib): r for (rnd, bib, _, _), r in fr.items()}
     for name in sorted(os.listdir(out_dir)):
-        m = re.fullmatch(rf'{prefix}-SUMMARY-(QUAL|FINAL)-(AA|TEAM)\.csv', name)
-        if not m:
+        if not re.fullmatch(rf'{prefix}-RANKING-(QUAL|FINAL)-(AA|TEAM)\.csv', name):
             continue
-        rnd = 'QUAL' if m.group(1) == 'QUAL' else m.group(2)
         with open(os.path.join(out_dir, name), encoding='utf-8') as f:
             for row in csv.DictReader(f):
+                rnd = ROUND_OF_COMPETITION[row['Competition']]
                 if 'Bib' in row:
                     r = perf.get((rnd, row['Bib']))
                     theirs = r and (r['Performance: Rank_G'] if row['Rank'] else '',

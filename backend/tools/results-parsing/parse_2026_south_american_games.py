@@ -4,7 +4,7 @@ Usage (needs poppler's pdftotext on PATH):
 
     python3 -I parse_2026_south_american_games.py data/2026/2026-SOUTH-AMERICAN-GAMES/18708-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS, JUDGES, SCORES-{QUAL,EVENT}-<APP>, SUMMARY-FINAL-TEAM and SUMMARY-FINAL-AA, and an
+Writes PARTICIPANTS, JUDGES, SCORES-{C1,C3}-<APP>, RANKING-FINAL-TEAM and RANKING-FINAL-AA, and an
 IMPORT.json, per discipline next to the PDF, reading event metadata from the EVENT.csv already there.
 Exits non-zero if any check fails (docs/instructions-results-parsing.md §3; this source format is
 §5.22).
@@ -13,11 +13,11 @@ The book is the Games' media book: rhythmic (pp. 2-77), trampoline (pp. 79-133),
 (pp. 136-249), the only part read. Every artistic page has text and a footer code like
 `C73A.GARM1APFX-------------QUAL--------.ENG` (report family, then the event); headers are Spanish
 over English. "Competition I: Qualification" (MAG 13, WAG 14 September) is followed by apparatus
-finals (15-16 September), so it is QUAL. The schedule's "Competition II: Final" (team and
+finals (15-16 September): Competition I (C1). The schedule's "Competition II: Final" (team and
 all-around) shares qualification's time block, and its reports, titled Final, rank the
 qualification's routines: the team final (four of five up counting) and the all-around final (two
-per NOC ranked, the others printed unranked). So TEAM and AA hold only a SUMMARY-FINAL-TEAM /
-SUMMARY-FINAL-AA with `Scores Round` QUAL (§4.9, as at the Asian Games).
+per NOC ranked, the others printed unranked). So Competition I decided both titles: they are a
+RANKING-FINAL-TEAM and a RANKING-FINAL-AA of C1 (§4.9, as at the Asian Games).
 
 Sources: the apparatus tables give every qualification and final routine, except vault, whose
 qualification table lists only the two-vault athletes. WAG prints a First Vault list (every first
@@ -644,7 +644,7 @@ def judges(disc):
         for app, f, name, noc in got:
             sur, giv = split_surname_first(name)
             rows.append({'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR',
-                         'Event Start Date': ev['Start Date'], 'Round': rnd, 'Apparatus': app or '', 'Function': f,
+                         'Event Start Date': ev['Start Date'], 'Competition': common.COMPETITION[rnd], 'Apparatus': app or '', 'Function': f,
                          'Name': name, 'Surname': sur, 'Given Name': giv, 'NOC Code': noc})
     out.csv(f'{PREFIX[disc]}-JUDGES.csv', common.JUDGES, rows)
     for r in rows:
@@ -656,8 +656,8 @@ def meta(disc, rnd, app, rank, bib):
     ev = EVENTS[PREFIX[disc]]
     name, noc = NAMES[disc][bib]
     date = SESSION_DATE[disc][('EVENT', app)] if rnd == 'EVENT' else SESSION_DATE[disc][rnd]
-    return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Session Start Date': date,
-            'Round': rnd, 'Part': '', 'Apparatus': app, 'Rank': rank, 'Bib': bib, 'Name': name, 'NOC Code': noc}
+    return {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Competition Start Date': date,
+            'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app, 'Rank': rank, 'Bib': bib, 'Name': name, 'NOC Code': noc}
 
 def routine_cols(r, n=''):
     return {f'{k}{n}': r[k] for k in ROUTINE_KEYS}
@@ -773,30 +773,32 @@ def podium(rows, team=False):
 # ---------------------------------------------------------------- summaries
 def summary_team(disc, teams):
     ev = EVENTS[PREFIX[disc]]
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'NOC Code'] + \
-          [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total', 'Scores Round']
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'NOC Code'] + \
+          [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
     rows = []
     for t in teams:
+        # Competition I decided the title: the team final ranks its routines
         r = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-             'Round': 'TEAM', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
-             'Total': t['Total'], 'Scores Round': 'QUAL'}
+             'Competition': 'C1', 'Part': '', 'Rank': t['Rank'], 'NOC Code': t['NOC'], 'SJ Penalty': '',
+             'Total': t['Total']}
         r.update({f'{a} Total': t['totals'][a] for a in SUMMARY_APPS[disc]})
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-FINAL-TEAM.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'TEAM', hdr, rows, EVENTS[PREFIX[disc]])
     return rows
 
 def summary_aa(disc, athletes):
     ev = EVENTS[PREFIX[disc]]
-    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Round', 'Part', 'Rank', 'Bib', 'Name',
-           'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total', 'Scores Round']
+    hdr = ['Event Name', 'Discipline', 'Age Category', 'Event Start Date', 'Competition', 'Part', 'Rank', 'Bib', 'Name',
+           'NOC Code'] + [f'{a} Total' for a in SUMMARY_APPS[disc]] + ['SJ Penalty', 'Total']
     rows = []
     for a in athletes:
+        # Competition I decided the title: the all-around final ranks its routines
         r = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-             'Round': 'AA', 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'], 'Name': NAMES[disc][a['Bib']][0],
-             'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total'], 'Scores Round': 'QUAL'}
+             'Competition': 'C1', 'Part': '', 'Rank': a['Rank'], 'Bib': a['Bib'], 'Name': NAMES[disc][a['Bib']][0],
+             'NOC Code': a['NOC'], 'SJ Penalty': '', 'Total': a['Total']}
         r.update({f'{x} Total': a['apps'][x]['Total'] for x in SUMMARY_APPS[disc]})
         rows.append(r)
-    out.csv(f'{PREFIX[disc]}-SUMMARY-FINAL-AA.csv', hdr, rows)
+    out.ranking(PREFIX[disc], 'AA', hdr, rows, EVENTS[PREFIX[disc]])
     # As written (after corrections): two per NOC ranked, in order, 1..n with shared ranks only on
     # equal totals; the others unranked
     per_noc, n = Counter(), 0
@@ -912,7 +914,7 @@ def run(disc):
                 for k in list(r):
                     if k.startswith('_'):
                         del r[k]
-            out.csv(f'{PREFIX[disc]}-SCORES-QUAL-VT.csv', common.score_header(True, True), rows)
+            out.csv(f'{PREFIX[disc]}-SCORES-C1-VT.csv', common.score_header(True, True), rows)
             results[('QUAL', 'VT')] = {r['Bib']: (r['Qualification Rank'], r['Total']) for r in rows if r['Qualification Rank']}
             if disc == 'WAG' and len(rows) != len(fv):
                 err(f'{disc} QUAL VT: {len(rows)} rows, {len(fv)} first vaults')
@@ -924,7 +926,7 @@ def run(disc):
                 for k in list(r):
                     if k.startswith('_'):
                         del r[k]
-            out.csv(f'{PREFIX[disc]}-SCORES-EVENT-VT.csv', common.score_header(True, False), f_rows)
+            out.csv(f'{PREFIX[disc]}-SCORES-C3-VT.csv', common.score_header(True, False), f_rows)
         else:
             rows = []
             for t in qual[app]:
@@ -937,14 +939,14 @@ def run(disc):
                 row.update(routine_cols(dns()))
                 row['Qualification'] = row['Qualification Rank'] = ''
                 rows.append(row)
-            out.csv(f'{PREFIX[disc]}-SCORES-QUAL-{app}.csv', common.score_header(False, True), rows)
+            out.csv(f'{PREFIX[disc]}-SCORES-C1-{app}.csv', common.score_header(False, True), rows)
             results[('QUAL', app)] = {r['Bib']: (r['Rank'], r['Total']) for r in rows}
             f_rows = []
             for t in final[app]:
                 row = meta(disc, 'EVENT', app, t['Rank'], t['Bib'])
                 row.update(routine_cols(t))
                 f_rows.append(row)
-            out.csv(f'{PREFIX[disc]}-SCORES-EVENT-{app}.csv', common.score_header(False, False), f_rows)
+            out.csv(f'{PREFIX[disc]}-SCORES-C3-{app}.csv', common.score_header(False, False), f_rows)
         results[('EVENT', app)] = {r['Bib']: (r['Rank'], r['Total']) for r in f_rows}
         for r in rows + f_rows:
             if r['Name'] != NAMES[disc][r['Bib']][0]:

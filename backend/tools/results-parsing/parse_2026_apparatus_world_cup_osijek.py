@@ -5,7 +5,7 @@ Usage (needs poppler's pdftotext on PATH):
     python3 -I parse_2026_apparatus_world_cup_osijek.py \\
         data/2026/2026-APPARATUS-WORLD-CUP-OSIJEK/17937-ResultsbookMedia.pdf
 
-Writes PARTICIPANTS / JUDGES / SCORES-QUAL-<APP> / SCORES-EVENT-<APP> CSVs and an IMPORT.json
+Writes PARTICIPANTS / JUDGES / SCORES-C1-<APP> / SCORES-C3-<APP> CSVs and an IMPORT.json
 per discipline next to the PDF, reading event metadata from the EVENT.csv already there and
 applying the event's CORRECTIONS.csv. Exits non-zero if any check fails
 (docs/instructions-results-parsing.md §3; this source format is §5.10).
@@ -404,7 +404,7 @@ def results(disc, rnd, app):
             dns = r.get('Status') == 'DNS' or r.get('v1') == 'DNS'
             (DNS if dns else COMPETED)[(disc, app)].add(r['Bib'])
         row = {'Event Name': EVENTS[PREFIX[disc]]['Title'], 'Discipline': disc, 'Age Category': 'SR',
-               'Session Start Date': DATES[rnd][DAY[disc][app]], 'Round': rnd, 'Part': '', 'Apparatus': app,
+               'Competition Start Date': DATES[rnd][DAY[disc][app]], 'Competition': common.COMPETITION[rnd], 'Part': '', 'Apparatus': app,
                'Rank': r['Rank'], 'Bib': r['Bib'], 'Name': p['Name'], 'NOC Code': p['NOC Code']}
         if app == 'VT':
             row |= vault_attempt(1, r['v1'], wag) | vault_attempt(2, r['v2'], wag)
@@ -415,7 +415,7 @@ def results(disc, rnd, app):
         if qual:
             row |= {'Qualification': r['Q'], 'Qualification Rank': r['Rank']}
         written.append(row)
-    out.csv(f'{PREFIX[disc]}-SCORES-{rnd}-{app}.csv', common.score_header(app == 'VT', qual), written)
+    out.csv(f'{PREFIX[disc]}-SCORES-{common.COMPETITION[rnd]}-{app}.csv', common.score_header(app == 'VT', qual), written)
     return written
 
 # ---------------------------------------------------------------- qualifiers, finals, start lists
@@ -597,7 +597,7 @@ def judges(disc, rnd):
     ev = EVENTS[PREFIX[disc]]
     title = f'Judges Assignment — {"Qualifications" if rnd == "QUAL" else "Finals"}'
     base = {'Event Name': ev['Title'], 'Discipline': disc, 'Age Category': 'SR', 'Event Start Date': ev['Start Date'],
-            'Round': rnd}
+            'Competition': common.COMPETITION[rnd]}
     rows, block, panels = [], None, defaultdict(list)
     for n in report(disc, title):
         for l in page(n).split('\n'):
