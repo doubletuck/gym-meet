@@ -14,9 +14,9 @@ import doubletuck.meet.domain.Routine;
 import doubletuck.meet.domain.Score;
 import doubletuck.meet.domain.ScoreStatus;
 import doubletuck.meet.domain.TeamScoreRole;
+import doubletuck.meet.domain.TitleFormat;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.ScoreRepository;
-import doubletuck.meet.service.ApparatusRanks;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -50,14 +50,14 @@ class ScoreImporter {
 
     void importFile(ImportContext context, String fileName) {
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
-            CompetitionType type = row.requiredCode("Round", CompetitionType::find);
+            CompetitionType type = row.requiredCode("Competition", CompetitionType::find);
             Apparatus apparatus = row.requiredCode("Apparatus", Apparatus::find);
             Integer part = row.integer("Part");
-            if (row.date("Session Start Date") == null) {
-                throw row.error("'Session Start Date' is required");
+            if (row.date("Competition Start Date") == null) {
+                throw row.error("'Competition Start Date' is required");
             }
             Competition competition = context.competitionForScores(type, apparatus, part,
-                    row.date("Session Start Date"), row);
+                    row.date("Competition Start Date"), row);
 
             Score score = new Score();
             score.setParticipant(context.participant(row));
@@ -79,7 +79,8 @@ class ScoreImporter {
             score = scoreRepository.save(score);
             context.getScores().add(score);
             context.getScorePlacings().add(new ImportContext.ScorePlacing(score, row.integer("Rank"),
-                    row.integer("Qualification Rank"), row.code("Qualification", QualificationResult::find)));
+                    row.integer("Qualification Rank"), row.code("Qualification", QualificationResult::find),
+                    row.location()));
             // Optional: where the file states each score's team role, it isn't worked out from the totals
             TeamScoreRole teamRole = row.code("Team Role", TeamScoreRole::find);
             if (teamRole != null) {
@@ -91,11 +92,11 @@ class ScoreImporter {
 
     /**
      * Turns the placings printed with the scores into apparatus rankings, one per
-     * competition, apparatus and purpose ({@link ApparatusRanks#rankPurpose}). In
-     * qualification a non-vault apparatus has one ranking, which decides the final
-     * ({@code Qualification Rank}, equal to {@code Rank}); vault has two, the
-     * single-vault list ({@code Rank}, every vaulter, on the first vault) and the
-     * two-vault list deciding the final ({@code Qualification Rank}, only those who
+     * competition, apparatus and purpose ({@link #rankPurpose}). Where Competition I
+     * qualifies for apparatus finals, a non-vault apparatus has one ranking, which
+     * decides the final ({@code Qualification Rank}, equal to {@code Rank}); vault has
+     * two, the single-vault list ({@code Rank}, every vaulter, on the first vault) and
+     * the two-vault list deciding the final ({@code Qualification Rank}, only those who
      * vaulted twice). A ranking is created only where some row places a score in it.
      */
     void rankScores(ImportContext context) {
@@ -108,8 +109,21 @@ class ScoreImporter {
         for (List<ImportContext.ScorePlacing> group : groups.values()) {
             Competition competition = group.getFirst().score().getCompetition();
             Apparatus apparatus = group.getFirst().score().getApparatus();
-            RankingPurpose purpose = ApparatusRanks.rankPurpose(competition.getType(), apparatus);
-            if (competition.getType() == CompetitionType.C1 && apparatus == Apparatus.VT) {
+            RankingPurpose purpose = rankPurpose(context.getFormat().getApparatusFormat(), competition, apparatus);
+            boolean qualifiesForFinals = competition.getType() == CompetitionType.C1 && competition.getPart() == null
+                    && context.getFormat().getApparatusFormat() == TitleFormat.FINAL;
+            if (!qualifiesForFinals) {
+                group.stream()
+                        .filter(placing -> placing.qualificationRank() != null || placing.qualification() != null)
+                        .findFirst()
+                        .ifPresent(placing -> {
+                            throw new ImportException(placing.location() + ": 'Qualification' or "
+                                    + "'Qualification Rank' is filled, but this competition qualifies no one to an "
+                                    + "apparatus final (apparatus format " + context.getFormat().getApparatusFormat()
+                                    + ")");
+                        });
+            }
+            if (qualifiesForFinals && apparatus == Apparatus.VT) {
                 rank(context, group, competition, apparatus, purpose, placing -> true,
                         ImportContext.ScorePlacing::rank, placing -> null,
                         placing -> placing.score().getRoutine().getScore());
@@ -125,6 +139,27 @@ class ScoreImporter {
                         ImportContext.ScorePlacing::qualification, placing -> placing.score().getTotalScore());
             }
         }
+    }
+
+    /**
+     * The purpose of the ranking a score's own placing ({@code Rank}) belongs to. In an
+     * unsplit Competition I it follows the apparatus format: where it qualifies for the
+     * apparatus finals, the ranking deciding the final, except on vault, where it is the
+     * single-vault list (the first vault, which counts for the all-around); where it
+     * decides the apparatus titles itself, the final placings. An apparatus final's
+     * placings are final; all others decide nothing (all-around and team finals, a split
+     * competition's parts, a meet with no apparatus titles).
+     */
+    static RankingPurpose rankPurpose(TitleFormat apparatusFormat, Competition competition, Apparatus apparatus) {
+        return switch (competition.getType()) {
+            case C1 -> competition.getPart() != null ? RankingPurpose.INFORMATIONAL : switch (apparatusFormat) {
+                case FINAL -> apparatus == Apparatus.VT ? RankingPurpose.INFORMATIONAL : RankingPurpose.QUALIFYING;
+                case C1 -> RankingPurpose.FINAL;
+                case NONE -> RankingPurpose.INFORMATIONAL;
+            };
+            case C3 -> RankingPurpose.FINAL;
+            case C2, C4 -> RankingPurpose.INFORMATIONAL;
+        };
     }
 
     private void rank(ImportContext context, List<ImportContext.ScorePlacing> group, Competition competition,

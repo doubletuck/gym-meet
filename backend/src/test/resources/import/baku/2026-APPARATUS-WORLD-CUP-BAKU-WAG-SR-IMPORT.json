@@ -11,7 +11,10 @@
         "country" : "AZE",
         "figEventNumber" : "17935",
         "venue" : "Milli Gimnastika Arenasi",
-        "apparatusSuppliers" : "Spieth"
+        "apparatusSuppliers" : "Spieth",
+        "teamFormat" : "NONE",
+        "aaFormat" : "NONE",
+        "apparatusFormat" : "FINAL"
     },
     "participants" : [
         "2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-PARTICIPANTS.csv"
@@ -20,8 +23,8 @@
         "2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-JUDGES.csv"
     ],
     "scores" : [
-        "2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-SCORES-QUAL-VT.csv",
-        "2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-SCORES-EVENT-VT.csv"
+        "2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-SCORES-C1-VT.csv",
+        "2026-APPARATUS-WORLD-CUP-BAKU-WAG-SR-SCORES-C3-VT.csv"
     ],
-    "summaries" : []
+    "rankings" : []
 }

@@ -10,8 +10,8 @@ it before the model change. The rules settled here move into
 | Step | What | Status |
 |---|---|---|
 | 1 | Schema and domain: `Competition`, `Ranking`, `Team`, `TeamResultScore`, rank status; data rebuilt by re-importing | Done ([data-model.md](data-model.md)) |
-| 2 | Import file standard: `RANKING-*`, `C1`–`C4`, `Rank Status`, format columns, `EventFormat` | |
-| 3 | Reshape the existing files | |
+| 2 | Import file standard: `RANKING-*`, `C1`–`C4`, `Purpose`, `Rank Status`, format columns, `EventFormat`; the importer reads only the new files, and `convert_file_standard.py` makes the mechanical renames. The `Team` column moved to step 6 | Done ([import-file-model.md](import-file-model.md)) |
+| 3 | Reshape the existing files: convert `data/`, then by hand the formats, title-deciding `RANKING-QUAL` → `RANKING-FINAL` of `C1`, rank statuses for blank ranks, Asian Championships' qualifying rankings dropped, `CORRECTIONS.csv` keys | |
 | 4 | Parsers and the parsing doc | |
 | 5 | API and front end aligned with the model | |
 | 6 | Youth Olympic Games, mixed team included | |
@@ -407,7 +407,10 @@ holds each gymnast's place in the all-around ranking. "One extra row per score" 
 - **A new `Rank Status` column.** It's blank when the row is ranked.
 - **`EVENT.csv`** gains `Team Format`, `AA Format` and `Apparatus Format`.
 - **A `Team` column** (team name) on summaries and scores. It's needed only where a team isn't
-  simply the NOC, such as mixed teams.
+  simply the NOC, such as mixed teams. (Moved to step 6: every team so far, `WG1`/`WG2` and
+  each YOG mixed team included, is one NOC.)
+- **A `Purpose` column** on ranking files (added in step 2), so a file states its own context:
+  `QUALIFYING`, `FINAL`, or `INFORMATIONAL` on a split competition's part rows.
 - **Re-shaping existing files:**
   - title-deciding `SUMMARY-QUAL-*` become `RANKING-FINAL-*` with competition `C1` (African,
     Pan Ams, Europeans, Commonwealth, Mediterranean Games, CAC Games);

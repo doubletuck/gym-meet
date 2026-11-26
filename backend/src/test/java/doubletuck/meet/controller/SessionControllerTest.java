@@ -189,7 +189,7 @@ class SessionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.session.slug").value("qualification"))
                 .andExpect(jsonPath("$.apparatus", not(empty())))
-                .andExpect(jsonPath("$.allAround", hasSize(6)))
+                .andExpect(jsonPath("$.allAround", hasSize(7)))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Yeap')].rank").value(9))
                 .andExpect(jsonPath("$.allAround[0].athlete.surname").value("Ke"))
                 .andExpect(jsonPath("$.allAround[0].apparatusScores.BB").value(14.933))

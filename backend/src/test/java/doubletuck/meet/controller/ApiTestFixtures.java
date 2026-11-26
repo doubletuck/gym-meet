@@ -3,13 +3,14 @@ package doubletuck.meet.controller;
 import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Competition;
-import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.Round;
 import doubletuck.meet.importer.EventImporter;
 import doubletuck.meet.repository.CompetitionRepository;
+import doubletuck.meet.service.CompetitionNaming;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 
 /** Loads the importer's real-data fixtures for the API tests. */
@@ -34,10 +35,12 @@ final class ApiTestFixtures {
         }
     }
 
+    /** By the round the API names the session by. */
     static Long sessionId(CompetitionRepository repository, Discipline discipline, Round round, Apparatus apparatus,
             Integer part) {
-        return repository.findAll().stream()
-                .filter(s -> s.getDiscipline() == discipline && s.getType() == CompetitionType.of(round)
+        List<Competition> all = repository.findAll();
+        return all.stream()
+                .filter(s -> s.getDiscipline() == discipline && CompetitionNaming.legacyRound(s, all) == round
                         && s.getApparatus() == apparatus && Objects.equals(s.getPart(), part))
                 .map(Competition::getId)
                 .findFirst()

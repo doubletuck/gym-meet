@@ -56,7 +56,7 @@ A manifest covers one discipline and age category of a competition (e.g. the
 anywhere in its files rolls back everything from that manifest, and the error
 names the file and line.
 
-1. **Event.** Found by FIG event number, or when there is none, by title and
+1. **Event and format.** Found by FIG event number, or when there is none, by title and
    overlapping dates; created if not found. Two manifests sharing an event (the
    2026 Worlds' MAG and WAG) therefore import into one `Event`. A meet's
    disciplines can run on different days under one title (the 2026 US
@@ -74,7 +74,10 @@ names the file and line.
    error. Without one, the slug is the manifest's prefix without the discipline
    and age category, lowercased: `2026-WORLD-CHAMPIONSHIPS-WAG-SR-IMPORT.json`
    gives `2026-world-championships`. When another event already has that slug,
-   the discipline is added (`2026-world-championships-wag`).
+   the discipline is added (`2026-world-championships-wag`). The manifest's
+   `teamFormat`, `aaFormat` and `apparatusFormat` (each `C1`, `FINAL` or
+   `NONE`; required) are stored as the slice's `EventFormat`: where each title
+   was decided. The files are checked against it (see [Checks](#checks)).
 2. **Participants.** Each entry-list row is matched to an `Athlete` (below) and
    entered into the event. A club is found or created by name within the
    participant's NOC. Some entry lists print a country's NOC only on its first
@@ -85,34 +88,33 @@ names the file and line.
    (`D+`, `E+`, `S+`) become `bonusDetail` entries. Once every scores file is read,
    the placings printed with the scores become apparatus rankings (see
    [Rankings](#rankings)).
-4. **Summaries.** Team, all-around and combined apparatus standings become
-   rankings of the competition their round and part identify (see
-   [Rankings](#rankings)).
-5. **Judges.** Attached to the competition their round and apparatus identify.
+4. **Rankings.** Team, all-around and combined apparatus standings
+   (`RANKING-*` files) become rankings of the competition their `Competition`
+   and `Part` identify (see [Rankings](#rankings)). Then the competitions and
+   rankings are checked against the format.
+5. **Judges.** Attached to the competition their `Competition` and apparatus identify.
 6. **Reconciling.** The imported scores are checked against the published
    totals (see [Checks](#checks)).
 
 ### Competitions
 
-The files still name a competition by its round code: `QUAL` is `C1`, `AA` is
-`C2`, `EVENT` is `C3` and `TEAM` is `C4` ([data-model.md](data-model.md) §2). A
-score's competition is its round and part, plus its apparatus when the competition
-is held one per apparatus:
+The files name a competition by its type, `C1`–`C4` ([data-model.md](data-model.md)
+§2). A score's competition is its `Competition` and `Part`, plus its apparatus when
+the competition is held one per apparatus:
 
-- **Apparatus finals** (`EVENT`) — always one competition per apparatus.
-- **Qualification at an apparatus-format meet** (a World Cup) — one competition per
-  apparatus. A meet is treated as apparatus-format when its manifest has no team or
-  all-around summary at all (qualifying or final), since such meets rank neither.
-- **Everything else** (championship qualification, team and all-around finals)
+- **Apparatus finals** (`C3`) — always one competition per apparatus.
+- **Competition I at an apparatus World Cup** — one competition per apparatus. A
+  meet is one when its format holds no team or all-around title (both `NONE`).
+- **Everything else** (championship Competition I, team and all-around finals)
   — one competition covering every apparatus.
 
-The competition's date is the `Session Start Date` of its scores. A split
+The competition's date is the `Competition Start Date` of its scores. A split
 competition's whole row (part blank), which holds only combined standings, is
-created from the summaries and dated on its first part. A summary row with a
-`Scores Round` creates no competition: it ranks the routines of that round's
-competition, whose scores must already be imported (2026 Asian Championships and
-South American Games: the team and all-around finals, `QUAL`; 2026 Asian Games: the
-all-around final; 2026 Oceania Championships: the team final, `AA`).
+created from the rankings and dated on its first part. Any other ranking row ranks
+a competition whose scores must already be imported: a final ranking of `C1`
+(2026 Asian Championships and South American Games: the team and all-around titles;
+2026 Asian Games: the all-around title; 2026 Oceania Championships: both) creates
+no competition of its own.
 
 A judge with no apparatus (Superior Jury) in a competition held one per apparatus
 is attached to each of those competitions: the finals' Superior Jury presides over
@@ -125,18 +127,28 @@ Each ranking is one competition's routines ranked for one purpose
 
 | File content | Ranking |
 |---|---|
-| `SUMMARY-QUAL-<X>` rows | `QUALIFYING` team or all-around ranking (Q/R/NR kept) |
-| `SUMMARY-FINAL-<X>` rows | `FINAL` ranking; Q/R/NR on one fails the import |
+| File content | Ranking |
+|---|---|
+| `RANKING-QUAL-<X>` rows | `QUALIFYING` team or all-around ranking (Q/R/NR kept) |
+| `RANKING-FINAL-<X>` rows | `FINAL` ranking; Q/R/NR on one fails the import |
 | A split competition's part rows (`Part` set) | `INFORMATIONAL`: the day's standings decide nothing |
-| `SUMMARY-FINAL-<APP>` rows (US) | `FINAL` apparatus ranking of the whole row |
-| Score `Rank`/`Qualification Rank`/`Qualification`, qualification, not vault | one `QUALIFYING` apparatus ranking (the two columns always agree) |
-| Same, qualification vault | `Rank`: an `INFORMATIONAL` single-vault list of every vaulter on the first vault; `Qualification Rank` + `Qualification`: a `QUALIFYING` double-vault list of those who vaulted twice |
-| Score `Rank`, apparatus final | `FINAL` apparatus ranking |
-| Score `Rank`, all-around or team final, or a part | `INFORMATIONAL` apparatus ranking |
+| `RANKING-FINAL-<APP>` rows (US) | `FINAL` apparatus ranking of the whole row |
+| Score `Rank`/`Qualification Rank`/`Qualification`, `C1` with apparatus format `FINAL`, not vault | one `QUALIFYING` apparatus ranking (the two columns always agree) |
+| Same, vault | `Rank`: an `INFORMATIONAL` single-vault list of every vaulter on the first vault; `Qualification Rank` + `Qualification`: a `QUALIFYING` double-vault list of those who vaulted twice |
+| Score `Rank`, `C1` (not a part) with apparatus format `C1` | `FINAL` apparatus ranking |
+| Score `Rank`, apparatus final (`C3`) | `FINAL` apparatus ranking |
+| Score `Rank`, all-around or team final, a part, or apparatus format `NONE` | `INFORMATIONAL` apparatus ranking |
+
+A ranking row's `Purpose` must agree with its file name (`QUALIFYING` in
+`RANKING-QUAL-*`, `FINAL` in `RANKING-FINAL-*`) or, on a part's row, be
+`INFORMATIONAL`. `Qualification` or `Qualification Rank` on a score where
+Competition I qualifies no one to apparatus finals fails the import.
 
 An apparatus ranking is created only where some row places a score in it. Team rows
-find or create the slice's `Team` for the NOC. A result with a printed rank gets the
-rank status `RANKED`; one without is left unstated until the files state it.
+find or create the slice's `Team` for the NOC. A ranking row with a printed rank
+gets the rank status `RANKED`, and must leave `Rank Status` blank; one without a
+rank must state its `Rank Status`. Results worked out from scores are `RANKED`
+where ranked and otherwise unstated (the score's own status explains a DNS).
 
 ### Matching athletes
 
@@ -161,7 +173,19 @@ apply this (`PersonName`), so it holds for every write, not only imports.
 
 ## Checks
 
-Totals are stored as published, never recomputed
+**Format.** These fail the import:
+
+- a qualifying ranking of a title whose format isn't `FINAL`, or that doesn't
+  rank `C1` (a title Competition I decided has a `FINAL` ranking of `C1`, not a
+  qualifying one);
+- a final ranking that doesn't rank the competition the format names (`C1`
+  for `C1`; `C4`, `C2` or `C3` for a team, all-around or apparatus `FINAL`);
+- a qualifying or final ranking of a title whose format is `NONE`;
+- a title whose format isn't `NONE` with no `FINAL` ranking (a book never
+  parsed, such as the 2026 Junior Europeans MAG all-around final);
+- a `C4`, `C2` or `C3` competition whose title's format isn't `FINAL`.
+
+**Totals.** Totals are stored as published, never recomputed
 ([data-model.md](data-model.md) §5), so the importer checks them against the
 scores and reports any that don't agree as a warning:
 
@@ -202,7 +226,7 @@ different dates, and judges for a competition with no scores are also reported.
 ## Importing again
 
 With `--import.replace`, a discipline and age category already in the event is
-deleted and imported again: its rankings with their results and team score links,
+deleted and imported again: its format, its rankings with their results and team score links,
 its teams, and its competitions with their scores and judges, then the event's participants of that discipline left with no results at all.
 Athletes and clubs are kept, so the reimport matches them again. Other
 disciplines and age categories sharing the event aren't touched.

@@ -4,7 +4,9 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.CompetitionType;
+import doubletuck.meet.domain.Round;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,33 @@ public final class CompetitionNaming {
             CompetitionType.C2, CompetitionType.C3);
 
     private CompetitionNaming() {
+    }
+
+    /**
+     * The round the API names a competition by, until it's named from its rankings (rollout
+     * step 5): a Competition I that is the only competition of its discipline and age category
+     * (Oceania, US Championships) decided everything, so it keeps the name the files gave it
+     * before Competition I was one code, the all-around final.
+     *
+     * @param competitions the event's competitions (those of other disciplines and age categories are ignored)
+     */
+    public static Round legacyRound(Competition competition, Collection<Competition> competitions) {
+        if (competition.getType() == CompetitionType.C1 && competitions.stream()
+                .filter(other -> other.getDiscipline() == competition.getDiscipline()
+                        && other.getAgeCategory() == competition.getAgeCategory())
+                .allMatch(other -> other.getType() == CompetitionType.C1)) {
+            return Round.AA;
+        }
+        return competition.getType().getLegacyRound();
+    }
+
+    /** @param competitions the event's competitions, as for {@link #legacyRound} */
+    public static String slug(Competition competition, Collection<Competition> competitions) {
+        if (legacyRound(competition, competitions) == Round.AA && competition.getType() == CompetitionType.C1) {
+            String name = "all-around-final";
+            return competition.getPart() != null ? name + "-part-" + competition.getPart() : name;
+        }
+        return slug(competition);
     }
 
     public static String slug(Competition competition) {

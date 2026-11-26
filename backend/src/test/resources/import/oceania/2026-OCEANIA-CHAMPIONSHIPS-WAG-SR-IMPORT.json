@@ -12,20 +12,23 @@
         "country" : "AUS",
         "figEventNumber" : "18530",
         "venue" : "Sleeman Sports Complex",
-        "apparatusSuppliers" : "Spieth"
+        "apparatusSuppliers" : "Spieth",
+        "teamFormat" : "C1",
+        "aaFormat" : "C1",
+        "apparatusFormat" : "NONE"
     },
     "participants" : [
         "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-PARTICIPANTS.csv"
     ],
     "judges" : [],
     "scores" : [
-        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-AA-BB.csv",
-        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-AA-FX.csv",
-        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-AA-UB.csv",
-        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-AA-VT.csv"
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-C1-BB.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-C1-FX.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-C1-UB.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SCORES-C1-VT.csv"
     ],
-    "summaries" : [
-        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-AA.csv",
-        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-SUMMARY-FINAL-TEAM.csv"
+    "rankings" : [
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-RANKING-FINAL-AA.csv",
+        "2026-OCEANIA-CHAMPIONSHIPS-WAG-SR-RANKING-FINAL-TEAM.csv"
     ]
 }

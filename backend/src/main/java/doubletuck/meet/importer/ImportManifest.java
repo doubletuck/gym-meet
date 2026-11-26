@@ -16,9 +16,14 @@ public record ImportManifest(
         List<String> participants,
         List<String> judges,
         List<String> scores,
-        List<String> summaries) {
+        List<String> rankings) {
 
-    /** @param slug the event's address; optional, see EventImporter for the default */
+    /**
+     * @param slug            the event's address; optional, see EventImporter for the default
+     * @param teamFormat      where the team title was decided: {@code C1}, {@code FINAL} or {@code NONE}
+     * @param aaFormat        likewise the all-around title
+     * @param apparatusFormat likewise the apparatus titles
+     */
     public record ManifestEvent(
             String slug,
             String title,
@@ -32,7 +37,10 @@ public record ImportManifest(
             String country,
             String figEventNumber,
             String venue,
-            String apparatusSuppliers) {
+            String apparatusSuppliers,
+            String teamFormat,
+            String aaFormat,
+            String apparatusFormat) {
     }
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
@@ -61,7 +69,7 @@ public record ImportManifest(
         return scores == null ? List.of() : scores;
     }
 
-    public List<String> summaries() {
-        return summaries == null ? List.of() : summaries;
+    public List<String> rankings() {
+        return rankings == null ? List.of() : rankings;
     }
 }

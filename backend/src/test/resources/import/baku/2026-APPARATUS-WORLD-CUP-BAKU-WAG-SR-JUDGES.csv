@@ -1,23 +1,23 @@
-Event Name,Discipline,Age Category,Event Start Date,Round,Apparatus,Function,Name,Surname,Given Name,NOC Code
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,,TD,Lyudmila Li,LI,Lyudmila,
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,SV,KOSHECHKINA Stella,KOSHECHKINA,Stella,UZB
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,D1,DANI Paola,DANI,Paola,ITA
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,D2,BELOUSSOVA Tamara,BELOUSSOVA,Tamara,KAZ
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,E1,PADILLA OLIVARES Arturo Miguel,PADILLA OLIVARES,Arturo Miguel,PAN
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,E2,OYETS Volha,OYETS,Volha,AIN1
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,E3,BADIC Aida,BADIC,Aida,CRO
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,E4,SOTOLOVA Lenka,SOTOLOVA,Lenka,CZE
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,E5,BASKAN Ozge,BASKAN,Ozge,TUR
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,L,KUROSU Maki,KUROSU,Maki,JPN
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,QUAL,VT,R,IDZIM Sara,IDZIM,Sara,MAR
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,,TD,Lyudmila Li,LI,Lyudmila,
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,SV,KOSHECHKINA Stella,KOSHECHKINA,Stella,UZB
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,D1,DANI Paola,DANI,Paola,ITA
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,D2,BELOUSSOVA Tamara,BELOUSSOVA,Tamara,KAZ
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,E1,SAHLAL Karima,SAHLAL,Karima,MAR
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,E2,HU Yu Feng,HU,Yu Feng,TPE
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,E3,BASKAN Ozge,BASKAN,Ozge,TUR
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,E4,OYETS Volha,OYETS,Volha,AIN1
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,E5,ZVALOVA Zuzana,ZVALOVA,Zuzana,SVK
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,L,SEILE Nadezda,SEILE,Nadezda,LAT
-Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,EVENT,VT,R,STEFANIDOU Elpida,STEFANIDOU,Elpida,GRE
+Event Name,Discipline,Age Category,Event Start Date,Competition,Apparatus,Function,Name,Surname,Given Name,NOC Code
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,,TD,Lyudmila Li,LI,Lyudmila,
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,SV,KOSHECHKINA Stella,KOSHECHKINA,Stella,UZB
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,D1,DANI Paola,DANI,Paola,ITA
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,D2,BELOUSSOVA Tamara,BELOUSSOVA,Tamara,KAZ
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,E1,PADILLA OLIVARES Arturo Miguel,PADILLA OLIVARES,Arturo Miguel,PAN
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,E2,OYETS Volha,OYETS,Volha,AIN1
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,E3,BADIC Aida,BADIC,Aida,CRO
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,E4,SOTOLOVA Lenka,SOTOLOVA,Lenka,CZE
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,E5,BASKAN Ozge,BASKAN,Ozge,TUR
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,L,KUROSU Maki,KUROSU,Maki,JPN
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C1,VT,R,IDZIM Sara,IDZIM,Sara,MAR
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,,TD,Lyudmila Li,LI,Lyudmila,
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,SV,KOSHECHKINA Stella,KOSHECHKINA,Stella,UZB
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,D1,DANI Paola,DANI,Paola,ITA
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,D2,BELOUSSOVA Tamara,BELOUSSOVA,Tamara,KAZ
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,E1,SAHLAL Karima,SAHLAL,Karima,MAR
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,E2,HU Yu Feng,HU,Yu Feng,TPE
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,E3,BASKAN Ozge,BASKAN,Ozge,TUR
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,E4,OYETS Volha,OYETS,Volha,AIN1
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,E5,ZVALOVA Zuzana,ZVALOVA,Zuzana,SVK
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,L,SEILE Nadezda,SEILE,Nadezda,LAT
+Apparatus World Cup 2026 Baku,WAG,SR,2026-03-05,C3,VT,R,STEFANIDOU Elpida,STEFANIDOU,Elpida,GRE

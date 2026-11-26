@@ -71,7 +71,7 @@ public class ImportLog {
         }
         List<Path> files = new ArrayList<>();
         files.add(manifestFile);
-        Stream.of(manifest.participants(), manifest.scores(), manifest.summaries(), manifest.judges())
+        Stream.of(manifest.participants(), manifest.scores(), manifest.rankings(), manifest.judges())
                 .flatMap(List::stream)
                 .map(manifestFile.getParent()::resolve)
                 .forEach(files::add);

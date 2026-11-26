@@ -4,13 +4,16 @@ import doubletuck.meet.domain.AgeCategory;
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
+import doubletuck.meet.domain.EventFormat;
 import doubletuck.meet.domain.EventLevel;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.Ranking;
 import doubletuck.meet.domain.TeamResult;
+import doubletuck.meet.domain.TitleFormat;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
 import doubletuck.meet.repository.CompetitionRepository;
+import doubletuck.meet.repository.EventFormatRepository;
 import doubletuck.meet.repository.EventRepository;
 import doubletuck.meet.repository.JudgeRepository;
 import doubletuck.meet.repository.ParticipantRepository;
@@ -36,6 +39,7 @@ public class EventImporter {
 
     private final EventRepository eventRepository;
     private final CompetitionRepository competitionRepository;
+    private final EventFormatRepository eventFormatRepository;
     private final RankingRepository rankingRepository;
     private final TeamRepository teamRepository;
     private final ParticipantRepository participantRepository;
@@ -48,21 +52,24 @@ public class EventImporter {
     private final CompetitionService competitionService;
     private final ParticipantImporter participantImporter;
     private final ScoreImporter scoreImporter;
-    private final SummaryImporter summaryImporter;
+    private final RankingImporter rankingImporter;
     private final JudgeImporter judgeImporter;
     private final ResultReconciler resultReconciler;
+    private final FormatChecker formatChecker;
     private final ImportLog importLog;
 
     EventImporter(EventRepository eventRepository, CompetitionRepository competitionRepository,
-            RankingRepository rankingRepository, TeamRepository teamRepository,
+            EventFormatRepository eventFormatRepository, RankingRepository rankingRepository, TeamRepository teamRepository,
             ParticipantRepository participantRepository, ScoreRepository scoreRepository,
             JudgeRepository judgeRepository, TeamResultRepository teamResultRepository,
             TeamResultScoreRepository teamResultScoreRepository, AllAroundResultRepository allAroundResultRepository,
             ApparatusResultRepository apparatusResultRepository, CompetitionService competitionService,
-            ParticipantImporter participantImporter, ScoreImporter scoreImporter, SummaryImporter summaryImporter,
-            JudgeImporter judgeImporter, ResultReconciler resultReconciler, ImportLog importLog) {
+            ParticipantImporter participantImporter, ScoreImporter scoreImporter, RankingImporter rankingImporter,
+            JudgeImporter judgeImporter, ResultReconciler resultReconciler, FormatChecker formatChecker,
+            ImportLog importLog) {
         this.eventRepository = eventRepository;
         this.competitionRepository = competitionRepository;
+        this.eventFormatRepository = eventFormatRepository;
         this.rankingRepository = rankingRepository;
         this.teamRepository = teamRepository;
         this.participantRepository = participantRepository;
@@ -75,9 +82,10 @@ public class EventImporter {
         this.competitionService = competitionService;
         this.participantImporter = participantImporter;
         this.scoreImporter = scoreImporter;
-        this.summaryImporter = summaryImporter;
+        this.rankingImporter = rankingImporter;
         this.judgeImporter = judgeImporter;
         this.resultReconciler = resultReconciler;
+        this.formatChecker = formatChecker;
         this.importLog = importLog;
     }
 
@@ -97,25 +105,47 @@ public class EventImporter {
         if (manifest.event().shortName() == null || manifest.event().shortName().isBlank()) {
             throw new ImportException(manifestFile.getFileName() + ": event shortName is required");
         }
+        TitleFormat teamFormat = required(TitleFormat.find(manifest.event().teamFormat()), "teamFormat",
+                manifest.event().teamFormat(), manifestFile);
+        TitleFormat aaFormat = required(TitleFormat.find(manifest.event().aaFormat()), "aaFormat",
+                manifest.event().aaFormat(), manifestFile);
+        TitleFormat apparatusFormat = required(TitleFormat.find(manifest.event().apparatusFormat()),
+                "apparatusFormat", manifest.event().apparatusFormat(), manifestFile);
         Event event = resolveEvent(manifest.event(), manifestFile, discipline, ageCategory, report);
 
         List<Competition> existing = competitionRepository.findByEventAndDisciplineAndAgeCategory(event,
                 discipline, ageCategory);
-        boolean replaced = !existing.isEmpty();
+        EventFormat existingFormat = eventFormatRepository.findByEventAndDisciplineAndAgeCategory(event, discipline,
+                ageCategory).orElse(null);
+        boolean replaced = !existing.isEmpty() || existingFormat != null;
         if (replaced) {
             if (!replace) {
                 throw new ImportException(manifestFile.getFileName() + ": " + event.getTitle() + " " + discipline
                         + " " + ageCategory + " is already imported; import with replace to load it again");
             }
             deleteSlice(event, discipline, ageCategory, existing, report);
+            if (existingFormat != null) {
+                eventFormatRepository.delete(existingFormat);
+                eventFormatRepository.flush();
+            }
         }
 
-        ImportContext context = new ImportContext(manifestFile.getParent(), manifest, event, discipline,
-                ageCategory, report, competitionService, rankingRepository, teamRepository);
+        EventFormat format = new EventFormat();
+        format.setEvent(event);
+        format.setDiscipline(discipline);
+        format.setAgeCategory(ageCategory);
+        format.setTeamFormat(teamFormat);
+        format.setAllAroundFormat(aaFormat);
+        format.setApparatusFormat(apparatusFormat);
+        format = eventFormatRepository.save(format);
+
+        ImportContext context = new ImportContext(manifestFile.getParent(), manifest, format, report,
+                competitionService, rankingRepository, teamRepository);
         manifest.participants().forEach(file -> participantImporter.importFile(context, file));
         manifest.scores().forEach(file -> scoreImporter.importFile(context, file));
         scoreImporter.rankScores(context);
-        manifest.summaries().forEach(file -> summaryImporter.importFile(context, file));
+        manifest.rankings().forEach(file -> rankingImporter.importFile(context, file));
+        formatChecker.check(context);
         manifest.judges().forEach(file -> judgeImporter.importFile(context, file));
         resultReconciler.reconcile(context);
         importLog.record(manifestFile, manifest, event, discipline, ageCategory, replaced, report);

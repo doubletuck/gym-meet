@@ -289,7 +289,7 @@ class ResultReconciler {
         if (Math.abs(published - expected) >= TOLERANCE) {
             Competition competition = competitions.iterator().next();
             context.getReport().warn("bib " + participant.getBibNumber() + " "
-                    + competition.getType().getLegacyRound()
+                    + competition.getType()
                     + (competition.getPart() != null ? " part " + competition.getPart() : "") + " " + what + " "
                     + published + " differs from the sum of its scores, " + String.format("%.3f", expected));
         }

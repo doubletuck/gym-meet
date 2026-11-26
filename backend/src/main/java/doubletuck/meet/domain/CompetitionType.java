@@ -18,7 +18,7 @@ public enum CompetitionType {
 
     private final String longName;
 
-    /** The round the import files and the API still name it by (until the step 2 and 5 changes). */
+    /** The round the API still names it by (until the step 5 change). */
     private final Round legacyRound;
 
     CompetitionType(String longName, Round legacyRound) {
@@ -26,7 +26,6 @@ public enum CompetitionType {
         this.legacyRound = legacyRound;
     }
 
-    /** By code or long name, or by the legacy round code or name the import files use. */
     public static CompetitionType find(String text) {
         if (text != null && !text.isEmpty()) {
             text = text.trim();
@@ -34,10 +33,6 @@ public enum CompetitionType {
                 if (type.name().equalsIgnoreCase(text) || type.longName.equalsIgnoreCase(text)) {
                     return type;
                 }
-            }
-            Round round = Round.find(text);
-            if (round != null) {
-                return of(round);
             }
         }
         return null;

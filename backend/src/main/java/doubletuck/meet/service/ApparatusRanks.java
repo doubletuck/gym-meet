@@ -40,22 +40,19 @@ public final class ApparatusRanks {
     }
 
     /**
-     * The purpose of the ranking a score's own placing on its apparatus belongs to: in
-     * qualification the one deciding the apparatus final, except on vault, where it is the
-     * single-vault list (the first vault, which counts for the all-around); an apparatus final's
-     * placings; otherwise placings that decide nothing (all-around and team finals, a split
-     * competition's parts).
+     * The placing a score is published with on its apparatus. A competition ranks an apparatus
+     * once, except qualification's vault, ranked twice: the single-vault list (every vaulter, on
+     * the first vault) gives the placing, and the two-vault list, which decides the final, the
+     * {@link #qualificationRank}.
      */
-    public static RankingPurpose rankPurpose(CompetitionType type, Apparatus apparatus) {
-        return switch (type) {
-            case C1 -> apparatus == Apparatus.VT ? RankingPurpose.INFORMATIONAL : RankingPurpose.QUALIFYING;
-            case C3 -> RankingPurpose.FINAL;
-            case C2, C4 -> RankingPurpose.INFORMATIONAL;
-        };
-    }
-
     public Integer rank(Score score) {
-        ApparatusResult result = result(score, rankPurpose(type, score.getApparatus()));
+        ApparatusResult result = result(score, RankingPurpose.FINAL);
+        if (result == null) {
+            result = result(score, RankingPurpose.INFORMATIONAL);
+        }
+        if (result == null) {
+            result = result(score, RankingPurpose.QUALIFYING);
+        }
         return result == null ? null : result.getRank();
     }
 

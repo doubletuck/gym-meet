@@ -79,7 +79,7 @@ nothing.
 | slug | String | Unique within the event, discipline and age category: `qualification`, `team-final`, `all-around-final`, `<apparatus>-final` (e.g. `beam-final`), `<apparatus>-qualification` at an apparatus-format meet; a split round's parts add `-part-<n>` |
 | discipline | String | `MAG` or `WAG` |
 | ageCategory | String | `SR`, `JR`, `JR16` or `JR17` |
-| round | String | `QUAL`, `TEAM`, `AA` or `EVENT` |
+| round | String | `QUAL`, `TEAM`, `AA` or `EVENT`: Competition I is `QUAL`, except where it was the only competition of its discipline and age category (Oceania, US Championships), which decided every title and is `AA` (slug `all-around-final`); the team, all-around and apparatus finals are `TEAM`, `AA` and `EVENT` |
 | apparatus | String, nullable | The apparatus, for an apparatus final or apparatus-format qualification |
 | part | Integer, nullable | The part of a split round; `null` for an ordinary session or a split round's combined session |
 | date | LocalDate | The day the session was held; for a split round's combined session, its first part's |

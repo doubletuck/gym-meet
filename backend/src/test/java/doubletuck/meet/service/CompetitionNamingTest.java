@@ -4,6 +4,7 @@ import doubletuck.meet.domain.Apparatus;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.CompetitionType;
+import doubletuck.meet.domain.Round;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -25,6 +26,30 @@ class CompetitionNamingTest {
         Competition round = competition(CompetitionType.C4, null, null);
         round.setRound(3);
         assertEquals("team-final-round-3", CompetitionNaming.slug(round));
+    }
+
+    @Test
+    void testLegacyRound_CompetitionIAloneInItsDivision_IsTheAllAroundFinal() {
+        // Oceania, US Championships: one competition decided every title
+        Competition whole = competition(CompetitionType.C1, null, null);
+        Competition part = competition(CompetitionType.C1, null, 1);
+        Competition otherDiscipline = competition(CompetitionType.C3, Apparatus.FX, null);
+        otherDiscipline.setDiscipline(Discipline.WAG);
+        List<Competition> event = List.of(whole, part, otherDiscipline);
+
+        assertEquals(Round.AA, CompetitionNaming.legacyRound(whole, event));
+        assertEquals("all-around-final", CompetitionNaming.slug(whole, event));
+        assertEquals("all-around-final-part-1", CompetitionNaming.slug(part, event));
+    }
+
+    @Test
+    void testLegacyRound_CompetitionIFollowedByFinals_IsTheQualification() {
+        Competition c1 = competition(CompetitionType.C1, null, null);
+        List<Competition> division = List.of(c1, competition(CompetitionType.C3, Apparatus.FX, null));
+
+        assertEquals(Round.QUAL, CompetitionNaming.legacyRound(c1, division));
+        assertEquals("qualification", CompetitionNaming.slug(c1, division));
+        assertEquals(Round.EVENT, CompetitionNaming.legacyRound(division.get(1), division));
     }
 
     @Test

@@ -12,6 +12,7 @@ erDiagram
     EVENT ||--o{ PARTICIPANT : entrants
     EVENT ||--o{ RANKING : publishes
     EVENT ||--o{ TEAM : "teams entered"
+    EVENT ||--o{ EVENT_FORMAT : "run as"
     ATHLETE ||--o{ PARTICIPANT : "competes as"
     CLUB ||--o{ PARTICIPANT : "trains at"
     ATHLETE ||--o{ ATHLETE_NAME_VARIANT : "also known as"
@@ -98,8 +99,7 @@ General Judges' Rules); how events are classified is still to be settled.
 FIG's own numbering (Technical Regulations). The code says which competition it was, not
 what it decided: what a competition decided is in its rankings (§5). An apparatus final's
 apparatus lives on `Competition.apparatus`, matching how `Score` carries its own
-`apparatus`. `find` also accepts the import files' round codes (`QUAL`, `AA`, `EVENT`,
-`TEAM`) and their long names.
+`apparatus`. The import files use these codes too.
 
 #### `Round`
 
@@ -110,8 +110,21 @@ apparatus lives on `Competition.apparatus`, matching how `Score` carries its own
 | AA | All-Around Final | C2 |
 | TEAM | Team Final | C4 |
 
-The round codes the import files and the API still name a competition by
-(`CompetitionType.legacyRound`), until the file standard and the API move to `C1`–`C4`.
+The round codes the API still names a competition by (`CompetitionType.legacyRound`),
+until it moves to `C1`–`C4` (rollout step 5). A `C1` that is the only competition of its
+discipline and age category (Oceania, US Championships) decided everything, so the API
+calls it `AA`, the all-around final, as the files did before the competition codes
+(`CompetitionNaming.legacyRound`).
+
+#### `TitleFormat`
+
+| Value | Long Name | Description |
+|---|---|---|
+| C1 | Competition I | Competition I decided the title. |
+| FINAL | Final | The title's own final decided it: Competition IV (team), II (all-around) or III (apparatus). |
+| NONE | Not held | The title wasn't contested. |
+
+Where a title was decided, per `EventFormat`.
 
 #### `AgeCategory`
 
@@ -260,6 +273,25 @@ Unique keys: `(title, start_date)` and `(slug)`. One `Event` can hold several di
 competitions (the 2026 Worlds' MAG and WAG share one title, date, and FIG event
 number), while sub-events published under their own titles (the 2026
 Europeans' Senior and Junior championships) are separate `Event`s.
+
+### `EventFormat`
+
+How one discipline and age category of an event was run: where each title was decided.
+It comes from the import manifest (`EVENT.csv`), and the importer checks the competitions
+and rankings against it ([import-process.md](import-process.md#checks)).
+
+| Field | Type | Nullable | Description |
+|---|---|---|---|
+| id | Long | No | Generated primary key. |
+| eventId | Long, FK → `Event` | No | The event. |
+| discipline | Discipline | No | |
+| ageCategory | AgeCategory | No | |
+| teamFormat | TitleFormat | No | Where the team title was decided. |
+| allAroundFormat | TitleFormat | No | Where the all-around title was decided. |
+| apparatusFormat | TitleFormat | No | Where the apparatus titles were decided. |
+
+Unique key: `(event, discipline, age category)`. With no team or all-around title (both
+`NONE`), Competition I is held one per apparatus, as at an apparatus World Cup.
 
 ### `Competition`
 
@@ -483,7 +515,8 @@ Standings over the routines of one or more competitions, published for a purpose
 
 How the import files map onto rankings: [import-process.md](import-process.md). A
 competition's per-apparatus placings printed with its scores become `APPARATUS`
-rankings of it: in qualification, `QUALIFYING` (vault: the two lists in §4); in an
+rankings of it: in a Competition I that qualifies for apparatus finals, `QUALIFYING`
+(vault: the two lists in §4); in one that decides the apparatus titles itself, and in an
 apparatus final, `FINAL`; elsewhere, `INFORMATIONAL`.
 
 #### `RankStatus`
@@ -500,8 +533,9 @@ never computed.
 | DID_NOT_FINISH | Did Not Finish | Withdrew partway. |
 | UNPLACED | Unplaced | The source prints no place for this ranking. |
 
-The import files don't state it yet, so for now a result with a printed rank is
-`RANKED` and one without is null ("not stated").
+The ranking files state it (`Rank Status`) for every row without a rank. Apparatus
+results worked out from the placings printed with the scores are `RANKED` where ranked and
+otherwise null ("not stated"): the score's own status explains a DNS.
 
 ### 5.2 Why results are stored
 

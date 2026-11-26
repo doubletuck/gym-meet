@@ -8,6 +8,7 @@ import doubletuck.meet.domain.Competition;
 import doubletuck.meet.domain.CompetitionType;
 import doubletuck.meet.domain.Discipline;
 import doubletuck.meet.domain.Event;
+import doubletuck.meet.domain.EventFormat;
 import doubletuck.meet.domain.Participant;
 import doubletuck.meet.domain.QualificationResult;
 import doubletuck.meet.domain.Ranking;
@@ -35,7 +36,7 @@ import java.util.Objects;
 
 /**
  * State shared by the steps importing one manifest: the event and slice
- * (discipline + age category) being imported, and the participants,
+ * (discipline + age category) being imported, its format, and the participants,
  * competitions, rankings and results created so far.
  */
 @Getter
@@ -45,7 +46,8 @@ class ImportContext {
     }
 
     /** A score's placings as its SCORES row gives them, turned into apparatus rankings once all are read. */
-    record ScorePlacing(Score score, Integer rank, Integer qualificationRank, QualificationResult qualification) {
+    record ScorePlacing(Score score, Integer rank, Integer qualificationRank, QualificationResult qualification,
+            String location) {
     }
 
     private record CompetitionKey(CompetitionType type, Apparatus apparatus, Integer part) {
@@ -60,17 +62,11 @@ class ImportContext {
     private final Event event;
     private final Discipline discipline;
     private final AgeCategory ageCategory;
+    private final EventFormat format;
     private final ImportReport report;
     private final CompetitionService competitionService;
     private final RankingRepository rankingRepository;
     private final TeamRepository teamRepository;
-
-    /**
-     * True for an apparatus-format meet (a World Cup), where each apparatus's
-     * qualification is its own competition. Recognised by the absence of any team
-     * or all-around ranking.
-     */
-    private final boolean qualificationByApparatus;
 
     private final Map<String, Participant> participantsByBib = new HashMap<>();
     private final Map<CompetitionKey, Competition> competitions = new LinkedHashMap<>();
@@ -86,20 +82,19 @@ class ImportContext {
     private final List<ApparatusResult> apparatusResults = new ArrayList<>();
     private final List<PublishedTeamTotal> publishedTeamTotals = new ArrayList<>();
 
-    ImportContext(Path directory, ImportManifest manifest, Event event, Discipline discipline,
-            AgeCategory ageCategory, ImportReport report, CompetitionService competitionService,
-            RankingRepository rankingRepository, TeamRepository teamRepository) {
+    ImportContext(Path directory, ImportManifest manifest, EventFormat format, ImportReport report,
+            CompetitionService competitionService, RankingRepository rankingRepository,
+            TeamRepository teamRepository) {
         this.directory = directory;
         this.manifest = manifest;
-        this.event = event;
-        this.discipline = discipline;
-        this.ageCategory = ageCategory;
+        this.event = format.getEvent();
+        this.discipline = format.getDiscipline();
+        this.ageCategory = format.getAgeCategory();
+        this.format = format;
         this.report = report;
         this.competitionService = competitionService;
         this.rankingRepository = rankingRepository;
         this.teamRepository = teamRepository;
-        this.qualificationByApparatus = manifest.summaries().stream()
-                .noneMatch(file -> file.matches(".*-SUMMARY-(QUAL|FINAL)-(TEAM|AA)\\.csv"));
     }
 
     Path file(String name) {
@@ -138,20 +133,18 @@ class ImportContext {
     }
 
     /**
-     * The competition whose routines a SUMMARY row ranks: the one named by its
-     * {@code Scores Round} where it has one (standings published as another round's,
-     * such as a team final decided in qualification), otherwise the row's own round.
-     * It must already exist from the scores, except a split competition's whole row
-     * (part null), which holds only combined standings and is created here, dated on
-     * its first part.
+     * The competition whose routines a RANKING row ranks, named by its {@code Competition}
+     * and {@code Part}. It must already exist from the scores, except a split competition's
+     * whole row (part null), which holds only combined standings and is created here, dated
+     * on its first part.
      */
-    Competition competitionForResults(CompetitionType type, Integer part, CompetitionType scoresType, CsvRow row) {
-        CompetitionKey key = new CompetitionKey(scoresType != null ? scoresType : type, null, part);
+    Competition competitionForResults(CompetitionType type, Integer part, CsvRow row) {
+        CompetitionKey key = new CompetitionKey(type, null, part);
         Competition competition = competitions.get(key);
         if (competition != null) {
             return competition;
         }
-        if (part == null && scoresType == null) {
+        if (part == null) {
             LocalDate firstPartDate = competitions.entrySet().stream()
                     .filter(entry -> entry.getKey().type() == key.type() && entry.getKey().apparatus() == null
                             && entry.getKey().part() != null)
@@ -227,7 +220,7 @@ class ImportContext {
     }
 
     private boolean isPerApparatus(CompetitionType type) {
-        return type == CompetitionType.C3 || (type == CompetitionType.C1 && qualificationByApparatus);
+        return type == CompetitionType.C3 || (type == CompetitionType.C1 && format.isApparatusOnly());
     }
 
     private Apparatus competitionApparatus(CompetitionType type, Apparatus apparatus) {
@@ -250,7 +243,7 @@ class ImportContext {
     }
 
     private static String describe(CompetitionKey key) {
-        return key.type().getLegacyRound() + (key.apparatus() != null ? " " + key.apparatus() : "")
+        return key.type() + (key.apparatus() != null ? " " + key.apparatus() : "")
                 + (key.part() != null ? " part " + key.part() : "");
     }
 }

@@ -37,8 +37,9 @@ public record SessionSummaryResponse(
                 .filter(date -> date.isAfter(competition.getDate()))
                 .max(Comparator.naturalOrder())
                 .orElse(null);
-        return new SessionSummaryResponse(competition.getId(), CompetitionNaming.slug(competition),
-                competition.getDiscipline(), competition.getAgeCategory(), competition.getType().getLegacyRound(),
+        return new SessionSummaryResponse(competition.getId(), CompetitionNaming.slug(competition, competitions),
+                competition.getDiscipline(), competition.getAgeCategory(),
+                CompetitionNaming.legacyRound(competition, competitions),
                 competition.getApparatus(), competition.getPart(), competition.getDate(), endDate);
     }
 }

@@ -107,3 +107,5 @@ Some migrations clear the imported data rather than converting it, because every
 ```shell
 mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=../data/2026 --import.replace"
 ```
+
+The importer reads only the current file standard ([import-file-model.md](import-file-model.md): `SCORES-C1-*`, `RANKING-*`, the event formats). Until the files under `data/` are converted to it (rollout step 3 in [competition-models.md](competition-models.md)), they don't import; `V10__event_format.sql` adds the formats' table, filled by importing again.

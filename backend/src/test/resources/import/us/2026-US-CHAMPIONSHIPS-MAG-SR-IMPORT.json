@@ -1,36 +1,39 @@
 {
-    "event": {
-        "title": "2026 Xfinity U.S. Gymnastics Championships",
-        "shortName": "US Champs 2026",
-        "disciplines": "MAG",
-        "ageCategory": "SR",
-        "level": "NATIONAL_CHAMPIONSHIPS",
-        "startDate": "2026-08-06",
-        "endDate": "2026-08-08",
-        "city": "Phoenix",
-        "country": "USA",
-        "figEventNumber": "",
-        "venue": "Mortgage Matchup Center",
-        "apparatusSuppliers": ""
+    "event" : {
+        "title" : "2026 Xfinity U.S. Gymnastics Championships",
+        "shortName" : "US Champs 2026",
+        "disciplines" : "MAG",
+        "ageCategory" : "SR",
+        "level" : "NATIONAL_CHAMPIONSHIPS",
+        "startDate" : "2026-08-06",
+        "endDate" : "2026-08-08",
+        "city" : "Phoenix",
+        "country" : "USA",
+        "figEventNumber" : "",
+        "venue" : "Mortgage Matchup Center",
+        "apparatusSuppliers" : "",
+        "teamFormat" : "NONE",
+        "aaFormat" : "C1",
+        "apparatusFormat" : "C1"
     },
-    "participants": [
+    "participants" : [
         "2026-US-CHAMPIONSHIPS-MAG-SR-PARTICIPANTS.csv"
     ],
-    "judges": [],
-    "scores": [
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-AA-FX.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-AA-HB.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-AA-PB.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-AA-PH.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-AA-SR.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-AA-VT.csv"
+    "judges" : [],
+    "scores" : [
+        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-C1-FX.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-C1-HB.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-C1-PB.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-C1-PH.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-C1-SR.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-SCORES-C1-VT.csv"
     ],
-    "summaries": [
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SUMMARY-FINAL-AA.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SUMMARY-FINAL-FX.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SUMMARY-FINAL-HB.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SUMMARY-FINAL-PB.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SUMMARY-FINAL-PH.csv",
-        "2026-US-CHAMPIONSHIPS-MAG-SR-SUMMARY-FINAL-SR.csv"
+    "rankings" : [
+        "2026-US-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-AA.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-FX.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-HB.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-PB.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-PH.csv",
+        "2026-US-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-SR.csv"
     ]
 }

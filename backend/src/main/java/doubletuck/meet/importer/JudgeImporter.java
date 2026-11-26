@@ -25,11 +25,11 @@ class JudgeImporter {
     void importFile(ImportContext context, String fileName) {
         Set<String> competitionsWithoutScores = new LinkedHashSet<>();
         for (CsvRow row : CsvRow.read(context.file(fileName))) {
-            CompetitionType type = row.requiredCode("Round", CompetitionType::find);
+            CompetitionType type = row.requiredCode("Competition", CompetitionType::find);
             Apparatus apparatus = row.code("Apparatus", Apparatus::find);
             List<Competition> competitions = context.competitionsForJudge(type, apparatus);
             if (competitions.isEmpty()) {
-                competitionsWithoutScores.add(type.getLegacyRound() + (apparatus != null ? " " + apparatus : ""));
+                competitionsWithoutScores.add(type + (apparatus != null ? " " + apparatus : ""));
                 continue;
             }
 
