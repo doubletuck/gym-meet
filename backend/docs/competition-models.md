@@ -162,15 +162,16 @@ It also accepts Q/R/NR on standings that qualified nobody.
 
 ### 7.2 Changes
 
-1. **Sessions are competitions only.** A session has a date, a part and routines.
-   - Its `Round` says which competition it was, using FIG's numbering:
+1. **Sessions become `Competition`s, and are competitions only.** A competition has a date, a
+   part, judges and routines.
+   - Its `type` (today `Round`) says which competition it was, using FIG's numbering (§9):
 
      | Code | Competition |
      |---|---|
      | `C1` (today `QUAL`) | Competition I, which every entrant competes in |
-     | `AA` | Competition II, the all-around final |
-     | `EVENT` | Competition III, the apparatus finals |
-     | `TEAM` | Competition IV, the team final |
+     | `C2` (today `AA`) | Competition II, the all-around final |
+     | `C3` (today `EVENT`) | Competition III, the apparatus finals |
+     | `C4` (today `TEAM`) | Competition IV, the team final |
 
    - `C1` doesn't claim to be a qualification. Oceania's and the US's single round is `C1`, like
      everyone else's.
@@ -179,7 +180,11 @@ It also accepts Q/R/NR on standings that qualified nobody.
    - a **type** (`TEAM`, `AA`, `APPARATUS` + apparatus): *what* is ranked;
    - a **purpose**: *what the standings are for*:
      - `QUALIFYING` picks who goes to a later round (Q/R/NR allowed);
-     - `FINAL` gives the final placings and medals.
+     - `FINAL` gives the final placings and medals;
+     - `INFORMATIONAL` orders results but decides nothing (vault's single-vault list in
+       qualification; the US day-by-day all-around rankings).
+
+   There is one ranking per competition, type, apparatus and purpose.
 
    It ranks the routines of one or more sessions (more than one for a mixed team, below).
    `TeamResult`, `AllAroundResult` and `ApparatusResult` belong to a ranking, not a session.
@@ -195,7 +200,7 @@ It also accepts Q/R/NR on standings that qualified nobody.
    - a title declared with no `FINAL` ranking is an error (this catches Europeans MAG JR AA,
      never parsed);
    - a `FINAL` format with no final session is an error.
-4. **A `standing` on each result explains a blank rank.** Ranks stay exactly as printed.
+4. **A `rankStatus` on each result explains a blank rank.** Ranks stay exactly as printed.
 
    | Value | Meaning |
    |---|---|
@@ -206,7 +211,7 @@ It also accepts Q/R/NR on standings that qualified nobody.
    | `DID_NOT_FINISH` | withdrew partway |
    | `UNPLACED` | the source prints no places (US Part 2 rows) |
 5. **Q/R/NR only on `QUALIFYING` rankings.** On a `FINAL` ranking, NR becomes the `NOC_LIMIT`
-   standing.
+   `rankStatus`.
 6. **Teams become entities.** A `Team` has a name and an optional NOC, and `TeamMember` links it
    to participants.
    - Today a team is just an NOC string on `TeamResult`, with its members implied by
@@ -231,6 +236,22 @@ Apparatus standings inside a session stay on `Score` (`rank`, `qualificationRank
 sessions, as with the US two-day totals (today's `ApparatusResult`). Whether every apparatus
 ranking should also become a `Ranking` row, for uniformity, is a later choice.
 
+**Competition versus ranking.** A competition is something that *happened*: gymnasts
+performed routines on a date, in front of judges. A ranking is an *ordering* of those routines'
+results, by a rule and for a purpose. Scores and judges belong to competitions. Ranks, Q/R/NR
+and standings belong to rankings. They need to be separate because they don't pair up one to
+one:
+
+| Case | Competitions | Rankings |
+|---|---|---|
+| Worlds C1 | 1 | 9: team, AA, six apparatus, plus vault's single list |
+| SA Games C1 | 1 | team `FINAL`, AA `FINAL`, apparatus `QUALIFYING` and more |
+| US combined all-around | 2 (Part 1, Part 2) | 1 |
+| Mixed team qualification | 2 (MAG C1, WAG C1) | 1 |
+| Worlds team final | 1 | 1 |
+
+Only the finals pair up one to one, and that is the case today's model was built around.
+
 ### 7.3 Entity diagram (proposed)
 
 Bold relationships are new. `Event`, `Athlete`, `Club`, `Judge` and `ImportRun` are unchanged
@@ -239,46 +260,49 @@ and partly omitted.
 ```mermaid
 erDiagram
     Event ||--o{ EventFormat : "declares"
-    Event ||--o{ Session : "holds"
+    Event ||--o{ Competition : "holds"
     Event ||--o{ Participant : "enters"
     Event ||--o{ Ranking : "publishes"
     Event ||--o{ Team : "enters"
     Athlete ||--o{ Participant : "is"
     Club |o--o{ Participant : "represents"
-    Session ||--o{ Score : "contains"
-    Session ||--o{ Judge : "judged by"
+    Competition ||--o{ Score : "contains"
+    Competition ||--o{ Judge : "judged by"
     Participant ||--o{ Score : "performs"
-    Ranking }o--|{ Session : "ranks routines of"
+    Ranking }o--|{ Competition : "ranks routines of"
     Team ||--|{ TeamMember : "has"
     Participant ||--o{ TeamMember : "is"
     Ranking ||--o{ TeamResult : "orders"
     Ranking ||--o{ AllAroundResult : "orders"
     Ranking ||--o{ ApparatusResult : "orders"
+    TeamResult ||--o{ TeamResultScore : "counts"
+    Score ||--o{ TeamResultScore : "counted in"
     Team ||--o{ TeamResult : "placed in"
     Participant ||--o{ AllAroundResult : "placed in"
     Participant ||--o{ ApparatusResult : "placed in"
 
     EventFormat {
-        enum discipline "MAG or WAG"
+        enum discipline "MAG, WAG or MIX"
         enum ageCategory
         enum teamDecidedIn "C1, FINAL, NONE"
         enum allAroundDecidedIn "C1, FINAL, NONE"
         enum apparatusDecidedIn "C1, FINAL, NONE"
     }
-    Session {
-        enum discipline
+    Competition {
         enum ageCategory
-        enum round "C1, TEAM, AA, EVENT"
-        enum apparatus "EVENT only"
-        int part "split rounds"
+        enum discipline "MAG, WAG or MIX"
+        enum type "C1, C2, C3, C4"
+        enum apparatus "C3 only"
+        int round "elimination round"
+        int part "days added together"
         date date
     }
     Ranking {
-        enum discipline "MAG, WAG or MIXED"
+        enum discipline "MAG, WAG or MIX"
         enum ageCategory
         enum type "TEAM, AA, APPARATUS"
         enum apparatus "APPARATUS only"
-        enum purpose "QUALIFYING or FINAL"
+        enum purpose "QUALIFYING, FINAL, INFORMATIONAL"
     }
     Team {
         string name
@@ -291,27 +315,29 @@ erDiagram
     Score {
         enum apparatus
         decimal totalScore
-        int rank
-        enum qualificationResult
-        enum teamScoreRole
+    }
+    TeamResultScore {
+        bigint team_result_id FK
+        bigint score_id FK
+        enum role "COUNTING or DROPPED"
     }
     TeamResult {
         decimal totalScore
         int rank
-        enum standing
+        enum rankStatus
         enum qualificationResult "QUALIFYING only"
     }
     AllAroundResult {
         decimal totalScore
         int rank
-        enum standing
+        enum rankStatus
         enum qualificationResult "QUALIFYING only"
     }
     ApparatusResult {
         enum apparatus
         decimal totalScore
         int rank
-        enum standing
+        enum rankStatus
     }
     Participant {
         string bibNumber
@@ -332,10 +358,10 @@ the entity at *that* end go with one of the other.
 
 For example:
 
-- `Event ||--o{ Session`: one event holds zero or more sessions, and each session belongs to
-  exactly one event.
-- `Ranking }o--|{ Session`: a ranking ranks the routines of one or more sessions (two for a
-  mixed team), and a session can be ranked by zero or more rankings.
+- `Event ||--o{ Competition`: one event holds zero or more competitions, and each competition
+  belongs to exactly one event.
+- `Ranking }o--|{ Competition`: a ranking ranks the routines of one or more competitions (two
+  for a mixed team), and a competition can be ranked by zero or more rankings.
 
 **Which table holds which row.** These are the rows for one apparatus in a qualification
 (Worlds MAG C1, floor, 100 gymnasts), under §7.6 decision 4:
@@ -344,39 +370,41 @@ For example:
 |---|---|---|
 | `Score` | 100 | one gymnast's routine: D, E, penalties, total (for vault, both vaults) |
 | `Ranking` | 1 | "C1 floor, `QUALIFYING`" |
-| `ApparatusResult` | 100 | one gymnast's place in that ranking: rank, standing, Q/R/NR, total |
+| `ApparatusResult` | 100 | one gymnast's place in that ranking: rank, rankStatus, Q/R/NR, total |
 
 The all-around works the same way already: `Score` holds the routines, and `AllAroundResult`
 holds each gymnast's place in the all-around ranking. "One extra row per score" means the
 `ApparatusResult` row. `Score` doesn't change in number.
 
-### 7.4 The models as sessions and rankings
+### 7.4 The models as competitions and rankings
 
-| Model | Example | Sessions | Rankings |
+| Model | Example | Competitions | Rankings |
 |---|---|---|---|
-| A | Worlds | C1, TEAM, AA, EVENT×n | C1: team and AA `QUALIFYING`. TEAM: team `FINAL`. AA: AA `FINAL` |
-| C | Asian Games | C1, TEAM, EVENT×n | C1: team `QUALIFYING`, **AA `FINAL`**. TEAM: team `FINAL` |
-| D | Commonwealth | C1, AA, EVENT×n | C1: **team `FINAL`**, AA `QUALIFYING`. AA: AA `FINAL` |
-| E | SA Games, African | C1, EVENT×n | C1: **team `FINAL`, AA `FINAL`** |
-| E | Asian Championships | C1, EVENT×n | C1: team and AA `FINAL` only; the printed qualifying rankings aren't stored (§7.6) |
+| A | Worlds | C1, C4, C2, C3×n | C1: team and AA `QUALIFYING`. C4: team `FINAL`. C2: AA `FINAL` |
+| C | Asian Games | C1, C4, C3×n | C1: team `QUALIFYING`, **AA `FINAL`**. C4: team `FINAL` |
+| D | Commonwealth | C1, C2, C3×n | C1: **team `FINAL`**, AA `QUALIFYING`. C2: AA `FINAL` |
+| E | SA Games, African | C1, C3×n | C1: **team `FINAL`, AA `FINAL`** |
+| E | Asian Championships | C1, C3×n | C1: team and AA `FINAL` only; the printed qualifying rankings aren't stored (§7.6) |
 | F | Oceania | C1 | C1: team `FINAL`, AA `FINAL` |
-| G | US | C1 part 1, C1 part 2, C1 | C1 parts: AA per day. C1 whole: AA `FINAL`, apparatus `FINAL` (combined) |
-| H | World Cups | C1, EVENT×n | none beyond the scores' own ranks |
+| G | US | C1 part 1, C1 part 2, C1 | C1 parts: AA per day, `INFORMATIONAL`. C1 whole: AA `FINAL`, apparatus `FINAL` (combined) |
+| H | World Cups | C1, C3×n | none beyond the scores' own ranks |
 
 ### 7.5 Files
 
-- **`SUMMARY-QUAL-<X>` and `SUMMARY-FINAL-<X>`.** These map to `QUALIFYING` and `FINAL`
-  rankings. On a FINAL summary, `Round` names the session whose routines it ranks, which
-  replaces `Scores Round`.
-- **A new `Standing` column.** It's blank when the row is ranked.
+- **`SUMMARY-*` files become `RANKING-*`.** `RANKING-QUAL-<X>` and `RANKING-FINAL-<X>` map to
+  `QUALIFYING` and `FINAL` rankings. On a FINAL ranking file, the competition column (today
+  `Round`) names the competition whose routines it ranks, which replaces `Scores Round`.
+- **Competition codes in files.** `SCORES-QUAL-*`, `-AA-*`, `-EVENT-*` and `-TEAM-*` become
+  `SCORES-C1-*`, `-C2-*`, `-C3-*` and `-C4-*`.
+- **A new `Rank Status` column.** It's blank when the row is ranked.
 - **`EVENT.csv`** gains `Team Format`, `AA Format` and `Apparatus Format`.
 - **A `Team` column** (team name) on summaries and scores. It's needed only where a team isn't
   simply the NOC, such as mixed teams.
 - **Re-shaping existing files:**
-  - title-deciding `SUMMARY-QUAL-*` become `SUMMARY-FINAL-*` with `Round` `C1` (African,
+  - title-deciding `SUMMARY-QUAL-*` become `RANKING-FINAL-*` with competition `C1` (African,
     Pan Ams, Europeans, Commonwealth, Mediterranean Games, CAC Games);
   - Oceania and US `AA` become `C1`;
-  - `QUAL` becomes `C1` everywhere.
+  - `QUAL`, `AA`, `EVENT` and `TEAM` become `C1`–`C4` everywhere.
 
 ### 7.6 Decisions and open questions
 
@@ -388,13 +416,13 @@ Decided:
    ranking over the same routines for a title Competition I decided (Asian Championships),
    only the `FINAL` ranking is stored.
    - It holds the whole field, as the Asian Games and SA Games summaries do.
-   - Athletes the book marked `NR` get the `NOC_LIMIT` standing.
+   - Athletes the book marked `NR` get the `NOC_LIMIT` `rankStatus`.
    - The Q/R/NR markers are dropped, since they qualified no one to a later round.
 
 4. **Places outside the final ranking.** Where the final ranking printed fewer places than the
    field (Asian Championships: 24 athletes, 8 teams), the rest are unranked with `UNPLACED`.
    Places from the qualifying ranking aren't borrowed.
-5. **Apparatus rankings are rankings.** Every standing has the same shape: a `Ranking` with
+5. **Apparatus rankings are rankings.** Every set of standings has the same shape: a `Ranking` with
    result rows (`TeamResult`, `AllAroundResult`, `ApparatusResult`).
    - `Score` keeps only the routine values.
    - Its `rank`, `qualificationRank` and `qualificationResult` move to `ApparatusResult`.
@@ -406,66 +434,175 @@ Decided:
 
    Team and all-around standings are separate rows (`TeamResult`, `AllAroundResult`), because
    they sum several scores. The question is whether apparatus standings should also become
-   `Ranking` + `ApparatusResult` rows, so that every standing has the same shape:
+   `Ranking` + `ApparatusResult` rows, so that every set of standings has the same shape:
    - **For:**
      - one way to ask "who won what, and where was it decided";
-     - a `standing` on apparatus results (`NOC_LIMIT` for apparatus two-per-country, now an
+     - a `rankStatus` on apparatus results (`NOC_LIMIT` for apparatus two-per-country, now an
        `NR` marker on a score);
      - the vault qualifying ranking stops needing its own `qualificationRank` column.
    - **Against:** one extra row per score in every session, repeating the score's total. The
      scores would then hold only routine values.
 
    Recommend making them rankings, for uniformity, unless the duplication bothers you.
-Open:
+6. **Vault's two lists are two rankings.** In qualification, the same vault scores are ranked
+   twice:
+   - the single-vault list (first vault, which counts for the all-around), `INFORMATIONAL`,
+     with every vaulter;
+   - the two-vault list (the average), `QUALIFYING` with Q/R/NR, only for those who did two
+     vaults.
 
-1. **Vault's two lists.** Qualification prints a single-vault list (the first vault, which
-   counts for the all-around) and a two-vault list (the average, which qualifies to the final).
-   Is the single-vault list a ranking to store, or only the two-vault one?
-2. **Terminology** (§9).
-3. **Mixed teams.** Next, once the base model is settled (§8).
+   Each is written only when the book prints it. This keeps both ranks that today sit on the
+   score row (`rank`, `qualificationRank`).
 
-## 8. Next: mixed teams (Youth Olympic Games, Dakar 2026)
+7. **Terminology** (§9).
 
-Notes for when we look at it. Rules:
+8. **Mixed teams** are modelled in §8.
+
+Nothing is open. Next: the implementation plan.
+
+## 8. Mixed teams (Youth Olympic Games, Dakar 2026)
+
+Source: `data/2026/2026-YOUTH-OLYMPIC-GAMES/18178-ResultsbookMedia.pdf` (123 pages, FIG
+layout). The format is on pages 3–6, the mixed team on pages 103–119. Rules:
 [Rules for the Youth Olympic Games 2026](https://www.gymnastics.sport/publicdir/rules/files/en_1.7%20-%20Rules%20for%20the%20Youth%20Olympic%20Games%202026.pdf).
 
-**Teams**
-- Each NOC enters one man and one woman, the same pair in every round.
-- An NOC needs at least one man and one woman in qualification to enter.
+### 8.1 How the YOG ran
 
-**Apparatus**
-- Only MAG FX, PB, HB and WAG UB, BB, FX count.
-- Both members of a pair can't do FX in the same round.
+**MAG and WAG.** These follow model A without apparatus finals. The book says "the apparatus
+finals have been replaced by team finals and a Mixed Team event".
 
-**Getting into the final**
-- There's no separate qualification round. A mixed team qualifying ranking is built from each
-  NOC's best single score per counting apparatus on the regular qualification day (both
-  disciplines' C1 sessions).
-- The top 12 advance.
-- Ties are broken by the sum of counting scores, then total E, then total D.
+| Day | Competition |
+|---|---|
+| 7 Nov (men), 8 Nov (women) | C1 |
+| 9 Nov | Team final (C4): top 8 teams, three a team, two counting per apparatus |
+| 10 Nov | All-around final (C2): top 18 |
 
-**Final**
-- Three elimination rounds, with scores reset each round:
-  - **Round 1:** each pair picks one men's and one women's apparatus; the top 8 advance.
-  - **Round 2:** a different apparatus; the top 4 advance.
-  - **Round 3:** the remaining apparatus; the highest total wins.
-- A team's score in a round is the sum of its two routines, scored under the normal codes.
+Format: team `FINAL`, AA `FINAL`, apparatus `NONE`.
 
-## 9. Terminology (to align)
+**Mixed team.** One NOC is one mixed team.
 
-A first pass at a glossary. Renames would land together with the model change, in one
-migration.
+- **Qualification has no routines of its own.** A ranking (pages 104–109) is built from the MAG
+  and WAG C1 routines:
+  - only MAG FX, PB, HB and WAG UB, BB, FX count;
+  - each NOC counts its best single score per apparatus;
+  - each apparatus total carries a printed rank in parentheses;
+  - the top 12 are marked Q;
+  - an NOC without a full set is `DNF` and unranked.
 
-| Today | Proposed | Why |
+  It lists every gymnast the NOC entered (CHN: three women, three men).
+- **The final is three rounds on 11 Nov.** Each round is its own competition with its own
+  routines, start list and results (`QFNL`, `SFNL`, `FNL` in the footers). One judges
+  assignment covers all three.
+  - In each round a pair (one man, one woman) does one apparatus each, and the team total is
+    the sum of the two scores.
+  - Scores reset each round. Rounds 1 and 2 mark Q for the top 8 and top 4.
+  - Round 1 prints places 9–12 for the teams it eliminates, and round 2 prints places 5–8.
+  - Round 3 decides the medals.
+  - Both members can't do FX in the same round. Each gymnast uses all three of their apparatus
+    across the final (round 3 prints `CR-1`/`CR-2`, "completed in round 1/2", for the rest).
+- **Medallists are the counting gymnasts plus the final pair** (page 7).
+  - CHN gold: CHEN Ziyan, XIE Guying, ZHONG Qi, YANG Lanbin. These are the four whose scores
+    counted in the mixed qualification. YANG and CHEN also made up the final pair.
+  - LI Lezheng and ZHAO Ruiyang, entered but not counting, aren't medallists.
+  - JPN's five medallists follow the same rule.
+
+### 8.2 What fits the proposed model
+
+| Need | How the model takes it |
+|---|---|
+| A ranking with no routines of its own, across two disciplines | `Ranking` (type `TEAM`, discipline `MIX`, purpose `QUALIFYING`) over the MAG C1 and WAG C1 competitions. This is the many-to-many from §7.3. |
+| Final rounds | Each round is a `Competition` (type `C4`, discipline `MIX`). Rounds 1 and 2 have a `QUALIFYING` team ranking, round 3 a `FINAL` one. |
+| A team that isn't one discipline | `Team` and `TeamMember` (§7.2, point 6) |
+| `DNF` NOCs in qualification | rank status `INCOMPLETE` |
+| A title outside MAG and WAG | an `EventFormat` row for discipline `MIX`: team `FINAL`, AA `NONE`, apparatus `NONE` |
+
+### 8.3 What the model needs added
+
+1. **Discipline `MIX`** for `Competition`, `Ranking` and `EventFormat`. A score's own
+   discipline comes from its athlete, since floor exists in both.
+2. **`Competition.round`**: an elimination round (1, 2, 3) within one competition type, with
+   scores reset.
+   - It's not `part`. Parts are added together (US), while rounds eliminate.
+   - The name frees up because `Round` becomes `type` (§9).
+3. **A score's team role belongs to a ranking, not to the score.** The same C1 score can count
+   for one ranking and be dropped by another. ZHAO Ruiyang's FX (13.666) counts for CHN's men's
+   team (FX total 27.432 = YANG 13.766 + ZHAO 13.666). It's dropped from CHN's mixed team,
+   which counts only YANG's best single score.
+   - So `Score.teamScoreRole` (V8) moves to a new link, **`TeamResultScore`** (team result,
+     score, role `COUNTING`/`DROPPED`).
+   - This also gives the medallists: the members whose scores count in any of the team's
+     rankings.
+4. **Files.** A mixed prefix (e.g. `2026-YOUTH-OLYMPIC-GAMES-MIX-JR`) whose import uses the MAG
+   and WAG prefixes' participants, so it's imported after them.
+   - Its files need the discipline beside the apparatus, because floor appears twice: columns
+     `MAG FX Total`, `WAG FX Total`, and scores files named by discipline and apparatus, or
+     with a `Discipline` column.
+   - The per-apparatus ranks in parentheses fit an `INFORMATIONAL` apparatus ranking within the
+     team ranking, or can be left out.
+
+### 8.4 Decisions and recommendations
+
+Decided:
+
+1. **Medallists are derived** from `TeamResultScore`, not stored.
+2. **Mixed team members** are only the gymnasts who counted in qualification or competed in a
+   final round.
+
+3. **Final placings 5–12 stay where the book prints them.**
+   - The round 3 `FINAL` ranking holds its 4 teams.
+   - Places 5–8 stay in the round 2 ranking and places 9–12 in the round 1 ranking, both
+     `QUALIFYING`, as printed.
+   - The site shows the overall classification by reading back through the rounds: round 3's
+     places, then the teams round 2 eliminated, then those round 1 eliminated. Every place
+     shown is one the book printed; nothing is computed or stored twice.
+4. **Per-apparatus ranks inside a team ranking aren't stored.**
+   - The mixed qualification prints each NOC's place on each apparatus in parentheses, e.g.
+     CHN "(1) 13.766" on men's floor.
+   - For men's PB and HB it prints `(0)` for every NOC, which is clearly a printing fault. The
+     right values are printed nowhere, so a correction would have to compute them.
+   - Regular team rankings print the same parenthesised ranks, and we already don't store them
+     (`SUMMARY-*-TEAM` and `TeamResult` have no apparatus ranks).
+   - Leaving them out for mixed teams too is consistent, and makes the fault irrelevant. The
+     apparatus totals are still kept in the file and checked.
+
+## 9. Terminology
+
+Decided. These are the terms for the new model. Sections 1–6 describe today's model and keep
+today's terms. The renames land together with the model change, in one migration.
+
+### 9.1 Competitions
+
+FIG's Technical Regulations number a meet's competitions I to IV:
+
+| Code | FIG name | What it is | Today |
+|---|---|---|---|
+| `C1` | Competition I | The competition every entrant takes part in. It may qualify to the finals, decide titles itself, or both. Usually called "Qualification". | `QUAL` (or `AA` for Oceania, US) |
+| `C2` | Competition II | The all-around final | `AA` |
+| `C3` | Competition III | The apparatus finals, one competition per apparatus | `EVENT` |
+| `C4` | Competition IV | The team final | `TEAM` |
+
+The site never shows these codes. It names a competition from the rankings it holds (§7.2,
+point 7), for example "Qualification", "All-Around Final" or "Team and All-Around Final".
+
+### 9.2 Glossary
+
+| Term | Meaning | Replaces |
 |---|---|---|
-| `Event` (a meet) | `Meet`? | In gymnastics "event" usually means an apparatus ("event finals"), and `Round.EVENT` uses it that way. |
-| `Session` | `Competition` | FIG numbers them Competition I–IV. A session is also a timetable slot, and one competition can span several (subdivisions, US Part 1/2). |
-| `Session.part` | `part` | A competition held over two days and decided on the combined total (US). |
-| `Round` | `CompetitionType`? `C1` (Competition I), then `AA`, `EVENT`, `TEAM`, or `C2`, `C3`, `C4` throughout | Codes all from one system, rather than half FIG and half ours. |
-| `Round.EVENT` | `APPARATUS`? | Same clash as `Event`. |
-| (new) `Ranking` | `Ranking` | Standings over one or more competitions' routines. |
-| (new) `purpose` | `QUALIFYING` / `FINAL` | |
-| (new) `EventFormat` | `MeetFormat`? | Follows the `Event` rename. |
-| `Score` | `Score` | One performance: a routine, or vault's two. |
-| `SUMMARY-*` files | `RANKING-*`? | They'd hold rankings. |
-
+| **Event** | A meet: one entry on the calendar, such as the 2026 World Championships. FIG's word for it. | (kept) |
+| **Apparatus** | Floor, pommel horse, vault and so on. "Event" is never used for an apparatus. | `Round.EVENT`, "event final" |
+| **Competition** | Routines performed on a date, in front of judges: one of C1–C4, for one discipline and age category (and apparatus, for C3). | `Session` |
+| **Competition type** | The `C1`–`C4` code. | `Round` |
+| **Part** | A share of a competition held over several days and decided on the combined total (US Part 1, Part 2). | (kept) |
+| **Round** | An elimination round within a competition, with scores reset each round (YOG mixed team final, rounds 1–3). | (new; the old `Round` is now the competition type) |
+| **`MIX`** | The discipline of a mixed team's competitions, rankings and format: men and women together. | (new) |
+| **Team result score** | How one score counts in one team result: `COUNTING` or `DROPPED`. | `Score.teamScoreRole` |
+| **Score** | One gymnast's performance on one apparatus in one competition: a routine, or vault's two. | (kept) |
+| **Ranking** | An ordering of one or more competitions' results by a rule, for a purpose. | standings held by `Session` |
+| **Ranking type** | What is ranked: `TEAM`, `AA` or `APPARATUS` (+ apparatus). | |
+| **Purpose** | What a ranking is for: `QUALIFYING` (picks who goes to a later competition; Q/R/NR), `FINAL` (final placings and medals), `INFORMATIONAL` (decides nothing). | |
+| **Result** | One team's or gymnast's line in a ranking: `TeamResult`, `AllAroundResult`, `ApparatusResult`. | |
+| **Rank status** | Why a result has or lacks a rank: `RANKED`, `INCOMPLETE`, `NOC_LIMIT`, `HORS_CONCOURS`, `DID_NOT_FINISH`, `UNPLACED`. | |
+| **Event format** | For each event, discipline and age category, which competition decided each title: team, all-around and apparatus, each `C1`, `FINAL` or `NONE`. | |
+| **Team** | A group of participants ranked together. Usually one NOC's team, but not always (mixed teams, `WG1`/`WG2`). | the NOC on `TeamResult` |
+| **`SCORES-<code>-<apparatus>`** | Import file of one competition's scores, e.g. `SCORES-C3-FX`. | `SCORES-QUAL/AA/EVENT/TEAM-*` |
+| **`RANKING-<QUAL\|FINAL>-<type>`** | Import file of one ranking. | `SUMMARY-*` |
