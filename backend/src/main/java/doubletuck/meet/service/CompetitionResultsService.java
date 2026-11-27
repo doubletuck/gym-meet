@@ -25,6 +25,8 @@ import doubletuck.meet.dto.CompetitionResultsResponse.AthleteRef;
 import doubletuck.meet.dto.CompetitionResultsResponse.PartResult;
 import doubletuck.meet.dto.CompetitionResultsResponse.PartScore;
 import doubletuck.meet.dto.CompetitionResultsResponse.ScoreRow;
+import doubletuck.meet.dto.CompetitionResultsResponse.MemberScore;
+import doubletuck.meet.dto.CompetitionResultsResponse.TeamMember;
 import doubletuck.meet.dto.CompetitionResultsResponse.TeamRow;
 import doubletuck.meet.repository.AllAroundResultRepository;
 import doubletuck.meet.repository.ApparatusResultRepository;
@@ -330,8 +332,33 @@ public class CompetitionResultsService {
             }
         }
         return new TeamRow(result.getRank(), result.getRankStatus(), result.getTeam().getNoc(), result.getTotalScore(),
-                result.getSjPenalty(), result.getQualificationResult(), apparatusTotals, round);
+                result.getSjPenalty(), result.getQualificationResult(), apparatusTotals, round,
+                members(contributions, columns));
     }
+
+    /** The team's gymnasts in bib order, each with their scores in the result, in the columns' order. */
+    private static List<TeamMember> members(List<TeamResultScore> contributions, List<ApparatusColumn> columns) {
+        Map<Participant, List<TeamResultScore>> byGymnast = contributions.stream()
+                .collect(Collectors.groupingBy(link -> link.getScore().getParticipant(), LinkedHashMap::new,
+                        Collectors.toList()));
+        return byGymnast.entrySet().stream()
+                .sorted(Comparator.comparing((Map.Entry<Participant, List<TeamResultScore>> entry) ->
+                                entry.getKey().getBibNumber(), Comparator.nullsLast(BIB_ORDER))
+                        .thenComparing(entry -> entry.getKey().getAthlete().getSurname()))
+                .map(entry -> new TeamMember(athlete(entry.getKey()), entry.getKey().getNoc(), columns.stream()
+                        .flatMap(column -> entry.getValue().stream()
+                                .filter(link -> isIn(link.getScore(), column))
+                                .map(link -> new MemberScore(column.discipline(), column.apparatus(),
+                                        link.getScore().getRoutine().getScore(),
+                                        link.getRole() == TeamContributionRole.COUNTING
+                                                ? TeamScoreRole.COUNTING : TeamScoreRole.DROPPED)))
+                        .toList()))
+                .toList();
+    }
+
+    // Bibs are numbers written as text: "99" comes before "100"
+    private static final Comparator<String> BIB_ORDER = Comparator.comparingInt(String::length)
+            .thenComparing(Comparator.naturalOrder());
 
     // Summed in decimal: binary doubles would print 41.232000000000006
     private static double sum(List<Double> scores) {

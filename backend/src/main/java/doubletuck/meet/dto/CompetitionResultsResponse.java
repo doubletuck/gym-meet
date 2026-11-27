@@ -123,6 +123,8 @@ public record CompetitionResultsResponse(
      *                        which counts one score an apparatus, the best of them
      * @param round           on a final round's page, the earlier elimination round that printed this place,
      *                        for a team it eliminated; null otherwise
+     * @param members         the gymnasts with a score in the team's result, in bib order, each with the
+     *                        scores that made up the apparatus totals and those left out of them
      */
     public record TeamRow(
             @Nullable Integer rank,
@@ -132,7 +134,20 @@ public record CompetitionResultsResponse(
             @Nullable Double sjPenalty,
             @Nullable QualificationResult qualification,
             List<ApparatusTotal> apparatusTotals,
-            @Nullable Integer round) {
+            @Nullable Integer round,
+            List<TeamMember> members) {
+    }
+
+    /** @param noc the country the gymnast competed for */
+    public record TeamMember(AthleteRef athlete, String noc, List<MemberScore> scores) {
+    }
+
+    /**
+     * @param score the routine's score, as added into the apparatus total: for vault, the first vault
+     * @param role  {@code COUNTING} or {@code DROPPED}
+     */
+    public record MemberScore(Discipline discipline, Apparatus apparatus, @Nullable Double score,
+            TeamScoreRole role) {
     }
 
     public record ApparatusStandings(Apparatus apparatus, List<ApparatusStandingRow> rows) {

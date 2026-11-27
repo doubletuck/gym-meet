@@ -442,6 +442,57 @@ describe("StandingsTable", () => {
 });
 
 describe("TeamTable", () => {
+  it("expands to each member's scores, marking a score dropped from the team total", async () => {
+    const team: TeamRow = {
+      rank: 1,
+      rankStatus: "RANKED",
+      noc: "CHN",
+      total: 164.996,
+      sjPenalty: null,
+      qualification: "Q",
+      apparatusTotals: [{ discipline: "WAG", apparatus: "BB", total: 43.966 }],
+      round: null,
+      members: [
+        {
+          athlete: { id: 1, surname: "Zhang", givenName: "Yihan" },
+          noc: "CHN",
+          scores: [{ discipline: "WAG", apparatus: "BB", score: 13.266, role: "DROPPED" }],
+        },
+        {
+          athlete: { id: 2, surname: "Zhang", givenName: "Qingying" },
+          noc: "CHN",
+          scores: [{ discipline: "WAG", apparatus: "BB", score: 15.1, role: "COUNTING" }],
+        },
+      ],
+    };
+    render(
+      <TeamTable
+        rows={[team]}
+        apparatus={[
+          { discipline: "WAG", apparatus: "UB" },
+          { discipline: "WAG", apparatus: "BB" },
+        ]}
+        qualification
+      />,
+    );
+    expect(screen.queryByRole("link", { name: "Yihan Zhang" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Show details" }));
+
+    const dropped = screen.getByRole("link", { name: "Yihan Zhang" }).closest("tr")!;
+    const cells = within(dropped).getAllByRole("cell");
+    // Rank, team, bars, beam: no bars score, and a struck-through beam
+    expect(cells[2]).toHaveTextContent(/^$/);
+    expect(cells[3]).toHaveTextContent("13.266 (dropped)");
+    expect(within(cells[3]).getByTitle("Dropped from the team total")).toHaveClass("line-through");
+    // On a phone, the member's scores are on a line under their name
+    expect(within(cells[1]).getByTitle("Balance Beam").parentElement).toHaveTextContent("13.266 (dropped)");
+
+    const counting = screen.getByRole("link", { name: "Qingying Zhang" }).closest("tr")!;
+    expect(within(counting).getAllByRole("cell")[3]).toHaveTextContent(/^15\.100$/);
+    expect(within(counting).queryByTitle("Dropped from the team total")).not.toBeInTheDocument();
+  });
+
   it("lists apparatus totals under the team for a phone, leaving out blanks", () => {
     const team: TeamRow = {
       rank: 1,
@@ -452,6 +503,7 @@ describe("TeamTable", () => {
       qualification: null,
       apparatusTotals: [{ discipline: "MAG", apparatus: "FX", total: 42.1 }],
       round: null,
+      members: [],
     };
     render(
       <TeamTable
@@ -480,6 +532,7 @@ describe("TeamTable", () => {
       qualification: null,
       apparatusTotals: [],
       round: null,
+      members: [],
     });
     const { unmount } = render(
       <TeamTable
@@ -517,6 +570,7 @@ describe("TeamTable", () => {
         { discipline: "WAG", apparatus: "FX", total: 13.866 },
       ],
       round,
+      members: [],
     });
     render(
       <TeamTable

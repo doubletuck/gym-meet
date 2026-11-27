@@ -4,13 +4,15 @@ import { Abbreviation } from "../Abbreviation";
 
 type SortDirection = "ascending" | "descending";
 
-export type Column<T> = {
+export type Column<T, S = never> = {
   header: string;
   /** Screen-reader name when the header is abbreviated, e.g. "Difficulty" for "D". */
   label?: string;
   /** Reads the label out in place of the header, for codes like "PH" a screen reader would spell out. */
   spoken?: boolean;
   cell: (row: T) => ReactNode;
+  /** The column's cell in each of an expanded row's sub-rows; blank where absent. */
+  subCell?(sub: S): ReactNode;
   align?: "left" | "right";
   /** Shown only from the small breakpoint up; on a phone it's in the expanded row. */
   wide?: boolean;
@@ -20,7 +22,7 @@ export type Column<T> = {
   sortFirst?: SortDirection;
 };
 
-function sortRows<T>(rows: T[], column: Column<T>, direction: SortDirection): T[] {
+function sortRows<T, S>(rows: T[], column: Column<T, S>, direction: SortDirection): T[] {
   const value = column.sortValue!;
   const sign = direction === "ascending" ? 1 : -1;
   // Stable, so tied rows keep their published order
@@ -38,26 +40,33 @@ function sortRows<T>(rows: T[], column: Column<T>, direction: SortDirection): T[
  * A results table whose rows expand on tap to show a detail panel. At phone
  * width the "wide" columns are hidden, so their values have to be shown
  * elsewhere: in the detail panel or in another column's cell. A row whose
- * `detail` is false or null doesn't expand.
+ * `detail` is false or null, and which has no sub-rows, doesn't expand.
  *
+ * @param subRows rows an expanded row opens onto, above its detail panel, each
+ *   laid out in the table's columns by their `subCell`, e.g. a team's members
+
  * @param defaultSort the header of the sortable column the rows arrive in
  *   order of, e.g. "#" for rows ranked as published
  * @param highlight picks out rows to mark, such as the athlete a link came
  *   from; the first is scrolled into view and its detail panel opened
  */
-export function ExpandableTable<T>({
+export function ExpandableTable<T, S = never>({
   columns,
   rows,
   rowKey,
   detail,
+  subRows,
+  subRowKey,
   caption,
   defaultSort,
   highlight,
 }: {
-  columns: Column<T>[];
+  columns: Column<T, S>[];
   rows: T[];
   rowKey: (row: T) => string;
   detail?: (row: T) => ReactNode;
+  subRows?: (row: T) => S[];
+  subRowKey?: (sub: S) => string;
   caption: string;
   defaultSort?: string;
   highlight?: (row: T) => boolean;
@@ -66,7 +75,7 @@ export function ExpandableTable<T>({
     const column = columns.find((c) => c.header === defaultSort);
     return column ? { header: column.header, direction: column.sortFirst ?? "descending" } : null;
   });
-  const sortBy = (column: Column<T>) =>
+  const sortBy = (column: Column<T, S>) =>
     setSort((current) =>
       current?.header === column.header
         ? { header: column.header, direction: current.direction === "ascending" ? "descending" : "ascending" }
@@ -79,11 +88,13 @@ export function ExpandableTable<T>({
     const content = detail?.(row);
     return content == null || content === false ? null : content;
   };
-  const expandable = rows.some((row) => panel(row) != null);
+  const subs = (row: T) => subRows?.(row) ?? [];
+  const opens = (row: T) => panel(row) != null || subs(row).length > 0;
+  const expandable = rows.some(opens);
 
   const highlighted = highlight ? rows.find(highlight) : undefined;
   const [expanded, setExpanded] = useState<Set<string>>(() =>
-    highlighted && panel(highlighted) != null ? new Set([rowKey(highlighted)]) : new Set(),
+    highlighted && opens(highlighted) ? new Set([rowKey(highlighted)]) : new Set(),
   );
   const highlightedRow = useRef<HTMLTableRowElement>(null);
   const highlightedKey = highlighted ? rowKey(highlighted) : undefined;
@@ -144,15 +155,17 @@ export function ExpandableTable<T>({
         {sorted.map((row) => {
           const key = rowKey(row);
           const content = panel(row);
-          const open = content != null && expanded.has(key);
+          const children = subs(row);
+          const canOpen = content != null || children.length > 0;
+          const open = canOpen && expanded.has(key);
           const marked = highlight?.(row) ?? false;
           return (
             <Fragment key={key}>
               <tr
                 ref={key === highlightedKey ? highlightedRow : undefined}
                 data-highlighted={marked || undefined}
-                onClick={content != null ? () => toggle(key) : undefined}
-                className={`border-b border-gray-200 dark:border-gray-800 ${marked ? HIGHLIGHT : content != null ? "hover:bg-gray-50 dark:hover:bg-gray-900" : ""} ${content != null ? "cursor-pointer" : ""}`}
+                onClick={canOpen ? () => toggle(key) : undefined}
+                className={`border-b border-gray-200 dark:border-gray-800 ${marked ? HIGHLIGHT : canOpen ? "hover:bg-gray-50 dark:hover:bg-gray-900" : ""} ${canOpen ? "cursor-pointer" : ""}`}
               >
                 {columns.map((column) => (
                   <td
@@ -164,7 +177,7 @@ export function ExpandableTable<T>({
                 ))}
                 {expandable && (
                   <td className="py-2.5 pr-1 text-right align-top">
-                    {content != null && (
+                    {canOpen && (
                       <button
                         type="button"
                         aria-expanded={open}
@@ -194,7 +207,24 @@ export function ExpandableTable<T>({
                   </td>
                 )}
               </tr>
-              {open && (
+              {open &&
+                children.map((sub, index) => (
+                  <tr
+                    key={subRowKey?.(sub) ?? index}
+                    className={`border-b border-gray-100 text-gray-700 dark:border-gray-800/60 dark:text-gray-300 ${marked ? HIGHLIGHT : "bg-gray-50 dark:bg-gray-900"}`}
+                  >
+                    {columns.map((column) => (
+                      <td
+                        key={column.header}
+                        className={`px-2 py-1.5 align-top ${column.align === "right" ? "text-right" : ""} ${column.wide ? "hidden sm:table-cell" : ""}`}
+                      >
+                        {column.subCell?.(sub)}
+                      </td>
+                    ))}
+                    {expandable && <td />}
+                  </tr>
+                ))}
+              {open && content != null && (
                 <tr
                   className={`border-b border-gray-200 dark:border-gray-800 ${marked ? HIGHLIGHT : "bg-gray-50 dark:bg-gray-900"}`}
                 >

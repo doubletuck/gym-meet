@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router";
 
 import type {
   AllAroundRow,
@@ -7,9 +8,11 @@ import type {
   Routine,
   ScoreRow,
   CompetitionResults,
+  MemberScore,
+  TeamMember,
   TeamRow,
 } from "~/api/types";
-import { formatScore, formatValue } from "~/lib/format";
+import { athleteName, formatScore, formatValue } from "~/lib/format";
 import { APPARATUS_LABELS, APPARATUS_ORDER, DISCIPLINE_OWNER, isMixed, type ApparatusColumn } from "~/lib/labels";
 import { Abbreviation } from "../Abbreviation";
 import { ExpandableTable, type Column } from "./ExpandableTable";
@@ -49,7 +52,7 @@ function PhoneLine({
   lead,
   children,
 }: {
-  items: (readonly [short: string, label: string, value: string])[];
+  items: (readonly [short: string, label: string, value: ReactNode])[];
   /** Reads the labels out in full, for codes like "PH" a screen reader would spell out. */
   spoken?: boolean;
   /** Leads the line in bold, e.g. the vault number. */
@@ -57,7 +60,7 @@ function PhoneLine({
   /** Follows the values, e.g. "Did not start". */
   children?: ReactNode;
 }) {
-  const shown = items.filter(([, , value]) => value !== "");
+  const shown = items.filter(([, , value]) => value !== "" && value != null);
   if (shown.length === 0 && !children) {
     return null;
   }
@@ -601,10 +604,30 @@ function teamTotal(row: TeamRow, column: ApparatusColumn): number | undefined {
   )?.total;
 }
 
+function memberScore(member: TeamMember, column: ApparatusColumn): MemberScore | undefined {
+  return member.scores.find((score) => score.discipline === column.discipline && score.apparatus === column.apparatus);
+}
+
+/** A team member's score: struck through and greyed when it was dropped from the team total. */
+function MemberScoreText({ score }: { score: MemberScore | undefined }) {
+  if (!score) {
+    return null;
+  }
+  return score.role === "DROPPED" ? (
+    <span className="text-gray-400 line-through dark:text-gray-500" title="Dropped from the team total">
+      {formatScore(score.score)}
+      <span className="sr-only"> (dropped)</span>
+    </span>
+  ) : (
+    <>{formatScore(score.score)}</>
+  );
+}
+
 /**
- * Team results; on a phone, each team's apparatus totals are on a line under its name. On a final
- * round's page, the teams earlier rounds eliminated follow at the places those rounds printed, each
- * marked with its round.
+ * Team results; on a phone, each team's apparatus totals are on a line under its name. A team
+ * expands to its members, each with the scores that made up the apparatus totals and those dropped
+ * from them. On a final round's page, the teams earlier rounds eliminated follow at the places those
+ * rounds printed, each marked with its round.
  */
 export function TeamTable({
   rows,
@@ -616,7 +639,7 @@ export function TeamTable({
   qualification: boolean;
 }) {
   const mixed = isMixed(apparatus);
-  const columns: Column<TeamRow>[] = [
+  const columns: Column<TeamRow, TeamMember>[] = [
     {
       header: "#",
       label: "Rank",
@@ -640,8 +663,27 @@ export function TeamTable({
           />
         </>
       ),
+      subCell: (member) => (
+        <>
+          <Link
+            to={`/athletes/${member.athlete.id}`}
+            // The team's row toggles on a tap; following the link shouldn't
+            onClick={(e) => e.stopPropagation()}
+            className="hover:underline"
+          >
+            {athleteName(member.athlete)}
+          </Link>
+          <PhoneLine
+            spoken
+            items={apparatus.map((column) => {
+              const score = memberScore(member, column);
+              return [...columnHeader(column, mixed), score ? <MemberScoreText score={score} /> : ""] as const;
+            })}
+          />
+        </>
+      ),
     },
-    ...apparatus.map((column): Column<TeamRow> => {
+    ...apparatus.map((column): Column<TeamRow, TeamMember> => {
       const [header, label] = columnHeader(column, mixed);
       return {
         header,
@@ -651,6 +693,7 @@ export function TeamTable({
         wide: true,
         sortValue: (row) => teamTotal(row, column),
         cell: (row) => formatScore(teamTotal(row, column)),
+        subCell: (member) => <MemberScoreText score={memberScore(member, column)} />,
       };
     }),
     ...penaltyColumn(rows),
@@ -670,7 +713,15 @@ export function TeamTable({
   }
 
   return (
-    <ExpandableTable caption="Team results" columns={columns} defaultSort="#" rows={rows} rowKey={(row) => row.noc} />
+    <ExpandableTable
+      caption="Team results"
+      columns={columns}
+      defaultSort="#"
+      rows={rows}
+      rowKey={(row) => row.noc}
+      subRows={(row) => row.members}
+      subRowKey={(member) => String(member.athlete.id)}
+    />
   );
 }
 

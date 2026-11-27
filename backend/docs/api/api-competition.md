@@ -161,3 +161,14 @@ One athlete's result on one apparatus.
 | qualification | String, nullable | Qualification to the team final, where the ranking qualifies to one |
 | apparatusTotals | List | `{discipline, apparatus, total}` for each apparatus with counting scores, in the order of `apparatus` above: the sum of the scores counting toward the team, or for a mixed team, which counts one score an apparatus, the best of them (two gymnasts tied for it both count) |
 | round | Integer, nullable | On a final elimination round's page, the earlier round that printed this place, for a team it eliminated: the 2026 Youth Olympic Games' mixed team round 3 lists its 4 teams, then round 2's places 5–8 (`round` 2), then round 1's 9–12 (`round` 1). Every place is one a round printed; `null` otherwise |
+| members | List | [TeamMember](#teammember-object) objects: the gymnasts with a score in the team's result, in bib order |
+
+### TeamMember Object
+
+The scores that made up a team's apparatus totals, and those left out of them, by gymnast.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| athlete | Object | `{id, surname, givenName}` |
+| noc | String | The country the gymnast competed for (IOC code) |
+| scores | List | `{discipline, apparatus, score, role}` for each apparatus the gymnast has a score on in the team's result, in the order of `apparatus` above: `score` is the routine's score as added into the apparatus total (for vault, the first vault; nullable, e.g. did not start), `role` is `COUNTING` or `DROPPED` |

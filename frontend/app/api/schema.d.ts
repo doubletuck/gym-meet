@@ -214,6 +214,16 @@ export interface components {
       slug: string;
       title: string;
     };
+    MemberScore: {
+      /** @enum {string} */
+      discipline: "MAG" | "WAG" | "MIX";
+      /** @enum {string} */
+      apparatus: "VT" | "UB" | "BB" | "FX" | "PH" | "SR" | "PB" | "HB";
+      /** Format: double */
+      score: number | null;
+      /** @enum {string} */
+      role: "COUNTING" | "DROPPED" | "INDIVIDUAL";
+    };
     RankingResultsResponse: {
       event: components["schemas"]["EventRef"];
       ranking: components["schemas"]["RankingSummaryResponse"];
@@ -276,6 +286,11 @@ export interface components {
       /** @enum {string} */
       teamRole: "COUNTING" | "DROPPED" | "INDIVIDUAL";
     };
+    TeamMember: {
+      athlete: components["schemas"]["AthleteRef"];
+      noc: string;
+      scores: components["schemas"]["MemberScore"][];
+    };
     TeamRow: {
       /** Format: int32 */
       rank: number | null;
@@ -291,6 +306,7 @@ export interface components {
       apparatusTotals: components["schemas"]["ApparatusTotal"][];
       /** Format: int32 */
       round: number | null;
+      members: components["schemas"]["TeamMember"][];
     };
     Division: {
       /** @enum {string} */

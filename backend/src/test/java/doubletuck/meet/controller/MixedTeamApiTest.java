@@ -85,6 +85,10 @@ class MixedTeamApiTest {
                         contains("FX", "PB", "HB", "UB", "BB", "FX")))
                 // GER's two men tie on floor: the team's floor is the one score, not their sum
                 .andExpect(jsonPath("$.teams[?(@.noc == 'GER')].apparatusTotals[0].total").value(12.366))
+                // A mixed team counts only its best score an apparatus: both of a tie count
+                .andExpect(jsonPath("$.teams[0].members[*].noc", hasItem("CHN")))
+                .andExpect(jsonPath("$.teams[?(@.noc == 'GER')].members[*].scores[?(@.discipline == 'MAG' "
+                        + "&& @.apparatus == 'FX')].role", contains("COUNTING", "COUNTING")))
                 .andExpect(jsonPath("$.apparatus[0].discipline").value("MAG"))
                 .andExpect(jsonPath("$.apparatus[0].apparatus").value("FX"))
                 .andExpect(jsonPath("$.apparatus[0].scores[0].athlete.surname").value("Yang"))

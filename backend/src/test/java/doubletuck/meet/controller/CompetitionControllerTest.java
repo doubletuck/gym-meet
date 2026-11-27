@@ -85,6 +85,15 @@ class CompetitionControllerTest {
                 .andExpect(jsonPath("$.teams[0].total").value(164.996))
                 .andExpect(jsonPath("$.teams[0].qualification").value("Q"))
                 .andExpect(jsonPath("$.teams[0].apparatusTotals[?(@.apparatus == 'BB')].total").value(43.966))
+                // Each member's scores, in bib order: the three best on beam count, the fourth is dropped
+                .andExpect(jsonPath("$.teams[0].members[*].athlete.surname",
+                        contains("Du", "Ke", "Qiu", "Zhang", "Zhang")))
+                .andExpect(jsonPath("$.teams[0].members[3].athlete.givenName").value("Yihan"))
+                .andExpect(jsonPath("$.teams[0].members[3].noc").value("CHN"))
+                .andExpect(jsonPath("$.teams[0].members[3].scores[?(@.apparatus == 'BB')].score").value(13.266))
+                .andExpect(jsonPath("$.teams[0].members[3].scores[?(@.apparatus == 'BB')].role").value("DROPPED"))
+                .andExpect(jsonPath("$.teams[0].members[4].scores[?(@.apparatus == 'BB')].score").value(15.1))
+                .andExpect(jsonPath("$.teams[0].members[4].scores[?(@.apparatus == 'BB')].role").value("COUNTING"))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].total").value(55.999))
                 .andExpect(jsonPath("$.allAround[?(@.athlete.surname == 'Nemour')].apparatusScores.UB")
                         .value(14.933))
