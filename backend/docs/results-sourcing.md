@@ -3,13 +3,16 @@
 How a meet goes from "on the calendar" to a folder that is ready for the `parse-results`
 skill: which files track the meets, what the meet folder holds, and the
 [`fig_events.py`](../tools/results-sourcing/fig_events.py) script that fills both from the
-World Gymnastics (FIG) site. Turning the folder's PDFs into import files is
+World Gymnastics (FIG) site. It also covers the athlete reference files and
+[`fig_athletes.py`](../tools/results-sourcing/fig_athletes.py), which keeps FIG's athlete licenses
+for birth dates and for checking entry lists (see [Athletes](#athletes)). Turning the folder's PDFs into import files is
 [instructions-results-parsing.md](instructions-results-parsing.md); loading them is
 [import-process.md](import-process.md).
 
 ## The files
 
-Everything lives under `data/<year>/` at the repository root.
+Everything lives under `data/<year>/` at the repository root, apart from the athlete
+reference files in `data/athletes/` (see [Athletes](#athletes)).
 
 | File | Written by | What it holds |
 |---|---|---|
@@ -170,7 +173,71 @@ own column; how `EventLevel` classifies events is still to be settled.
 python3 -I -m unittest discover -s backend/tools/results-sourcing
 ```
 
-They cover everything except the network calls.
+They cover both scripts, everything except the network calls.
+
+## Athletes
+
+Results books often print only a birth year, or nothing (US Championships), and athletes who
+compete only nationally have no FIG license. Two reference files in `data/athletes/` fill the
+gaps. The importer applies them after the results (`--import.athletes`, see
+[import-process.md](import-process.md#athlete-reference-files)), so a rebuilt database gets
+them back from the files, with no call to FIG.
+
+| File | Written by | What it holds |
+|---|---|---|
+| `FIG-LICENSES.csv` | `fig_athletes.py` only; never edit it | FIG's MAG and WAG athlete licenses, one row per license |
+| `ATHLETES.csv` | you only | Birth dates (and licenses) FIG doesn't have, each with its source: mostly athletes who have only competed nationally |
+
+They are kept apart so that a sync can rewrite FIG's file freely, and so a date you add keeps its
+source. Their columns are in [import-file-model.md](import-file-model.md#athlete-reference-files).
+
+FIG lists only *active* licenses: a license that lapses (an athlete who retires, or stops
+competing internationally) drops off FIG's list. A sync keeps its row, so the record isn't
+lost; `Last Seen` says when FIG last listed it.
+
+### fig_athletes.py
+
+```sh
+python3 -I backend/tools/results-sourcing/fig_athletes.py sync    [--discipline MAG] [--max-age 30]
+python3 -I backend/tools/results-sourcing/fig_athletes.py search  --lastname GHADIMI [--given Mehrdad] \
+    [--country QAT] [--license 70193] [--discipline MAG] [--online]
+python3 -I backend/tools/results-sourcing/fig_athletes.py check   data/2026/2026-ASIAN-GAMES [--refresh]
+python3 -I backend/tools/results-sourcing/fig_athletes.py missing [--refresh] > missing.csv
+```
+
+**`sync`** downloads every active license of each discipline, one request per discipline
+(about 1,700 MAG and 1,900 WAG), and merges them into `FIG-LICENSES.csv` by license: a new
+license is added, a listed one updated (and any change of name, country or birth date printed),
+and one no longer listed kept. With `--max-age`, a discipline synced within that many days is
+not downloaded.
+
+**`search`** looks athletes up in `FIG-LICENSES.csv`; names match without case or accents, and
+as a part (`--lastname al` finds `ALI` and `KHALIL`). With `--online` it asks FIG with the same
+criteria first (FIG searches by surname, country, license and discipline, not given name) and
+merges what comes back.
+
+**`check <PARTICIPANTS.csv or folder>…`** compares entry lists with both reference files and
+reports, per row:
+
+- a license FIG doesn't list (lapsed, or misprinted);
+- a license FIG lists under another discipline, another name, or another country;
+- a birth date, or a birth year, that differs from FIG's or `ATHLETES.csv`'s;
+- an entry with no license that FIG lists, under the same name and country, with one (or more).
+
+Names are compared as FIG lists them, its preferred names: one that is part of the other
+("AJALLA Isabella" for "AJALLA Isabella Ayelen"), or the same words in another order or spacing,
+is not a difference. Countries are compared as federations: FIG lists home nations' and Crown
+dependencies' athletes under GBR (Northern Ireland's under GBR or IRL), and neutral athletes
+(AIN, AIN1/AIN2, WG1/WG2) under their own federation. `check` changes nothing; what to do with a
+difference is the `parse-results` skill's call (see
+[instructions-results-parsing.md](instructions-results-parsing.md), §3).
+
+**`missing`** lists the athletes in every `PARTICIPANTS.csv` under `data/` whose full birth
+date neither a results book nor a reference file gives, as `ATHLETES.csv` rows with the birth
+date blank and the printed birth year in `Note`: a to-do list for the hand-curated file.
+
+`check` and `missing` first sync any discipline last synced more than 30 days ago, or every
+discipline with `--refresh`; otherwise they make no request.
 
 ## The FIG site
 
@@ -183,6 +250,7 @@ change; these calls are the ones the site's own pages make:
 | `/api/sporteventswithresult/?from=&to=&discipline=` | The same, limited to events with results, with `resultbook` (an asset id, sometimes the Delegation edition) and `digitalresult` |
 | `/api/sportevents/<id>/` | One event: venue, level, suppliers, categories and its files, including `Results book (Media)` |
 | `/asset.php?id=fidb_<asset>` | A file |
+| `/api/athletes.php?function=searchLicenses&discipline=&country=&idlicense=&lastname=` | Active athlete licenses matching the criteria, any of which may be empty (`discipline`: `MAG`, `WAG`). Each has `idgymnastlicense` (the FIG license a results book prints), `gymnastid` (FIG's id for the person), `preferredlastname`, `preferredfirstname`, `birth`, `gender`, `country`, `licensestatus` (the date the license was issued or renewed) and `validto`. Used by `fig_athletes.py` |
 
 The "has results" flag in the search list is not reliable (some events with a book show none),
 which is why `sync` uses the results call and the event's file list.

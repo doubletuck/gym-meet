@@ -2,6 +2,7 @@ package doubletuck.meet.importer;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.InOrder;
 import org.springframework.boot.DefaultApplicationArguments;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -24,7 +26,8 @@ class ImportRunnerTest {
 
     private final EventImporter eventImporter = mock(EventImporter.class);
     private final ImportLog importLog = mock(ImportLog.class);
-    private final ImportRunner runner = new ImportRunner(eventImporter, importLog);
+    private final AthleteReferenceImporter athleteReferenceImporter = mock(AthleteReferenceImporter.class);
+    private final ImportRunner runner = new ImportRunner(eventImporter, importLog, athleteReferenceImporter);
 
     @Test
     void testRun_ImportsEveryManifestUnderTheDirectory() throws IOException {
@@ -61,6 +64,32 @@ class ImportRunnerTest {
         runner.run(new DefaultApplicationArguments("--import.path=" + dir, "--import.status"));
 
         verify(importLog).status(worlds);
+        verify(eventImporter, never()).importManifest(any(), anyBoolean());
+    }
+
+    @Test
+    void testRun_Athletes_AppliedAfterTheManifests() throws IOException {
+        Path worlds = manifest("2026-WORLDS/2026-WORLDS-MAG-SR-IMPORT.json");
+        Path athletes = dir.resolve("athletes");
+        when(eventImporter.importManifest(any(), eq(false))).thenReturn(new ImportReport("report"));
+        when(athleteReferenceImporter.importDirectory(athletes)).thenReturn(new ImportReport("athletes"));
+
+        runner.run(new DefaultApplicationArguments("--import.path=" + dir.resolve("2026-WORLDS"),
+                "--import.athletes=" + athletes));
+
+        InOrder order = inOrder(eventImporter, athleteReferenceImporter);
+        order.verify(eventImporter).importManifest(worlds, false);
+        order.verify(athleteReferenceImporter).importDirectory(athletes);
+    }
+
+    @Test
+    void testRun_AthletesAlone_ImportsNoManifests() {
+        Path athletes = dir.resolve("athletes");
+        when(athleteReferenceImporter.importDirectory(athletes)).thenThrow(new ImportException("no files"));
+
+        assertThrows(IllegalStateException.class,
+                () -> runner.run(new DefaultApplicationArguments("--import.athletes=" + athletes)));
+
         verify(eventImporter, never()).importManifest(any(), anyBoolean());
     }
 

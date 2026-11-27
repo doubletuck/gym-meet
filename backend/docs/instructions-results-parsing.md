@@ -178,7 +178,16 @@ A parser that silently drops or misplaces values is worse than one that stops.
    book is a row in the event's `CORRECTIONS.csv` (import-file-model.md), and
    the parser fails on an unlogged difference from a text copy it compares
    with, or a logged correction that no longer applies.
-9. **Summary pages are a cross-check, not a source** — medal lists and
+9. **FIG's athlete licenses** — run `fig_athletes.py check <event folder>`
+   (results-sourcing.md, Athletes) on the `PARTICIPANTS` files written, and
+   account for every difference it reports. A misprinted licence or birth date
+   (a day and month swapped) is a `LICENCE` or `BIRTH_DATE` correction with
+   source `FIG athlete database`, once another source agrees; a license it
+   suggests for an unlicensed entry goes in `FIG License` only when the
+   athlete is certainly the same (see Linking a different spelling, §4); a
+   preferred, married or transliterated name, or a lapsed licence, needs no
+   change. This check reports; it doesn't fail the parser.
+10. **Summary pages are a cross-check, not a source** — medal lists and
    standings can disagree with the results tables (Cottbus WAG vault bronze,
    §5.3). When they do, the results table wins; flag it.
 
@@ -233,6 +242,8 @@ decisions that come up while parsing.
   the athlete's licence, from an international entry list, in that row's
   `FIG License`: the import then links them and keeps the printed name as a
   variant. The US parser keeps the column when it rewrites `PARTICIPANTS`.
+  `fig_athletes.py check` suggests the licence FIG lists for an unlicensed
+  entry with the same name and country.
 - **Judges have no master file**, so `JUDGES` derives the split itself.
 
 ### 4.2 Ranks and markers

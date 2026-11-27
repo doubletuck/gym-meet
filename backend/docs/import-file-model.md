@@ -22,6 +22,7 @@ cross-check/reference value, not an oversight in this document.
 | `<PREFIX>-RANKING-FINAL-<APP>.csv` | Combined standings on one apparatus for a competition split into parts (US Championships' two-day apparatus titles) | Discipline + Age Category + Apparatus |
 | `<PREFIX>-IMPORT.json` | Manifest: the event's metadata plus every file above that belongs to this discipline+age | Discipline + Age Category |
 | `<EVENT>-CORRECTIONS.csv` | Log of values written differently from the results book (not imported) | Event folder |
+| `data/athletes/FIG-LICENSES.csv`, `data/athletes/ATHLETES.csv` | Athlete reference files: FIG's licenses, and hand-curated birth dates (see [Athlete reference files](#athlete-reference-files)) | One each, for all meets |
 
 `<PREFIX>` is exactly the `Prefix` column of the event's `EVENT.csv`:
 `<EVENT-SLUG>-<DISCIPLINE>-<AGE-CATEGORY>`, e.g.
@@ -379,3 +380,45 @@ files.
 | Source | Where the corrected value comes from: `sporttech export`, `FIG athlete database`, `other panels`, … |
 | Note | Free text |
 
+## Athlete reference files
+
+Two files in `data/athletes/`, for all meets, that fill in athletes' birth dates and licenses
+after the results are imported (`--import.athletes`; see
+[import-process.md](import-process.md#athlete-reference-files) and
+[results-sourcing.md](results-sourcing.md#athletes)).
+
+### `FIG-LICENSES.csv`
+
+FIG's athlete licenses, written only by `fig_athletes.py`; never edit it. One row per license,
+sorted by discipline and name.
+
+| Column | Description | Entity Mapping |
+|---|---|---|
+| FIG License | FIG's license number (`idgymnastlicense`), as results books print it | `Athlete.licenseNumber` |
+| Gymnast ID | FIG's id for the person (`gymnastid`), which stays the same when a license is replaced | |
+| Discipline | `MAG` or `WAG` | `Athlete.discipline` (to match) |
+| Surname | Preferred surname, as FIG lists it (capitalised) | (to match) |
+| Given Name | Preferred given name, as FIG lists it | (to match) |
+| NOC Code | The athlete's federation | (to match) |
+| Birth Date | `YYYY-MM-DD` | `Athlete.birthDate`, and `Athlete.birthYear` from it |
+| Licensed On | When the license was issued or last renewed (FIG's `licensestatus`) | |
+| Valid To | When the license expires | |
+| First Seen | When a sync first found the license | |
+| Last Seen | When a sync last found it. Earlier than the latest sync means FIG no longer lists it | |
+
+### `ATHLETES.csv`
+
+Hand-curated: birth dates (and licenses) that FIG doesn't have, mostly for athletes who have
+competed only nationally. `fig_athletes.py missing` lists the athletes still without a full
+birth date, in these columns.
+
+| Column | Description | Entity Mapping |
+|---|---|---|
+| Discipline | `MAG` or `WAG` | `Athlete.discipline` (to match) |
+| NOC Code | A country the athlete has competed for, as an entry list prints it | (to match) |
+| FIG License | The athlete's license, if any; blank otherwise | `Athlete.licenseNumber` |
+| Surname | As a results book prints it | (to match) |
+| Given Name | As a results book prints it | (to match) |
+| Birth Date | `YYYY-MM-DD` | `Athlete.birthDate`, and `Athlete.birthYear` from it |
+| Source | Where the date comes from: a federation's athlete page, a news article, … | |
+| Note | Free text | |

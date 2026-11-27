@@ -208,13 +208,13 @@ them out ("Line Judge 1", "Time Judge", "Floor Exercise Supervisor").
 | Field | Type | Nullable | Description |
 |---|---|---|---|
 | id | Long | No | Generated primary key. |
-| licenseNumber | String | Yes | FIG license number assigned registered to athletes. |
+| licenseNumber | String | Yes | FIG license number assigned registered to athletes: from a results book, or the athlete reference files (`data/athletes/`) when no book prints it. |
 | discipline | Discipline | No | The type of gymnastics program this athlete competes in. |
 | surname | String | No | Athlete's family name, in written form ("Blakely", "McDonald", "van Pol") whatever capitalisation the source printed — FIG's capitalised surnames are converted by `PersonName`. |
 | givenName | String | No | Athlete's given name, in the same written form. |
 | birthplace | String | Yes | Where the athlete was born, when the source publishes it (rarely). A further way to tell apart athletes with the same name. |
-| birthYear | Short | Yes | Birth year of the athlete — taken from `birthDate` when the source publishes a full date, otherwise from the year the source prints. Null when the source publishes neither (e.g. US Championships). |
-| birthDate | Date | Yes | Birth date of the athlete, when the source publishes a full date. |
+| birthYear | Short | Yes | Birth year of the athlete — taken from `birthDate` when the source publishes a full date, otherwise from the year the source prints. Null when the source publishes neither (e.g. US Championships) and no athlete reference file gives a birth date. |
+| birthDate | Date | Yes | Birth date of the athlete, when a results book publishes a full date; otherwise from the athlete reference files in `data/athletes/` (FIG's licenses, or hand-curated), applied after the results are imported. |
 
 Unique key: `(surname, given_name, discipline)`. Neither `licenseNumber`
 nor `birthYear` is part of it, since both can be null: athletes who only

@@ -23,6 +23,10 @@ import java.util.stream.Stream;
  * imported on its own, so one failing doesn't stop the rest; the run fails if
  * any did. With {@code --import.status}, nothing is imported: each manifest is
  * reported as imported and up to date, changed since, or not imported.
+ *
+ * <p>{@code --import.athletes=<directory>} applies the athlete reference files
+ * ({@link AthleteReferenceImporter}) after the manifests, or on its own without
+ * {@code --import.path}.
  */
 @Component
 @Profile("import")
@@ -32,22 +36,26 @@ class ImportRunner implements ApplicationRunner {
 
     private final EventImporter eventImporter;
     private final ImportLog importLog;
+    private final AthleteReferenceImporter athleteReferenceImporter;
 
-    ImportRunner(EventImporter eventImporter, ImportLog importLog) {
+    ImportRunner(EventImporter eventImporter, ImportLog importLog, AthleteReferenceImporter athleteReferenceImporter) {
         this.eventImporter = eventImporter;
         this.importLog = importLog;
+        this.athleteReferenceImporter = athleteReferenceImporter;
     }
 
     @Override
     public void run(ApplicationArguments args) {
-        List<String> paths = args.getOptionValues("import.path");
-        if (paths == null || paths.isEmpty()) {
-            throw new IllegalArgumentException("--import.path is required");
+        List<String> paths = args.containsOption("import.path") ? args.getOptionValues("import.path") : List.of();
+        List<String> athletes = args.containsOption("import.athletes") ? args.getOptionValues("import.athletes")
+                : List.of();
+        if (paths.isEmpty() && athletes.isEmpty()) {
+            throw new IllegalArgumentException("--import.path or --import.athletes is required");
         }
         boolean replace = args.containsOption("import.replace");
 
         List<Path> manifests = paths.stream().flatMap(path -> manifests(Path.of(path))).toList();
-        if (manifests.isEmpty()) {
+        if (!paths.isEmpty() && manifests.isEmpty()) {
             throw new IllegalArgumentException("No *-IMPORT.json manifests found under " + paths);
         }
         if (args.containsOption("import.status")) {
@@ -64,7 +72,17 @@ class ImportRunner implements ApplicationRunner {
                 failures.add(manifest.getFileName().toString());
             }
         }
-        log.info("Imported {} of {} manifests", manifests.size() - failures.size(), manifests.size());
+        if (!manifests.isEmpty()) {
+            log.info("Imported {} of {} manifests", manifests.size() - failures.size(), manifests.size());
+        }
+        for (String directory : athletes) {
+            try {
+                log.info("Applied {}", athleteReferenceImporter.importDirectory(Path.of(directory)).summary());
+            } catch (RuntimeException e) {
+                log.error("Failed to apply the athlete reference files in {}: {}", directory, e.getMessage());
+                failures.add(directory);
+            }
+        }
         if (!failures.isEmpty()) {
             throw new IllegalStateException("Failed to import " + failures);
         }

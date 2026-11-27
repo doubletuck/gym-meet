@@ -101,11 +101,16 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.ar
 ```
 See [import-process.md](import-process.md) for the arguments and what an import does. Add `--import.status` to check which manifests are imported and up to date, without importing.
 
+Athletes' birth dates that the results books don't print come from the athlete reference files in `data/athletes/`. Apply them after importing, with the import or on their own:
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.athletes=../data/athletes"
+```
+
 ### After a migration that rebuilds the results
 
 Some migrations clear the imported data rather than converting it, because every row comes from the files: `V9__competitions_and_rankings.sql` drops the competitions, scores, judges, rankings and results, and deletes the participants and the import log (events, athletes, their name variants and clubs are kept). After it, import everything again:
 ```shell
-mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=../data/2026 --import.replace"
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import -Dspring-boot.run.arguments="--import.path=../data/2026 --import.replace --import.athletes=../data/athletes"
 ```
 
 The importer reads only the current file standard ([import-file-model.md](import-file-model.md): `SCORES-C1-*`, `RANKING-*`, the event formats), which the files under `data/` follow. `V10__event_format.sql` adds the formats' table, empty until the manifests are imported again with `--import.replace` as above.

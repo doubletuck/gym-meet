@@ -99,7 +99,11 @@ parser must exit non-zero on any failure. Then:
 3. If files already exist for the event, compare old and new value by value and explain
    every difference.
 4. Run it in place and confirm a second run produces identical files.
-5. If any Java code changed, run `mvn -q test` in `backend/` — all tests must pass.
+5. Run `python3 -I backend/tools/results-sourcing/fig_athletes.py check data/<year>/<event>` and
+   account for every difference it reports (parsing doc §3, FIG's athlete licenses): a
+   misprint confirmed by another source becomes a `CORRECTIONS.csv` row; list the rest in the
+   report.
+6. If any Java code changed, run `mvn -q test` in `backend/` — all tests must pass.
 
 ## 5. Report and document
 

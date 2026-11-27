@@ -20,6 +20,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
 | `--import.path` | A manifest (`*-IMPORT.json`), or a directory searched recursively for them — a single meet's folder, or a whole year. Can be given more than once. |
 | `--import.replace` | Reimport a discipline and age category that is already in the database (see [Importing again](#importing-again)). Without it, that is an error. |
 | `--import.status` | Import nothing; report each manifest as up to date, changed since it was imported, or not imported (see [What has been imported](#what-has-been-imported)). |
+| `--import.athletes` | A directory holding the athlete reference files (`../data/athletes`), applied after the manifests, or on its own without `--import.path` (see [Athlete reference files](#athlete-reference-files)). |
 
 The app imports and then exits; it doesn't start the web server. For each
 manifest it logs a report: how many of each record it created, how many
@@ -173,11 +174,50 @@ is name and discipline, two different athletes with the same name can't both
 be stored. A matched athlete gains any license, birth date or birth year the
 row adds; existing values are never overwritten.
 
+Athletes' birth dates, and licenses that no results book prints, also come from the
+[athlete reference files](#athlete-reference-files), applied after the results.
+
 Names (athletes, name variants and judges) are stored in written form whatever
 capitalisation the source printed: each run of two or more capitals becomes a
 capital followed by lowercase, so FIG's "BLAKELY" and "McDONALD" are stored as
 "Blakely" and "McDonald", and "van POL" as "van Pol". The entities' name setters
 apply this (`PersonName`), so it holds for every write, not only imports.
+
+## Athlete reference files
+
+`--import.athletes=../data/athletes` applies `ATHLETES.csv` (hand-curated), then
+`FIG-LICENSES.csv` (FIG's licenses, kept by `fig_athletes.py`; see
+[results-sourcing.md](results-sourcing.md#athletes)) to the athletes the results created. Run it
+after importing, and again after either file changes; applying them again changes nothing.
+
+```shell
+mvn spring-boot:run -Dspring-boot.run.profiles=local,import \
+  -Dspring-boot.run.arguments="--import.path=../data/2026 --import.athletes=../data/athletes"
+```
+
+It only adds to athletes already in the database, in one transaction:
+
+1. A row finds its athlete by **FIG license**; or, when the license is in no athlete's record,
+   by **name and discipline** (or a known name variant), ignoring case and accents, where
+   exactly one such athlete has an entry for the row's country. A home nation's or Crown
+   dependency's entry counts as GBR (Northern Ireland's as GBR or IRL), and a neutral athlete's
+   (AIN, AIN1/AIN2, WG1/WG2) as any country. A row whose athlete has competed for no matching
+   country, or who isn't in the database, is counted and skipped.
+2. The athlete gains the row's license, birth date, and the birth year from that date, where
+   these are empty. A value already recorded is never changed.
+3. A row that disagrees is a warning, and that row's values aren't applied: a license under
+   another discipline, a name match recorded with another license, a birth date other than
+   the recorded one, or one outside the recorded birth year. Most are a book's misprint (a
+   day and month swapped): correct it in the meet's `CORRECTIONS.csv` and import it again.
+
+`ATHLETES.csv` comes first, so where it and FIG disagree its date is the one applied and FIG's
+is reported. It isn't recorded in the import log, and FIG's names aren't kept as name variants:
+a preferred name ("BEITIA Ana" for "BEITIA DELGADO Ana Lucia") is often too short to tell
+athletes apart.
+
+A meet imported after the reference files have been applied is checked against what they
+added: a book whose birth date differs from FIG's fails the import (see
+[Matching athletes](#matching-athletes)). `fig_athletes.py check` finds these before importing.
 
 ## Checks
 
