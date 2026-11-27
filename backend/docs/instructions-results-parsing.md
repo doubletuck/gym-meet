@@ -239,6 +239,9 @@ decisions that come up while parsing.
 
 - Copy ranks as published, including duplicate ranks for ties and tie-breaks
   that order equal totals — never recompute (tie-break rules change by quad).
+  The one exception, agreed with the user: a title the book prints only as medallists, with no
+  ranking (Europeans MAG SR all-around, §5.1), is ranked from its scores, the medallists checked
+  against the top three, and each tie broken as a `TIE_BREAK` correction.
   Elevien's World Cup books break a tie on E, then D (Osijek WAG floor
   qualification: SHAMAY over ZLOBEC, E 7.500 both); equal on both, the rank
   is shared. Varna's book does the same (MAG floor qualification: BOURDET and
@@ -582,8 +585,8 @@ meet records it.
 | Structure | Format (team, AA, apparatus) | Competitions, and the title rankings | Example |
 |---|---|---|---|
 | Championship | `FINAL`, `FINAL`, `FINAL` | `C1`, `C4`, `C2`, `C3` per apparatus | Worlds |
-| Team and apparatus finals, no all-around title | `FINAL`, `NONE`, `FINAL` | `C1`, `C4`, `C3` | Europeans MAG seniors (but see competition-models.md: the title exists, only its medallists printed) |
-| All-around decided in Competition I | `FINAL`, `C1`, `FINAL` | `C1`, `C4`, `C3`; `RANKING-FINAL-AA` of `C1` (Asian Games: 24 ranked, two per country, the others unranked) | Europeans WAG seniors, Asian Games |
+| Team and apparatus finals, no all-around title | `FINAL`, `NONE`, `FINAL` | `C1`, `C4`, `C3` | none in 2026 |
+| All-around decided in Competition I | `FINAL`, `C1`, `FINAL` | `C1`, `C4`, `C3`; `RANKING-FINAL-AA` of `C1` (Asian Games: 24 ranked, two per country, the others unranked) | Europeans WAG seniors, Europeans MAG seniors (ranked from the C1 scores: the book prints only the medallists), Asian Games |
 | Team decided in Competition I, all-around final | `C1`, `FINAL`, `FINAL` | `C1`, `C2`, `C3`; `RANKING-FINAL-TEAM` of `C1` | Europeans MAG juniors, Senior Pan Americans, Mediterranean Games, Commonwealth Games, Central American and Caribbean Games |
 | Team and all-around decided in Competition I | `C1`, `C1`, `FINAL` | `C1`, `C3`; both final rankings of `C1` | African Championships, Junior Pan Americans, Europeans WAG juniors, Asian Championships (also printed as finals of the same routines), South American Games (printed only as those finals) |
 | One competition deciding the team and all-around titles, nothing to qualify for | `C1`, `C1`, `NONE` | `C1` (single-attempt vault, as at any all-around final); both final rankings of `C1` | Oceania Championships |
@@ -609,12 +612,16 @@ the apparatus totals the source prints.
 A concatenation of reports, each stamped with a footer like
 `GARM1APFX-------------QUAL--------_73I 1.0  <timestamp>  Page 1/5`.
 Parsers: [`parse_2026_world_championships.py`](../tools/results-parsing/parse_2026_world_championships.py)
-(the 2026 Europeans files predate the parsers and were built by hand, except the juniors' men's
-all-around final ranking, which
+(the 2026 Europeans files predate the parsers and were built by hand, except the men's all-around
+rankings, which
 [`parse_2026_european_championships.py`](../tools/results-parsing/parse_2026_european_championships.py)
-writes from its "All-Around Results" report, in the current standard). The senior men's book prints
-no all-around ranking: only the medallists, dated on qualification day (see
-competition-models.md, open items).
+writes in the current standard). The juniors' final ranking is read from its "All-Around Results"
+report. The senior men's book prints no all-around ranking, only the medallists, dated on
+qualification day: the title was decided in Competition I, so the parser ranks it from the
+`SCORES-C1-*` files (competition-models.md §7.6 item 11). Every gymnast with all six apparatus is
+ranked by the sum of their C1 scores (first vault on vault). It checks that the medallists come out
+first to third, and leaves a tie unranked for `CORRECTIONS.csv` to break (`TIE_BREAK`, on the
+higher E total).
 
 **Finding reports**
 
@@ -1407,7 +1414,7 @@ Parser: [`parse_2026_world_challenge_cup_paris.py`](../tools/results-parsing/par
   are counted in the entries by NOC. Each is first on the start list of one or two apparatus, and
   their results rows print bib, name and NOC only: no rank, no score, no `DNS` (real non-starters
   print `DNS` on the same pages). The book gives no reason. They are written as entries with no
-  SCORES rows (`NO_RESULT` in the parser), confirmed with the user. See §6 item 8.
+  SCORES rows (`NO_RESULT` in the parser), confirmed with the user. See §6 item 7.
 - **Bibs of one to three digits** (MAG 1-80), printed one space after the rank (`1 34`). The
   WAG List of Qualifiers prints the order and the bib run together (`1255` is order 1, bib 255).
 - **Vault** prints `1` and vault 1 on the athlete's line, `2` and vault 2 on the next line, each
@@ -1732,7 +1739,7 @@ rotations; the start lists' dates agree). Top eight per apparatus, two per count
 - **Ties are always broken** (E, then D; vault the highest vault, then E, then D). The MAG rings and
   WAG vault finals have ties and no tie-break page.
 - **Hors concours**: MAG 135-138 and WAG 225-227, all UZB, print `(HC)` on the qualification start
-  lists only; they are not on the entry list and have no results, so are not written (§6 item 8).
+  lists only; they are not on the entry list and have no results, so are not written (§6 item 7).
 - **A start-list athlete left out of the table**: MAG SITCHINAVA is on the vault start list with no
   row, not even `DNS`. Elevien has him `DNS`, so the parser adds a blank row and `ROW` corrections
   set both vaults `DNS` (from the user). MAG floor subdivision IV prints its bibs against the wrong names
@@ -2078,56 +2085,52 @@ apparatus each, scores reset (top 8, top 4 Q; places 9-12 and 5-8 printed in rou
    and no marker; sporttech.io a bare `0` with no D or E; Baku's Microplus
    print a D (`0.0`) and `0.000` with E blank; Antalya's EVAL print `0,000` in
    every column. Watch for a source that marks it differently.
-2. **Europeans MAG senior all-around.** The title was decided in Competition I (medallists dated on
-   qualification day), but the senior book prints no all-around ranking, only the medallists; the
-   format says `NONE` for now (competition-models.md, open). The juniors' all-around final ranking is
-   parsed (`parse_2026_european_championships.py`).
-3. **Europeans files were built by hand** before the parsers existed and lack
+2. **Europeans files were built by hand** before the parsers existed and lack
    the newer `Birth Date` column; there is no parser to regenerate them.
-4. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
+3. **`SV` vs `DS1`** may be the same role (an apparatus supervisor) seen in
    different contexts; kept separate for now. Both are World Cups: Cottbus
    heads each panel with `DS1`, Baku with `SV`.
-5. **Penalties attributed to an apparatus.** sporttech.io's export records CUB's
+4. **Penalties attributed to an apparatus.** sporttech.io's export records CUB's
    team penalty against one routine (bib 338's parallel bars) and has fields
    for per-apparatus team penalties and individual all-around penalties; only
    the team-level total is modelled (`TeamResult.sjPenalty`). The 2026 Asian
    Championships WAG juniors print one against LBN's beam total (§4.3); it is
    folded into the team's `SJ Penalty`. Revisit if the site should show where a
    team penalty was taken.
-6. **SJ penalties on vault.** Baku printed an SJ penalty on a combined
+5. **SJ penalties on vault.** Baku printed an SJ penalty on a combined
    two-vault result (§4.3), stored as `Score.combinedSjPenalty` beside the
    per-attempt `SJ Penalty1`/`SJ Penalty2`. Check the Code of Points: an SJ
    penalty may always apply to the apparatus score — one value per `Score`,
    which for vault is the combined result — in which case the per-attempt
    columns and this one should become a single SJ penalty on the score.
-7. **Judge name variants.** The Baku TD prints as `Steve Butcher`; the Pan
+6. **Judge name variants.** The Baku TD prints as `Steve Butcher`; the Pan
    American books print `BUTCHER, Steven`. Cairo prints `VELASQUEZ ALVARADO Juan
    Carlos` for the Pan Americans' `VELASQUEZ, Juan Carlos`. Not merged (judges have
    no master record); settle on one spelling if judges are ever linked across meets.
-8. **Hors concours results.** Varna's and Koper's books leave the hors concours athletes' scores out,
+7. **Hors concours results.** Varna's and Koper's books leave the hors concours athletes' scores out,
    so they are entries with no results. Szombathely's leaves its one (WAG KOVACS Regina, bib 224,
    on the beam start list only) off the entry list too, so she isn't written at all. Paris's six
    late French entries (§5.14) aren't marked hors concours, but their rows print no result either.
    Tashkent's seven (§5.18) are on the start lists only, like Szombathely's, so aren't written.
    Their scores would need another source (the FIG results system) and a way to keep them out of the ranks.
-10. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury (senior
+9. **Judges printed without a surname.** The 2026 African Championships WAG Superior Jury (senior
    and junior books) prints `Debbie` (RSA, judge number 2058) and `Rawan` (EGY, 4646) only. Rawan is written as ABOUSHOUSHA
    Rawan (EGY), the Cairo World Cup judge (a correction; the book gives no full name). Debbie isn't
    written, a judge needing a surname; add her if her surname is found.
-9. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
+8. **Plain `AIN`.** Cairo and Osijek print one `AIN` for both neutral groups, kept as printed
    (Osijek's entry list and entry counts keep the two groups apart, under two `AIN` headings).
    Those athletes link by FIG licence, but their Cairo entries form a third neutral
    group beside `AIN1`/`AIN2`. Revisit if the site groups results by country.
-11. **World Gymnastics judge IDs.** Every judge has an ID in the World Gymnastics database
+10. **World Gymnastics judge IDs.** Every judge has an ID in the World Gymnastics database
    (the African Championships WAG sheets print some as judge numbers). Backfill them, which would
    link a judge across meets despite spelling and federation differences (item 7), and replace the
    hand-checked federations of judges credited to a continental union (the 2026 Central American
    and Caribbean Games' nine, filled from other 2026 meets).
-12. **Individual judges' marks.** The 2026 African Championships junior book prints every routine's
+11. **Individual judges' marks.** The 2026 African Championships junior book prints every routine's
    E1–E5 marks and its penalty parts (ND, line, time, …) (§5.15). Nothing in the model holds them, so
    they are transcribed and checked but not written. Storing them would need columns on `SCORES`
    (or a file of their own) and fields on `Score`, joined to the panel's judges by function.
-13. **A routine on a start list that no report prints.** 2026 South American Games MAG TORRES
+12. **A routine on a start list that no report prints.** 2026 South American Games MAG TORRES
    Sebastian (VEN, 77) is on the qualification vault start list and in no vault report (the book has
    no first-vault list for MAG, and he is in neither the team nor the all-around report). No row is
    written. The FIG results system may have his vault (or a DNS).

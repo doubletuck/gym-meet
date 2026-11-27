@@ -14,7 +14,7 @@
         "venue" : "Arena Zagreb",
         "apparatusSuppliers" : "Spieth",
         "teamFormat" : "FINAL",
-        "aaFormat" : "NONE",
+        "aaFormat" : "C1",
         "apparatusFormat" : "FINAL"
     },
     "participants" : [
@@ -44,6 +44,7 @@
         "2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-SCORES-C4-VT.csv"
     ],
     "rankings" : [
+        "2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-AA.csv",
         "2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-RANKING-FINAL-TEAM.csv",
         "2026-EUROPEAN-CHAMPIONSHIPS-MAG-SR-RANKING-QUAL-TEAM.csv"
     ]

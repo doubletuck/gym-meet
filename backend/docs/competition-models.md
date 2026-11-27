@@ -38,7 +38,7 @@ titles that aren't held.
 | Meet | Prefixes | Team | AA | Apparatus | Model |
 |---|---|---|---|---|---|
 | World Championships | MAG SR, WAG SR | Qual | Qual | Qual | A |
-| European Championships | MAG SR | Qual | — (see §7.6, open) | Qual | B |
+| European Championships | MAG SR | Qual | Final (ranked from the scores, §7.6 item 11) | Qual | C |
 | European Championships | WAG SR | Qual | Final | Qual | C |
 | Asian Games | MAG SR, WAG SR | Qual | Final | Qual | C |
 | European Championships | MAG JR | Final | Qual | Qual | D |
@@ -59,7 +59,8 @@ titles that aren't held.
 Models:
 
 - **A.** Every title is decided in a final.
-- **B.** As A, but without an all-around title.
+- **B.** As A, but without an all-around title. No meet now: Europeans MAG SR, first read as B, held
+  its all-around title in the first session (model C, §7.6 item 11).
 - **C.** The team title goes to a final. The all-around title is decided in the first session.
 - **D.** The team title is decided in the first session. The all-around title goes to a final.
 - **E.** The team and all-around titles are decided in the first session. Apparatus finals follow.
@@ -478,14 +479,17 @@ Decided in step 3:
 10. **An entry who started no apparatus** but is listed in an all-around ranking (Worlds MAG,
     Commonwealth MAG, Pan Ams WAG JR, Asian Championships MAG JR): `INCOMPLETE`.
 
-Open:
+Decided after step 6:
 
-- **Europeans MAG SR all-around.** The title exists and Competition I decided it: the book's
-  medallists (gold KOVTUN Illia, CRO) are dated on qualification day. But the senior book prints
-  no all-around ranking, only the three medallists. For now the AA format is `NONE`, which is
-  knowingly wrong. Options: store the medallists as a `FINAL` ranking of `C1` (the other
-  all-arounders `UNPLACED`), compute the ranking from the scores (a correction, since ranks are
-  otherwise copied as printed), or leave it.
+11. **Europeans MAG SR all-around.** The title exists and Competition I decided it: the book's
+    medallists (gold KOVTUN Illia, CRO) are dated on qualification day, but the senior book prints
+    no all-around ranking, only the three medallists. The AA format is `C1`, and the `FINAL`
+    ranking of `C1` is computed from the C1 scores, the one exception to ranks copied as printed:
+    - its rows are the 81 gymnasts with all six apparatus, each apparatus total the C1 score (the
+      first vault on vault), ranked by their sum;
+    - the sums put the printed medallists first, second and third (82.833, 82.832, 81.899);
+    - the one tie, 77.798, is broken on the higher execution total (CASSAM CHENAI 28th, SPONEVIK
+      29th), as `TIE_BREAK` corrections.
 
 ## 8. Mixed teams (Youth Olympic Games, Dakar 2026)
 
