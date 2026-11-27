@@ -6,7 +6,7 @@ import { eventsQuery, queryClient } from "~/api/client";
 import { Division } from "~/components/Abbreviation";
 import { countryName } from "~/lib/countries";
 import { formatDateRange } from "~/lib/format";
-import { LEVEL_LABELS } from "~/lib/labels";
+import { divisionPath, LEVEL_LABELS } from "~/lib/labels";
 
 export function meta(): Route.MetaDescriptors {
   return [
@@ -30,27 +30,34 @@ export default function Events() {
       ) : (
         <ul className="mt-4 space-y-3">
           {events.map((event) => (
-            <li key={event.slug}>
-              <Link
-                to={`/events/${event.slug}`}
-                className="block rounded-lg border border-gray-200 p-4 hover:border-gray-400 dark:border-gray-800 dark:hover:border-gray-600"
-              >
-                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{LEVEL_LABELS[event.level]}</p>
-                <h2 className="mt-1 font-semibold">{event.title}</h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  {formatDateRange(event.startDate, event.endDate)} · {event.city}, {countryName(event.countryCode)}
-                </p>
-                <p className="mt-2 flex flex-wrap gap-2">
-                  {event.divisions.map((division) => (
-                    <span
-                      key={`${division.discipline}-${division.ageCategory}`}
-                      className="rounded-full bg-gray-100 px-2 py-0.5 text-xs dark:bg-gray-800"
+            <li
+              key={event.slug}
+              className="relative rounded-lg border border-gray-200 p-4 hover:border-gray-400 dark:border-gray-800 dark:hover:border-gray-600"
+            >
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{LEVEL_LABELS[event.level]}</p>
+              <h2 className="mt-1 font-semibold">
+                {/* The whole card opens the event; its division chips, layered over it, open that division's results */}
+                <Link to={`/events/${event.slug}`} className="after:absolute after:inset-0 hover:underline">
+                  {event.title}
+                </Link>
+              </h2>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {formatDateRange(event.startDate, event.endDate)} · {event.city}, {countryName(event.countryCode)}
+              </p>
+              <ul aria-label="Results" className="relative z-10 mt-2 flex flex-wrap gap-2">
+                {event.divisions.map((division) => (
+                  <li key={`${division.discipline}-${division.ageCategory}`}>
+                    <Link
+                      to={`/events/${event.slug}/${divisionPath(division.discipline, division.ageCategory)}`}
+                      className="block rounded-full border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs hover:border-blue-700 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-400 dark:hover:text-blue-400"
                     >
                       <Division discipline={division.discipline} ageCategory={division.ageCategory} />
-                    </span>
-                  ))}
-                </p>
-              </Link>
+                      <span aria-hidden="true"> ›</span>
+                      <span className="sr-only"> results, {event.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>

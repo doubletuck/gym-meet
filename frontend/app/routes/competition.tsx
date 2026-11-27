@@ -18,6 +18,7 @@ import {
 import { formatCompetitionDate } from "~/lib/format";
 import { columnKey, isMixed, ranksFirstVault, VAULT_FINAL_QUALIFYING, type ApparatusColumn } from "~/lib/labels";
 import { Abbreviation, ApparatusCode, Division } from "~/components/Abbreviation";
+import { CompetitionNav, DivisionNav } from "~/components/results/CompetitionNav";
 
 /**
  * Finds the competition the address names, or a ranking with no competition of its own (a mixed
@@ -140,34 +141,55 @@ function ViewNav({ views, current, athleteId }: { views: View[]; current?: View;
   );
 }
 
+/**
+ * The event, which division and competition these results are, and the way to the event's other
+ * results: its divisions, the division's competitions, and a tab's apparatus, rounds or parts.
+ */
 function Header({
   eventSlug,
-  eventTitle,
+  slug,
   title,
   discipline,
   ageCategory,
   date,
   endDate,
+  view,
+  athleteId,
 }: {
   eventSlug: string;
-  eventTitle: string;
+  slug: string;
   title: string;
   discipline: CompetitionResults["competition"]["discipline"];
   ageCategory: CompetitionResults["competition"]["ageCategory"];
   date: string;
   endDate: string | null;
+  view: string | null;
+  athleteId?: number;
 }) {
+  const { data: event } = useSuspenseQuery(eventQuery(eventSlug));
+  const where = { event, discipline, ageCategory, slug, view };
   return (
     <>
-      <nav className="text-sm">
+      <nav aria-label="Breadcrumb" className="text-sm">
+        <Link to="/" className="text-blue-700 underline dark:text-blue-400">
+          Competitions
+        </Link>
+        <span className="text-gray-500"> / </span>
         <Link to={`/events/${eventSlug}`} className="text-blue-700 underline dark:text-blue-400">
-          {eventTitle}
+          {event.title}
         </Link>
       </nav>
-      <h1 className="mt-2 text-2xl font-semibold">{title}</h1>
-      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        <Division discipline={discipline} ageCategory={ageCategory} /> · {formatCompetitionDate(date, endDate)}
-      </p>
+      <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold">{event.title}</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            <Division discipline={discipline} ageCategory={ageCategory} /> · {title} ·{" "}
+            {formatCompetitionDate(date, endDate)}
+          </p>
+        </div>
+        <DivisionNav {...where} />
+      </div>
+      <CompetitionNav {...where} athleteId={athleteId} />
     </>
   );
 }
@@ -199,12 +221,14 @@ function Ranking({ id, title, eventSlug }: { id: number; title: string; eventSlu
     <>
       <Header
         eventSlug={eventSlug}
-        eventTitle={results.event.title}
+        slug={ranking.slug}
         title={title}
         discipline={ranking.discipline}
         ageCategory={ranking.ageCategory}
         date={ranking.date}
         endDate={ranking.endDate}
+        view={current?.key ?? null}
+        athleteId={athleteId}
       />
       <ViewNav views={views} current={current} athleteId={athleteId} />
       <div className="mt-4">
@@ -254,12 +278,14 @@ function Competition({ id, title, eventSlug }: { id: number; title: string; even
     <>
       <Header
         eventSlug={eventSlug}
-        eventTitle={results.event.title}
+        slug={competition.slug}
         title={title}
         discipline={competition.discipline}
         ageCategory={competition.ageCategory}
         date={competition.date}
         endDate={competition.endDate}
+        view={current?.key ?? null}
+        athleteId={athleteId}
       />
       <ViewNav views={views} current={current} athleteId={athleteId} />
 
