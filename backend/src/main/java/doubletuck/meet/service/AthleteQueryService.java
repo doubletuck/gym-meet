@@ -228,7 +228,8 @@ public class AthleteQueryService {
         }
 
         return new AthleteResponse(athlete.getId(), athlete.getSurname(), athlete.getGivenName(),
-                athlete.getDiscipline(), athlete.getBirthYear(), otherNames, personalBests(bests, order),
+                athlete.getDiscipline(), athlete.getBirthYear(),
+                athlete.getBirthDate(), otherNames, personalBests(bests, order),
                 allAroundBest, entries);
     }
 

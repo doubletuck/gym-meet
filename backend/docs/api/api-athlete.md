@@ -70,6 +70,7 @@ Fields marked nullable may be `null`; every field is always present.
 | givenName | String | |
 | discipline | String | `MAG` or `WAG` |
 | birthYear | Integer, nullable | |
+| birthDate | Date, nullable | Their full date of birth (`2006-12-30`), where known; many athletes have only a `birthYear` |
 | otherNames | List | Other spellings sources have printed, as `Given Surname` |
 | personalBests | List | [PersonalBest](#personalbest-object) objects: their best routine score on each apparatus they have one on, in Olympic order |
 | allAroundBest | Object, nullable | `{total, event, competition}`: their best all-around total from a whole all-around in one competition — a score on every apparatus. A split competition's combined total (e.g. two days added together) and a partial total some national results print don't count. `event` and `competition` as on [PersonalBest](#personalbest-object) |

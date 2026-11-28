@@ -69,6 +69,7 @@ class AthleteControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.surname").value("Nemour"))
                 .andExpect(jsonPath("$.birthYear").value(2006))
+                .andExpect(jsonPath("$.birthDate").value("2006-12-30"))
                 // Bars: 15.333 in the final beats 14.933 in qualification
                 .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'UB')].score").value(15.333))
                 .andExpect(jsonPath("$.personalBests[?(@.apparatus == 'UB')].routine.difficulty").value(7.0))

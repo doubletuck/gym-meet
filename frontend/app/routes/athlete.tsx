@@ -6,7 +6,7 @@ import { athleteQuery, queryClient } from "~/api/client";
 import { DisciplineCode } from "~/components/Abbreviation";
 import { CareerResults, PersonalBests } from "~/components/athletes/career";
 import { Country } from "~/components/results/parts";
-import { athleteName } from "~/lib/format";
+import { athleteName, formatDate } from "~/lib/format";
 
 function athleteId(params: Route.ClientLoaderArgs["params"]): number {
   const id = Number(params.athleteId);
@@ -39,7 +39,11 @@ export default function Athlete({ loaderData }: Route.ComponentProps) {
           </>
         )}
         <DisciplineCode discipline={athlete.discipline} />
-        {athlete.birthYear != null && <> · Born {athlete.birthYear}</>}
+        {athlete.birthDate != null ? (
+          <> · Born {formatDate(athlete.birthDate)}</>
+        ) : (
+          athlete.birthYear != null && <> · Born {athlete.birthYear}</>
+        )}
       </p>
       {athlete.otherNames.length > 0 && (
         <p className="mt-1 text-sm text-gray-500">Also printed as {athlete.otherNames.join(", ")}</p>

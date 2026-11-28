@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * An athlete's career: their best results, then every meet they entered.
  *
+ * @param birthDate          their full date of birth, where known; many athletes have only a birth year
  * @param otherNames         other spellings sources have printed, as "Given Surname"
  * @param personalBests      their best routine score on each apparatus, in Olympic order
  * @param allAroundBest      their best all-around total from a complete all-around in one competition; null
@@ -28,6 +29,7 @@ public record AthleteResponse(
         String givenName,
         Discipline discipline,
         @Nullable Short birthYear,
+        @Nullable LocalDate birthDate,
         List<String> otherNames,
         List<PersonalBest> personalBests,
         @Nullable AllAroundBest allAroundBest,

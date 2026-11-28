@@ -528,6 +528,8 @@ export interface components {
       discipline: "MAG" | "WAG" | "MIX";
       /** Format: int32 */
       birthYear: number | null;
+      /** Format: date */
+      birthDate: string | null;
       otherNames: string[];
       personalBests: components["schemas"]["PersonalBest"][];
       allAroundBest: components["schemas"]["AllAroundBest"] | null;

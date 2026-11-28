@@ -34,6 +34,11 @@ export function formatDateRange(start: string, end: string): string {
   return DAY.formatRange(parseDay(start), parseDay(end));
 }
 
+/** "30 Dec 2006" */
+export function formatDate(day: string): string {
+  return DAY.format(parseDay(day));
+}
+
 /** "Sat 17 Oct", or for a competition held over several days, "Thu 6 Aug – Sat 8 Aug" */
 export function formatCompetitionDate(day: string, endDay?: string | null): string {
   return endDay ? WEEKDAY.formatRange(parseDay(day), parseDay(endDay)) : WEEKDAY.format(parseDay(day));
